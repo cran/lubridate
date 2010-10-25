@@ -21,9 +21,18 @@
 #' can be added to and subtracted to date-times to create a user interface 
 #' similar to object oriented programming.
 #'
+#' @export new_period
+#' @S3method "%/%" period
+#' @S3method "%%" period
+#' @S3method "/" period
+#' @S3method "*" period
+#' @S3method "+" period
+#' @S3method "-" period
+#' @S3method rep period
+#' @S3method print period
+#' @S3method format period
 #' @param ... a list of time units to be included in the period and their amounts. Seconds, minutes, 
-#'   hours, days, weeks, months, and years are supported. See \code{\link{standardise_date_names}} 
-#'   for more details.
+#'   hours, days, weeks, months, and years are supported.
 #' @return a period object
 #' @seealso \code{\link{period}}, \code{\link{as.period}}
 #' @keywords chron classes
@@ -75,6 +84,7 @@ new_period <- function(...) {
 #' 
 #' y, m, w, d are predefined period objects such that y = 1 year, m = 1 month, w = 1 week, d = 1 day.
 #'
+#' @export seconds minutes hours days weeks months years y m w d
 #' @aliases seconds minutes hours days weeks months years y m w d
 #' @param x numeric value of the number of units to be contained in the period. With the exception 
 #'   of seconds(), x must be an integer. 
@@ -137,36 +147,36 @@ days <-    function(x = 1) new_period(day = x)
 weeks <-   function(x = 1) new_period(week = x)
 months <-  function(x = 1) new_period(month = x)
 years <-   function(x = 1) new_period(year = x)
+y <- years(1)
+m <- months(1)
+d <- days(1)
+w <- weeks(1)
 
-#' Internal function. Formats period objects.
-#'
-#' @method format period
-#' @keywords internal print chron
+
 format.period <- function(x, ...){
   show <- vector(mode = "character")
   for (i in 1:nrow(x)){
     per <- x[i,]
   
     per <- per[which(per != 0)]
-    if (length(per) == 0) show[i] <- "0 seconds"
-    
-    else{
+    if (length(per) == 0) {
+      show[i] <- "0 seconds"
+    } else {
       singular <- names(per)
-         plural <- paste(singular, "s", sep = "")
-    
-        IDs <-paste(per, ifelse(!is.na(per) & per == 1, singular, plural))
-          if(length(IDs) == 1) show[i] <- IDs
-        else
-          show[i] <- paste(paste(IDs[-length(IDs)], collapse = ", "), IDs[length(IDs)],sep = " and ")
+      plural <- paste(singular, "s", sep = "")
+      IDs <- paste(per, ifelse(!is.na(per) & per == 1, singular, plural))
+      if(length(IDs) == 1) {
+        show[i] <- IDs
+      } else {
+        show[i] <- paste(paste(paste(IDs[-length(IDs)], collapse = ", "),
+          IDs[length(IDs)], sep = " and "), "")  
       }
     }
-    paste(show, collapse = "   ")
+  }
+  show
 }
 
-#' Internal method for printing interval objects.
-#'
-#' @keywords internal print chron
-#' @method print period
+
 print.period <- function(x, ...) {
   print(format(x), ..., quote = FALSE)
 }
@@ -194,73 +204,113 @@ print.period <- function(x, ...) {
 #' transformation, first transform the duration to an interval with 
 #' \code{\link{as.interval}}.
 #'
-#' @aliases as.period as.period.default as.period.difftime as.period.interval
+#' @export as.period 
+#' @S3method as.period default 
+#' @S3method as.period difftime 
+#' @S3method as.period interval
+#' @S3method as.period duration
 #' @param x an interval, difftime, or numeric object   
-#' @param units a character vector. The names of the units to divide the
-#'   period among. Years, months, days, hours, minutes, and seconds are
-#'   supported, see \code{\link{standardise_date_names}} for more details. The
-#'   largest units should be listed first. As much of the period as possible
-#'   will be assigned to the first unit. As much of the remainder as possible
-#'   will be assigned to the second unit and so on until all listed units have
-#'   been handled. After the period has been distributed across all listed
-#'   units, any remaining time will be added to the period in seconds units.
-#'   If no units are provided, as.period will use all available units by
-#'   default.
 #' @return a period object
 #' @seealso \code{\link{period}}, \code{\link{new_period}}
 #' @keywords classes manip methods chron
 #' @examples
 #' span <- new_interval(as.POSIXct("2009-01-01"), as.POSIXct("2010-02-02 01:01:01")) #interval
-#' # 397.0424 days beginning at 2009-01-01
+#' # [1] 2009-01-01 -- 2010-02-02 01:01:01
 #' as.period(span)
 #' # 1 year, 1 month, 1 day, 1 hour, 1 minute and 1 second
-#' as.period(span, units = c("year")) 
-#' # 1 year and 2768461 seconds
-#' as.period(span, units = c("day", "minute")) 
-#' # 1 day, 1 minute and 34218001 seconds
-as.period <- function(x, units)
+as.period <- function(x)
   UseMethod("as.period")
   
-as.period.default <- function(x, units = c("seconds")){
+as.period.default <- function(x){
   x <- as.numeric(x)
   unit <- standardise_date_names(units[1])
   f <- match.fun(paste(unit, "s", sep = ""))
   f(x)
 }
 
-as.period.interval <- function(x, units = NULL){
-  start <- as.POSIXlt(x$start)
-  end <- as.POSIXlt(x$end)
+as.period.interval <- function(x){
+  start <- as.POSIXlt(attr(x, "start"))
+  end <- start + unclass(x)
 
   to.per <- as.data.frame(unclass(end)) - 
     as.data.frame(unclass(start))
     
   names(to.per)[1:6] <- c("second", "minute", "hour", "day", "month", "year")
+  to.per <- to.per[1:6]
   
-  new_period(to.per[,1:6])
+  # remove negative periods
+  nsecs <- to.per$second < 0
+  to.per$second[nsecs] <- 60 + to.per$second[nsecs]
+  to.per$minute[nsecs] <- to.per$minute[nsecs] - 1
+  
+  nmins <- to.per$minute < 0
+  to.per$minute[nmins] <- 60 + to.per$minute[nmins]
+  to.per$hour[nmins] <- to.per$hour[nmins] - 1
+  
+  nhous <- to.per$hour < 0
+  to.per$hour[nhous] <- 24 + to.per$hour[nhous]
+  to.per$day[nhous] <- to.per$day[nhous] - 1
+  
+  nmons <- to.per$month < 0
+  to.per$month[nmons] <- 12 + to.per$month[nmons]
+  to.per$year[nmons] <- to.per$year[nmons] - 1
+  
+  day.no <- floor_date(end, "month") - days(1)
+  day.no <- day.no$mday
+  ndays <- to.per$day < 0
+  to.per$day[ndays] <- day.no[ndays] + to.per$day[ndays]
+  to.per$month[ndays] <- to.per$month[ndays] - 1
+  
+  structure(to.per[,c(6:1)], class = c("period", "data.frame"))
 }
 
-as.period.difftime <- function(x, units = c("year", "day", "hour", "minute", "seconds")){
-  units <- standardise_date_names(units)
+as.period.difftime <- function(x){
+  message("estimate only: convert durations to intervals for accuracy")
   span <- as.double(x, "secs")
   remainder <- abs(span)
   newper <- new_period(second = rep(0, length(x)))
-  denominator <- c(second = 1, minute = 60, hour = 3600, day = (3600 * 24), year =  (3600 * 24 * 7 * 365))
   
-  if ("month" %in% units) 
-    stop("month length cannot be estimated from durations", call. = FALSE)
+  newper$year <- remainder %/% (3600 * 24 * 365.25)
+  remainder <- remainder %% (3600 * 24 * 365.25)
   
-  for (i in 1:length(units)){
-    bite <- switch(units[i], 
-      "second" = remainder, 
-      "minute" = remainder %/% 60 * 60, 
-      "hour" = remainder %/% 3600 * 3600, 
-      "day" = remainder %/% (3600 * 24) * (3600 * 24), 
-      "year" = remainder %/% (3600 * 24 * 7 * 365) * (3600 * 24 * 7 * 365))
-    remainder <- remainder - bite
-    newper[units[i]] <- bite / denominator[[units[i]]]
-  }
+  newper$day <- remainder %/% (3600 * 24)
+  remainder <- remainder %% (3600 * 24)
   
-  newper$second <- newper$second + remainder
+  newper$hour <- remainder %/% (3600)
+  remainder <- remainder %% (3600)
+  
+  newper$minute <- remainder %/% (60)
+  newper$second <- remainder %% (60)
+  
   newper * sign(span)
 }
+
+as.period.duration <- function(x){
+  message("estimate only: convert durations to intervals for accuracy")
+  span <- as.numeric(x)
+  remainder <- abs(span)
+  newper <- new_period(second = rep(0, length(x)))
+  
+  newper$year <- remainder %/% (3600 * 24 * 365.25)
+  remainder <- remainder %% (3600 * 24 * 365.25)
+  
+  newper$day <- remainder %/% (3600 * 24)
+  remainder <- remainder %% (3600 * 24)
+  
+  newper$hour <- remainder %/% (3600)
+  remainder <- remainder %% (3600)
+  
+  newper$minute <- remainder %/% (60)
+  newper$second <- remainder %% (60)
+  
+  newper * sign(span)
+}
+
+
+rep.period <- function(x, ...){
+	y <- lapply(x, rep, ...)
+	attr(y, "row.names") <- c(1:length(y$year))
+	attr(y, "class") <- attr(x, "class")
+	y
+}
+	

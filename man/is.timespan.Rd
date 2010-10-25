@@ -6,8 +6,7 @@
   Is x a length of time?
 }
 \alias{is.timespan}
-\alias{timespan}
-\value{TRUE if x is a period, interval, or difftime object, FALSE otherwise.}
+\value{TRUE if x is a period, interval, duration, or difftime object, FALSE otherwise.}
 \seealso{\code{\link{is.instant}}, \code{\link{is.duration}}, \code{\link{is.difftime}}, \code{\link{is.period}}, \code{\link{is.interval}}}
 \keyword{logic}
 \keyword{chron}

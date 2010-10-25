@@ -7,12 +7,15 @@
 }
 
 \details{
-  date-time object denote instants in time.
+  An instant is a specific moment in time. Most common
+  date-time objects (e.g, POSIXct, POSIXlt, and Date
+  objects) are instants.
 }
-\alias{is.timepoint}
-\alias{timepoint}
-\alias{is.instant}
 \alias{instant}
+\alias{instants}
+\alias{is.instant}
+\alias{timepoint}
+\alias{is.timepoint}
 \value{TRUE if x is a POSIXct, POSIXlt, or Date object, FALSE otherwise.}
 \seealso{\code{\link{is.timespan}}, \code{\link{is.POSIXt}}, \code{\link{is.Date}}}
 \keyword{logic}

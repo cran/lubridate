@@ -3,15 +3,12 @@
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, 
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects. 
 #'
-#' @aliases yday.default yday.zoo yday.its yday.ti yday.timeseries yday.fts yday.irts 
-#'   mday.default mday.zoo mday.its day
-#'   mday.ti mday.timeseries mday.fts mday.irts yday mday day<- yday<-.default yday<-.Date 
-#'   yday<-.chron yday<-.zoo yday<-.its yday<-.ti yday<-.timeDate yday<-.jul yday<-.timeSeries yday<-
-#'   yday<-.fts yday<-.irts 
-#'   mday<-.default mday<-.Date mday<-.chron mday<-.zoo mday<-.its mday<-.ti mday<-.timeDate 
-#'   mday<-.jul mday<-.timeSeries mday<-.fts mday<-.irts
-#' @param x a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, zooreg, timeDate, xts, its, ti, 
-#'   jul, timeSeries, or fts object. 
+#' @export day yday mday "day<-" "yday<-" "mday<-"
+#' @aliases day yday mday day<- yday<- mday<-
+#' @S3method yday default
+#' @S3method mday default
+#' @param x a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, zooreg,
+#'    timeDate, xts, its, ti, jul, timeSeries, or fts object. 
 #' @return yday returns the day of the year as a decimal number (01-366). mday returns the day of 
 #'   the month as a decimal number (01-31). 
 #' @seealso \code{\link{wday}}
@@ -36,10 +33,10 @@ yday.default <- function(x)
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, 
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects. 
 #'
-#' @aliases wday.default 
-#'   wday.zoo wday.its wday.ti wday.timeseries wday.fts wday.irts wday 
-#'   wday<- wday<-.default wday<-.Date wday<-.chron wday<-.zoo wday<-.its 
-#'   wday<-.ti wday<-.timeDate wday<-.jul wday<-.timeSeries wday<-.fts wday<-.irts mday<- wday.numeric
+#' @export wday "wday<-"
+#' @aliases wday wday<- 
+#' @S3method wday default
+#' @S3method wday numeric
 #' @param x a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, zooreg, timeDate, xts, its, ti, 
 #'   jul, timeSeries, or fts object. 
 #' @param label logical. Only available for wday. TRUE will display the day of the week as a 

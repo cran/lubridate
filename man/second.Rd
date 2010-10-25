@@ -7,29 +7,12 @@
 }
 
 \details{
-  Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr,
-  zoo, zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts
-  objects.
+  Date-time must be a POSIXct, POSIXlt, Date, chron,
+  yearmon, yearqtr, zoo, zooreg, timeDate, xts, its, ti,
+  jul, timeSeries, and fts objects.
 }
-\alias{second.default}
-\alias{second.zoo}
-\alias{second.its}
-\alias{second.ti}
-\alias{second.timeseries}
-\alias{second.fts}
-\alias{second.irts}
 \alias{second}
 \alias{second<-}
-\alias{second<-.default}
-\alias{second<-.chron}
-\alias{second<-.zoo}
-\alias{second<-.its}
-\alias{second<-.ti}
-\alias{second<-.timeDate}
-\alias{second<-.jul}
-\alias{second<-.timeSeries}
-\alias{second<-.fts}
-\alias{second<-.irts}
 \value{the seconds element of x as a decimal number}
 \keyword{utilities}
 \keyword{manip}

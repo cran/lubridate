@@ -1,18 +1,18 @@
 \name{ceiling_date}
 \alias{ceiling_date}
 \title{Round date-times up.}
-\usage{ceiling_date(x, unit=c("second", "minute", "hour", "day", "week",
-    "month", "year"))}
+\usage{ceiling_date(x, unit=c("second", "minute", "hour", "day",
+    "week", "month", "year"))}
 
 \description{
   Round date-times up.
 }
 
 \details{
-  ceiling_date takes a date-time object and rounds it up to the nearest
-  integer value of the specified time unit. Users can specify whether
-  to round up to the nearest second, minute, hour, day, week, month, or
-  year.
+  ceiling_date takes a date-time object and rounds it up to
+  the nearest integer value of the specified time unit.
+  Users can specify whether to round up to the nearest
+  second, minute, hour, day, week, month, or year.
 }
 \value{x with the appropriate units rounded up}
 \seealso{\code{\link{floor_date}}, \code{\link{round_date}}}

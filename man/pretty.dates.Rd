@@ -1,5 +1,4 @@
 \name{pretty.dates}
-\alias{pretty.dates}
 \title{Computes attractive axis breaks for date-time data...}
 \usage{pretty.dates(x, n, ...)}
 
@@ -8,17 +7,27 @@
 }
 
 \details{
-  pretty.dates indentifies which unit of time the sub-intervals should
-  be measured in to provide approximately n breaks. It then chooses a
-  "pretty" length for the sub-intervals and sets start and endpoints
-  that 1) span the entire range of the data, and 2) allow the breaks to
-  occur on important date-times (i.e. on the hour, on the first of the
-  month, etc.)
+  pretty.dates indentifies which unit of time the
+  sub-intervals should be measured in to provide
+  approximately n breaks. It then chooses a "pretty" length
+  for the sub-intervals and sets start and endpoints that
+  1) span the entire range of the data, and 2) allow the
+  breaks to occur on important date-times (i.e. on the
+  hour, on the first of the month, etc.)
 }
 \value{a vector of date-times that can be used as axis tick marks or bin breaks}
 \keyword{dplot}
 \keyword{utilities}
 \keyword{chron}
+\alias{pretty.dates}
+\alias{pretty.unit}
+\alias{pretty.sec}
+\alias{pretty.min}
+\alias{pretty.hour}
+\alias{pretty.day}
+\alias{pretty.month}
+\alias{pretty.year}
+\alias{pretty.point}
 \arguments{
   \item{x}{a vector of POSIXct, POSIXlt, Date, or chron date-time objects}
   \item{n}{integer value of the desired number of breaks}
