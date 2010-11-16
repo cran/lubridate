@@ -1,5 +1,19 @@
 Version 0.2.1
 -------------------------------------------------------------------------
+NEW FEATURES
+
+* made division, modulo, and integer division operations compatible with difftimes
+
+* created c() methods for periods and durations
+
+
+BUG FIXES
+
+* fixed bug in division, modulo, and integer operations with timespans
+
+
+Version 0.2.1
+-------------------------------------------------------------------------
 
 NEW FEATURES
 
