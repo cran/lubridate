@@ -85,18 +85,16 @@ new_period <- function(...) {
 #' 
 #' y, m, w, d are predefined period objects such that y = 1 year, m = 1 month, w = 1 week, d = 1 day.
 #'
-#' @export seconds minutes hours days weeks months years y m w d
-#' @aliases seconds minutes hours days weeks months years y m w d
+#' @export seconds minutes hours days weeks years y m w d milliseconds microseconds microseconds nanoseconds picoseconds
+#' @aliases seconds minutes hours days weeks years y m w d milliseconds microseconds microseconds nanoseconds picoseconds
+#' @S3method months numeric
+#' @S3method months integer
 #' @param x numeric value of the number of units to be contained in the period. With the exception 
 #'   of seconds(), x must be an integer. 
 #' @return a period object
-#' @seealso \code{\link{period}}, \code{\link{new_period}}, \code{\link{edays}}
+#' @seealso \code{\link{period}}, \code{\link{new_period}}, \code{\link{ddays}}
 #' @keywords chron manip
 #' @examples
-#' eseconds(1) 
-#' # Time difference of 1 secs
-#' eminutes(3.5) 
-#' # Time difference of 3.5 mins
 #'
 #' x <- as.POSIXct("2009-08-03") 
 #' # "2009-08-03 CDT"
@@ -146,12 +144,17 @@ minutes <- function(x = 1) new_period(minute = x)
 hours <-   function(x = 1) new_period(hour = x)
 days <-    function(x = 1) new_period(day = x)  
 weeks <-   function(x = 1) new_period(week = x)
-months <-  function(x = 1) new_period(month = x)
+months.numeric <- months.integer <- function(x, abbreviate) new_period(month = x)
 years <-   function(x = 1) new_period(year = x)
 y <- years(1)
 m <- months(1)
 d <- days(1)
 w <- weeks(1)
+milliseconds <- function(x = 1) seconds(x/1000)
+microseconds <- function(x = 1) seconds(x/1000000)
+nanoseconds <- function(x = 1) seconds(x/1e9)
+picoseconds <- function(x = 1) seconds(x/1e12)
+
 
 
 format.period <- function(x, ...){
