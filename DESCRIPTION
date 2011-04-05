@@ -1,7 +1,7 @@
 Package: lubridate
 Type: Package
 Title: Make dealing with dates a little easier
-Version: 0.2.3
+Version: 0.2.4
 Author: Garrett Grolemund <grolemund@rice.edu>, Hadley Wickham
         <h.wickham@gmail.com>
 Maintainer: Garrett Grolemund <grolemund@rice.edu>
@@ -24,6 +24,6 @@ Collate: 'accessors-day.r' 'accessors-hour.r' 'accessors-minute.r'
         'coercion.r' 'durations.r' 'epochs.r' 'help.r' 'intervals.r'
         'ops.durations.r' 'parse.r' 'periods.r' 'pretty.r' 'round.r'
         'util.r' 'zzz.r'
-Packaged: 2010-12-09 17:22:08 UTC; garrettgrolemund
+Packaged: 2011-04-05 13:17:45 UTC; hadley
 Repository: CRAN
-Date/Publication: 2010-12-09 20:32:52
+Date/Publication: 2011-04-05 13:28:28
