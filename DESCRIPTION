@@ -15,8 +15,8 @@ Description: Lubridate makes it easier to work with dates and times by
         Lubridate has a consistent, memorable syntax, that makes
         working with dates fun instead of frustrating.
 Enhances: chron, timeDate, zoo, xts, its, tis, timeSeries, fts, tseries
-Version: 0.2.5
-Depends: R (>= 2.8)
+Version: 0.2.6
+Depends: R (>= 2.10)
 Suggests: testthat
 Collate: 'accessors-day.r' 'accessors-hour.r' 'accessors-minute.r'
         'accessors-misc.r' 'accessors-month.r' 'accessors-second.r'
@@ -24,6 +24,6 @@ Collate: 'accessors-day.r' 'accessors-hour.r' 'accessors-minute.r'
         'coercion.r' 'durations.r' 'epochs.r' 'help.r' 'intervals.r'
         'ops.durations.r' 'parse.r' 'periods.r' 'pretty.r' 'round.r'
         'util.r' 'zzz.r'
-Packaged: 2011-05-11 20:17:05 UTC; garrettgrolemund
+Packaged: 2012-01-02 16:19:22 UTC; hadley
 Repository: CRAN
-Date/Publication: 2011-05-12 04:27:20
+Date/Publication: 2012-01-10 08:59:32
