@@ -1,3 +1,6 @@
+#' @include periods.r
+NULL
+
 #' Get/set months component of a date-time.
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, 
@@ -52,5 +55,10 @@ month.numeric <- function(x, label = FALSE, abbr = TRUE) {
     
 
 
-"month<-" <- function(x, value)
-  x <- x + months(value - month(x))
+"month<-" <- function(x, value) {
+	if (!is.numeric(value)) {
+			value <- pmatch(tolower(value), c("january", "february", "march", 
+  		"june", "july", "august", "september", "october", "november", "december"))
+  	}
+  	x <- x + months(value - month(x))
+ }

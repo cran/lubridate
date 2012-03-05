@@ -15,15 +15,19 @@ Description: Lubridate makes it easier to work with dates and times by
         Lubridate has a consistent, memorable syntax, that makes
         working with dates fun instead of frustrating.
 Enhances: chron, timeDate, zoo, xts, its, tis, timeSeries, fts, tseries
-Version: 0.2.6
-Depends: R (>= 2.10)
+Version: 1.1.0
+Depends: methods, R (>= 2.14)
 Suggests: testthat
-Collate: 'accessors-day.r' 'accessors-hour.r' 'accessors-minute.r'
-        'accessors-misc.r' 'accessors-month.r' 'accessors-second.r'
-        'accessors-tz.r' 'accessors-week.r' 'accessors-year.r'
-        'coercion.r' 'durations.r' 'epochs.r' 'help.r' 'intervals.r'
-        'ops.durations.r' 'parse.r' 'periods.r' 'pretty.r' 'round.r'
-        'util.r' 'zzz.r'
-Packaged: 2012-01-02 16:19:22 UTC; hadley
+Collate: 'time-zones.r' 'POSIXt.r' 'timespans.r' 'numeric.r' 'util.r'
+        'durations.r' 'periods.r' 'intervals.r' 'difftimes.r' 'Dates.r'
+        'coercion.r' 'ops-addition.r' 'ops-division.r'
+        'ops-integer-division.r' 'ops-modulo.r' 'ops-multiplication.r'
+        'ops-subtraction.r' 'accessors-day.r' 'accessors-dst.r'
+        'accessors-hour.r' 'accessors-minute.r' 'accessors-month.r'
+        'accessors-second.r' 'accessors-tz.r' 'accessors-week.r'
+        'accessors-year.r' 'am-pm.r' 'decimal-dates.r' 'epochs.r'
+        'help.r' 'instants.r' 'leap-years.r' 'parse.r' 'pretty.r'
+        'round.r' 'update.r' 'data.r'
+Packaged: 2012-03-05 16:41:00 UTC; GarrettsiMac
 Repository: CRAN
-Date/Publication: 2012-01-10 08:59:32
+Date/Publication: 2012-03-05 19:06:04

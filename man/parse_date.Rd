@@ -2,7 +2,8 @@
 \alias{parse_date}
 \title{Change dates into a POSIXct format}
 \usage{
-  parse_date(x, formats, seps = find_separator(x))
+  parse_date(x, formats, quiet = FALSE,
+    seps = find_separator(x), tz = "UTC")
 }
 \arguments{
   \item{x}{a character or numeric vector of suspected
@@ -12,8 +13,14 @@
   the order they occur within the dates.  See
   \code{\link[base]{strptime}} for format elements.}
 
+  \item{quiet}{logical. When TRUE function evalueates
+  without displaying customary messages.}
+
   \item{seps}{a vector of possible characters used to
   separate elements within the dates.}
+
+  \item{tz}{a character string that specifies the time zone
+  with which to parse the dates}
 }
 \value{
   a vector of POSIXct date-time objects

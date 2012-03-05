@@ -1,0 +1,28 @@
+\name{\%within\%}
+\alias{\%within\%}
+\alias{\%within\%,ANY,Interval-method}
+\alias{\%within\%,Interval,Interval-method}
+\title{Tests whether a date or interval falls within an interval}
+\usage{
+  a \%within\% b
+}
+\arguments{
+  \item{a}{An interval or date-time object}
+
+  \item{b}{An interval}
+}
+\value{
+  A logical int <- new_interval(ymd("2001-01-01"),
+  ymd("2002-01-01")) # 2001-01-01 UTC--2002-01-01 UTC int2
+  <- new_interval(ymd("2001-06-01"), ymd("2002-01-01")) #
+  2001-06-01 UTC--2002-01-01 UTC
+
+  ymd("2001-05-03") %within% int # TRUE int2 %within% int #
+  TRUE ymd("1999-01-01") %within% int # FALSE
+}
+\description{
+  %within% returns TRUE if a falls within interval b, FALSE
+  otherwise. If a is an interval, both its start and end
+  dates must fall within b to return TRUE.
+}
+

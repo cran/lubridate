@@ -1,17 +1,13 @@
 \name{seconds}
-\alias{d}
 \alias{days}
 \alias{hours}
-\alias{m}
 \alias{microseconds}
 \alias{milliseconds}
 \alias{minutes}
 \alias{nanoseconds}
 \alias{picoseconds}
 \alias{seconds}
-\alias{w}
 \alias{weeks}
-\alias{y}
 \alias{years}
 \title{Quickly create relative timespans.}
 \usage{
@@ -26,12 +22,12 @@
   a period object
 }
 \description{
-  Quickly create period objects for easy date-time
+  Quickly create Period objects for easy date-time
   manipulation. The units of the period created depend on
-  the name of the function called. For period objects,
+  the name of the function called. For Period objects,
   units do not have a fixed length until they are added to
   a specific date time, contrast this with
-  \code{\link{durations}}. This makes periods useful for
+  \code{\link{new_duration}}. This makes periods useful for
   manipulations with clock times because units expand or
   contract in length to accomodate conventions such as leap
   years, leap seconds, and Daylight Savings Time.
@@ -40,10 +36,8 @@
   When paired with date-times, these functions allow
   date-times to be manipulated in a method similar to
   object oriented programming. Period objects can be added
-  to Date, POSIXt, and Interval objects.
-
-  y, m, w, d are predefined period objects such that y = 1
-  year, m = 1 month, w = 1 week, d = 1 day.
+  to Date, POSIXct, and POSIXlt objects to calculate new
+  date-times.
 }
 \examples{
 x <- as.POSIXct("2009-08-03")
@@ -91,7 +85,7 @@ boundary + edays(1) # duration
 # "2009-03-09 02:59:59 CDT" (clock time corresponding to 86400 seconds later)
 }
 \seealso{
-  \code{\link{period}}, \code{\link{new_period}},
+  \code{\link{Period-class}}, \code{\link{new_period}},
   \code{\link{ddays}}
 }
 \keyword{chron}

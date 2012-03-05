@@ -6,7 +6,7 @@
 }
 \arguments{
   \item{num}{the number of seconds to be included in the
-  period (if not listing time units).}
+  duration (if not listing time units).}
 
   \item{...}{a list of time units to be included in the
   duration and their amounts. Seconds, minutes, hours,
@@ -29,6 +29,10 @@
   used due to their variability.
 }
 \details{
+  new_duration is meant to be used interactively on the
+  command line. See \code{\link{duration}}, for a version
+  that is better suited to automating within a function.
+
   Durations record the exact number of seconds in a time
   span. They measure the exact passage of time but do not
   always align with measurements made in larger units of
@@ -38,7 +42,7 @@
   Base R provides a second class for measuring durations,
   the difftime class.
 
-  duration objects can be easily created with the helper
+  Duration objects can be easily created with the helper
   functions \code{\link{dweeks}}, \code{\link{ddays}},
   \code{\link{dminutes}}, \code{\link{dseconds}}. These
   objects can be added to and subtracted to date- times to
@@ -51,11 +55,11 @@ new_duration(second = 90)
 new_duration(minute = 1.5)
 # 90s
 new_duration(second = 3, minute = 1.5, hour = 2, day = 6, week = 1)
-# 1130493s (13.08d)
+# 1130493s (~13.08 days)
 new_duration(hour = 1, minute = -60)
 # 0s
 new_duration(day = -1)
-# -86400s (-1d)
+# -86400s (~-1 days)
 }
 \seealso{
   \code{\link{duration}}, \code{\link{as.duration}}

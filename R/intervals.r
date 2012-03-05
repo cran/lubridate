@@ -1,201 +1,504 @@
+#' @include timespans.r
+NULL
+
+
+check_interval <- function(object){
+	errors <- character()
+	if (!is.numeric(object@.Data)) {
+		msg <- "Span length must be numeric."
+		errors <- c(errors, msg)
+	}
+	if (!is(object@start, "POSIXct")) {
+		msg <- "Start date must be in POSIXct format."
+		errors <- c(errors, msg)
+	}
+	if (length(object@.Data) != length(object@start)) {
+		msg <- paste("Inconsistent lengths: spans = ", length(object@.Data), 
+			", start dates = ", length(object@start), sep = "") 
+		errors <- c(errors, msg)
+	}
+	if (length(errors) == 0) 
+		TRUE
+	else
+		errors
+}
+
+
+#' Interval class
+#'
+#' Interval is an S4 class that extends the \code{\link{Timespan-class}} class. An 
+#' Interval object records one or more spans of time. Intervals record these 
+#' timespans as a sequence of seconds that begin at a specified date. Since 
+#' intervals are anchored to a precise moment of time, they can accurately be 
+#' converted to \code{\link{Period-class}} or \code{\link{Duration-class}} class objects. This 
+#' is because we can observe the length in seconds of each period that begins on a
+#' specific date. Contrast this to a generalized period, which may not have a 
+#' consistent length in seconds (e.g. the number of seconds in a year will change 
+#' if it is a leap year). 
+#'
+#' Intervals can be both negative and positive. Negative intervals progress 
+#' backwards from the start date; positive intervals progress forwards.
+#'
+#' Interval class objects have two slots: .Data, a numeric object equal to the number 
+#' of seconds in the interval; and start, a POSIXct object that specifies the time 
+#' when the interval starts.
+#'
+#'
+#' @name Interval-class
+#' @rdname Interval-class
+#' @exportClass Interval
+#' @aliases intersect,Interval,Interval-method 
+#' @aliases union,Interval,Interval-method 
+#' @aliases setdiff,Interval,Interval-method 
+#' @aliases as.numeric,Interval-method 
+#' @aliases show,Interval-method
+#' @aliases c,Interval-method
+#' @aliases rep,Interval-method
+#' @aliases [,Interval-method
+#' @aliases [<-,Interval,ANY-method
+#' @aliases $,Interval-method
+#' @aliases $<-,Interval-method
+#' @aliases as.difftime,Interval-method
+#' @aliases +,Interval,Duration-method
+#' @aliases +,Interval,Interval-method
+#' @aliases +,Interval,Period-method
+#' @aliases +,Interval,Date-method
+#' @aliases +,Date,Interval-method
+#' @aliases +,Interval,difftime-method
+#' @aliases +,difftime,Interval-method
+#' @aliases +,Interval,numeric-method
+#' @aliases +,numeric,Interval-method
+#' @aliases +,Interval,POSIXct-method
+#' @aliases +,POSIXct,Interval-method
+#' @aliases +,Interval,POSIXlt-method
+#' @aliases +,POSIXlt,Interval-method
+#' @aliases /,Interval,Duration-method
+#' @aliases /,Interval,Interval-method
+#' @aliases /,Interval,Period-method
+#' @aliases /,Interval,difftime-method
+#' @aliases /,difftime,Interval-method
+#' @aliases /,Interval,numeric-method
+#' @aliases /,numeric,Interval-method
+#' @aliases *,Interval,ANY-method
+#' @aliases *,ANY,Interval-method
+#' @aliases -,Interval,missing-method
+#' @aliases -,Interval,Interval-method
+#' @aliases -,Date,Interval-method
+#' @aliases -,POSIXct,Interval-method
+#' @aliases -,POSIXlt,Interval-method
+#' @aliases -,numeric,Interval-method
+#' @aliases -,Interval,Date-method
+#' @aliases -,Interval,POSIXct-method
+#' @aliases -,Interval,POSIXlt-method
+#' @aliases -,Interval,numeric-method
+#' @aliases -,Duration,Interval-method
+#' @aliases -,Period,Interval-method
+#' @aliases %%,Interval,Duration-method
+#' @aliases %%,Interval,Interval-method
+#' @aliases %%,Interval,Period-method
+setClass("Interval", contains = c("Timespan", "numeric"), representation(start = "POSIXct", 	tzone = "character"), validity = check_interval)
+
+#' @export
+setMethod("show", signature(object = "Interval"), function(object){
+	print(paste(format(object@start, tz = object@tzone, usetz = TRUE), "--", 
+		format(object@start + object@.Data, tz = object@tzone, usetz = TRUE), sep = ""), quote = F)
+})
+
+#' @S3method format Interval
+format.Interval <- function(x,...){
+	paste(format(x@start, tz = x@tzone, usetz = TRUE), "--", 
+		format(x@start + x@.Data, tz = x@tzone, usetz = TRUE), sep = "")
+}
+
+#' @export
+setMethod("c", signature(x = "Interval"), function(x, ...){
+	spans <- c(x@.Data, unlist(list(...)))
+	starts <- c(x@start, unlist(lapply(list(...), int_start)))
+	new("Interval", spans, start = starts, tzone = x@tzone)
+})
+
+#' @export
+setMethod("rep", signature(x = "Interval"), function(x, ...){
+	new("Interval", rep(x@.Data, ...), start = rep(x@start,...), tzone = x@tzone)
+})
+
+#' @export
+setMethod("[", signature(x = "Interval"), 
+	function(x, i, j, ..., drop = TRUE) {
+    	new("Interval", x@.Data[i], start = x@start[i], tzone = x@tzone)
+	}
+)
+
+#' @export
+setMethod("[<-", signature(x = "Interval"), function(x, i, j, ..., value) {
+  	if (is.interval(value)){
+  		x@.Data[i] <- value@.Data
+  		x@start[i] <- value@start 
+  		new("Interval", x@.Data, start = x@start, tzone = x@tzone)
+  	}
+  	else {
+  		x@.Data[i] <- value
+		new("Interval", x@.Data, start = x@start, tzone = x@tzone)
+	}
+})
+
+
+#' @export
+setMethod("$", signature(x = "Interval"), function(x, name) {
+	if(name == "span") name <- ".Data"
+	slot(x, name)
+})
+
+#' @export
+setMethod("$<-", signature(x = "Interval"), function(x, name, value) {
+	if(name == "span") name <- ".Data"
+	slot(x, name) <- value
+	x
+})
+
 #' Create an interval object.
 #'
-#' new_interval creates an interval object with the specified start and end 
-#' dates. new_interval automatically assigns the date that occurs first in time as the 
-#' start date and the date that occurs later as the end date. As a result, intervals are always positive.
+#' interval creates an \code{\link{Interval-class}} object with the specified start and end 
+#' dates. If the start date occurs before the end date, the interval will be positive. 
+#' Otherwise, it will be negative.
 #'
 #' Intervals are time spans bound by two real date-times.  Intervals can be 
 #' accurately converted to either period or duration objects using 
 #' \code{\link{as.period}}, \code{\link{as.duration}}. Since an interval is
 #' anchored to a fixed history of time, both the exact number of seconds that passed
 #' and the number of variable length time units that occurred during the interval can be
-#' calculated.  Subtracting two date times automatically creates an interval
-#' object. 
+#' calculated.  
 #'
-#' @export new_interval
-#' @S3method "%%" interval
-#' @S3method "%/%" interval
-#' @S3method "/" interval
-#' @S3method "*" interval
-#' @S3method "+" interval
-#' @S3method "-" interval
-#' @S3method rep interval
-#' @S3method "[" interval
-#' @S3method c interval
-#' @S3method format interval
-#' @S3method print interval
-#' @param date1 a POSIXt or Date date-time object
-#' @param date2 a POSIXt or Date date-time object
-#' @return an interval object
-#' @seealso \code{\link{interval}}, \code{\link{as.interval}}
-#' @keywords chron classes
+#' \%--\% Creates an interval that covers the range spanned 
+#' by two dates. It replaces the 
+#' original behavior of lubridate, which created an interval by default whenever 
+#' two date-times were subtracted.
+#'
+#' @export new_interval interval "%--%"
+#' @aliases interval new_interval %--%
+#' @param start a POSIXt or Date date-time object
+#' @param end a POSIXt or Date date-time object
+#' @param tzone a recognized timezone to display the interval in
+#' @return an Interval object
+#' @seealso \code{\link{Interval-class}}, \code{\link{as.interval}}
 #' @examples
 #' new_interval(ymd(20090201), ymd(20090101))
-#' # 2009-01-01 -- 2009-02-01 
+#' # 2009-02-01 UTC--2009-01-01 UTC 
 #'
 #' date1 <- as.POSIXct("2009-03-08 01:59:59")
 #' date2 <- as.POSIXct("2000-02-29 12:00:00")
 #' new_interval(date2, date1)
-#' # 2000-02-29 12:00:00 -- 2009-03-08 01:59:59
+#' # 2000-02-29 12:00:00 CST--2009-03-08 01:59:59 CST
 #' new_interval(date1, date2)
-#' # 2000-02-29 12:00:00 -- 2009-03-08 01:59:59
+#' # 2009-03-08 01:59:59 CST--2000-02-29 12:00:00 CST
 #' 
-#' span <- new_interval(ymd(20090201), ymd(20090101))
-#' # [1] 2009-01-01 -- 2009-02-01 
-#' span - days(30)
-#' # 2009-01-01 -- 2009-01-02
-#' span + months(6)
-#' # 2009-01-01 -- 2009-08-01 
-#'
-#' start <- attr(span, "start")
-#' # "2009-01-01 UTC"
-#' end <- start + span
-#' # "2009-02-01 UTC"
-new_interval <- function(date2, date1){
-  int <- data.frame(date2 = as.POSIXct(date2), 
-                    date1 = as.POSIXct(date1))
-  span <- abs(as.numeric(int$date2) - as.numeric(int$date1))
-  structure(span, start = pmin(int$date1, int$date2), class = c("interval", "numeric"))
+#' span <- new_interval(ymd(20090101), ymd(20090201))
+#' # 2009-01-01 UTC--2009-02-01 UTC 
+new_interval <- interval <- function(start, end, tzone = attr(start, "tzone")){
+	if (is.null(tzone)) {
+		if (is.null(attr(end, "tzone"))) tzone <- ""
+		else tzone <- attr(end, "tzone")
+	}
+	
+	span <- as.numeric(end) - as.numeric(start)
+	starts <- start + rep(0, length(span))
+	starts <- with_tz(starts, tzone)
+	
+	new("Interval", span, start = starts, tzone = tzone)
 }
 
-
-format.interval <- function(x, ...){
-  paste(attr(x, "start"), "--", attr(x, "start") + as.numeric(x), "")
-}
-
-print.interval <- function(x, ...) {
-  print(format(x), ..., quote = FALSE)
-}
+"%--%" <- function(start, end) interval(start, end)
 
 
-#' Change an object to an interval.
+#' Is x an Interval object?
 #'
-#' as.interval changes difftime, duration, period and numeric objects to 
-#' intervals that begin at the specified date-time. Numeric objects are first 
-#' coerced to time spans equal to the numeric value in seconds. 
-#'
-#' as.interval can be used to create accurate transformations between period 
-#' objects, which measure time spans in variable length units, and difftime objects, 
-#' which measure timespans as an exact number of seconds. A start date-
-#' time must be supplied to make the conversion. Lubridate uses 
-#' this start date to look up how many seconds each variable 
-#' length unit (e.g. month, year) lasted for during the time span 
-#' described. See 
-#' \code{\link{as.duration}}, \code{\link{as.period}}.
-#'
-#' @export as.interval
-#' @param x a duration (i.e. difftime), period, or numeric object that describes the length of the 
-#'   interval
-#' @param start a POSIXt or Date object that describes when the interval begins   
-#' @return an interval object
-#' @seealso \code{\link{interval}}, \code{\link{new_interval}}
-#' @keywords classes manip methods chron
+#' @export is.interval
+#' @param x an R object   
+#' @return TRUE if x is an Interval object, FALSE otherwise.
+#' @seealso \code{\link{is.instant}}, \code{\link{is.timespan}}, \code{\link{is.period}}, 
+#'   \code{\link{is.duration}}, \code{\link{Interval-class}}
+#' @keywords logic chron
 #' @examples
-#' diff <- new_difftime(days = 31) #difftime
-#' as.interval(diff, ymd("2009-01-01"))
-#' # 2009-01-01 -- 2009-02-01
-#' as.interval(diff, ymd("2009-02-01"))
-#' # 2009-02-01 -- 2009-03-04
-#' 
-#' dur <- new_duration(days = 31) #duration
-#' as.interval(dur, ymd("2009-01-01"))
-#' # 2009-01-01 -- 2009-02-01
-#' as.interval(dur, ymd("2009-02-01"))
-#' # 2009-02-01 -- 2009-03-04
-#'
-#' per <- new_period(months = 1) #period
-#' as.interval(per, ymd("2009-01-01"))
-#' # 2009-01-01 -- 2009-02-01 
-#' as.interval(per, ymd("2009-02-01"))
-#' # 2009-02-01 -- 2009-03-01
-#'
-#' as.interval(3600, ymd("2009-01-01")) #numeric
-#' # 2009-01-01 -- 2009-01-01 01:00:00
-as.interval <- function(x, start){
-	stopifnot(is.instant(start))
-	if (is.instant(x))
-		return(new_interval(x, start))
-	else
-		new_interval(start + x, start)
-}
+#' is.interval(new_period(months= 1, days = 15)) # FALSE
+#' is.interval(new_interval(ymd(20090801), ymd(20090809))) # TRUE
+is.interval <- function(x) is(x, c("Interval"))
 
-
-c.interval <- function(..., recursive = F){
-	intervals <- list(...)
-	starts <- structure(c(unlist(lapply(intervals, attr, "start"))), class = c("POSIXt", "POSIXct"))
-	durations <- unlist(lapply(intervals, as.vector))
-	structure(durations, start = starts, class = c("interval", "numeric"))
-}
-
-
-"[.interval" <- function(x, i, ...){
-	structure(unclass(x)[i], start = attr(x, "start")[i], class = c("interval", "numeric"))
-} 
 
 #' Access and change the start date of an interval
 #'
-#' Changing the start date of an interval does not change the length of 
-#' the interval. It shifts when the interval occurs.
+#' Note that changing the start date of an interval will change the length of 
+#' the interval, since the end date will remain the same.
 #'
 #' @aliases int_start int_start<-
 #' @export int_start "int_start<-"
-#' @param x An interval object
+#' @param int An interval object
 #' @return A POSIXct date object when used as an accessor. Nothing when used as a settor
+#' @seealso \code{\link{int_end}}, \code{\link{int_shift}}, \code{\link{int_flip}}
 #' @examples
 #' int <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
-#' # 2001-01-01 -- 2002-01-01
+#' # 2001-01-01 UTC--2002-01-01 UTC
 #' int_start(int)
 #' # "2001-01-01 UTC"
 #' int_start(int) <- ymd("2001-06-01")
 #' int
-#' # 2001-06-01 -- 2002-06-01
-int_start <- function(x)
-	attr(x, "start")
-	
-"int_start<-" <- function(interval, value){
-	stopifnot(length(value) == length(interval))
-	interval <- structure(as.numeric(interval), start = value, class = c("interval", "numeric"))
-}	
+#' # 2001-06-01 UTC--2002-01-01 UTC
+int_start <- function(int) int@start
 
+"int_start<-" <- function(int, value){
+	value <- as.POSIXct(value)
+	span <- as.numeric(int@start + int@.Data - value, "secs")
+	equal.lengths <- data.frame(span, value)
+	int <- new("Interval", span, start = equal.lengths$value, 
+		tzone = int@tzone)
 
-	
-
+}
 
 
 #' Access and change the end date of an interval
 #'
-#' Changing the end date of an interval does not change the length of 
-#' the interval. It shifts when the interval occurs.
+#' Note that changing the end date of an interval will change the length of 
+#' the interval, since the start date will remain the same.
 #'
 #' @aliases int_end int_end<-
 #' @export int_end "int_end<-"
-#' @param x An interval object
+#' @param int An interval object
 #' @return A POSIXct date object when used as an accessor. Nothing when used as a settor
+#' @seealso \code{\link{int_start}}, \code{\link{int_shift}}, \code{\link{int_flip}}
 #' @examples
 #' int <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
-#' # 2001-01-01 -- 2002-01-01
+#' # 2001-01-01 UTC--2002-01-01 UTC
 #' int_end(int)
 #' # "2002-01-01 UTC"
 #' int_end(int) <- ymd("2002-06-01")
 #' int
-#' # 2001-06-01 -- 2002-06-01
-int_end <- function(x)
-	attr(x, "start") + as.numeric(x)
+#' # 2001-01-01 UTC--2002-06-01 UTC
+int_end <- function(int) int@start + int@.Data
 
-"int_end<-" <- function(interval, value){
-	stopifnot(length(value) == length(interval))
-	dur <- as.numeric(interval)
-	interval <- structure(dur, start = value - dur , class = c("interval", "numeric"))
+"int_end<-" <- function(int, value){
+	value <- as.POSIXct(value)
+	span <- as.numeric(value - int@start, "secs")
+	int <- new("Interval", span, start = int@start,
+		tzone = int@tzone)
 }
 
-	
-	
-
-	
-
-rep.interval <- function(x, ...){
-	y <- rep(as.numeric(x), ...)
-	attr(y, "start") <- rep(attr(x, "start"), ...)
-	attr(y, "class") <- attr(x, "class")
-	y
+#' Flip the direction of an interval
+#'
+#' Reverses the order of the start date and end date in an interval. The 
+#' new interval takes place during the same timespan as the original interval, 
+#' but has the opposite direction.
+#'
+#' @export int_flip
+#' @param int An interval object
+#' @return An interval object
+#' @seealso \code{\link{int_shift}},  \code{\link{int_start}}, \code{\link{int_end}}
+#' @examples
+#' int <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
+#' # 2001-01-01 UTC--2002-01-01 UTC
+#' int_flip(int)
+#' # 2002-01-01 UTC--2001-01-01 UTC
+int_flip <- function(int){
+	new("Interval", -int@.Data, start = int@start + int@.Data, tzone = int@tzone)
 }
+
+#' Shift an interval along the timeline
+#'
+#' Shifts the start and end dates of an interval up or down the timeline 
+#' by a specified amount. Note that this may change the exact length of the 
+#' interval if the interval is shifted by a Period object. Intervals shifted by a 
+#' Duration or difftime object will retain their exact length in seconds.
+#'
+#' @export int_shift
+#' @param int An interval object
+#' @param by A period or duration object
+#' @return An interval object
+#' @seealso \code{\link{int_flip}},  \code{\link{int_start}}, \code{\link{int_end}}
+#' @examples
+#' int <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
+#' # 2001-01-01 UTC--2002-01-01 UTC
+#' int_shift(int, new_duration(days = 11))
+#' # 2001-01-12 UTC--2002-01-12 UTC
+#' int_shift(int, new_duration(hours = -1))
+#' # 2000-12-31 23:00:00 UTC--2001-12-31 23:00:00 UTC
+int_shift <- function(int, by){
+	if(!is.timespan(by)) stop("by is not a recognized timespan object")
+	if(is.interval(by)) stop("an interval cannot be shifted by another interval. 
+		Convert second interval to a period or duration.")
+	new_interval(int@start + by, int_end(int) + by)
+}
+
+
+#' Test if two intervals overlap
+#'
+#' @export "int_overlaps"
+#' @param int1 an Interval object
+#' @param int2 an Interval object
+#' @return Logical. TRUE if int1 and int2 overlap by at least one second. FALSE otherwise.
+#' @examples
+#' int1 <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
+#' # 2001-01-01 UTC--2002-01-01 UTC
+#' int2 <- new_interval(ymd("2001-06-01"), ymd("2002-06-01"))
+#' # 2001-06-01 UTC--2002-06-01 UTC
+#' int3 <- new_interval(ymd("2003-01-01"), ymd("2004-01-01"))
+#' # 2003-01-01 UTC--2004-01-01 UTC
+#'
+#' int_overlaps(int1, int2) # TRUE
+#' int_overlaps(int1, int3) # FALSE
+int_overlaps <- function(int1, int2){
+	stopifnot(c(is.interval(int1), is.interval(int2)))
+	int1@start <= int2@start + int2@.Data & int2@start <= int1@start + int1@.Data
+}
+
+#' Ensures all intervals in an interval object are positive
+#'
+#' If an interval is not positive, int_standardize flips it so that it 
+#' retains its endpoints but becomes positive.
+#'
+#' @export "int_standardize"
+#' @param int an Interval object
+#' @examples
+#' int <- new_interval(ymd("2002-01-01"), ymd("2001-01-01"))
+#' # 2002-01-01 UTC--2001-01-01 UTC
+#' int_standardize(int)
+#' # 2001-01-01 UTC--2002-01-01 UTC
+int_standardize <- function(int){
+	int[int@.Data < 0] <- int_flip(int[int@.Data < 0])
+	int
+}
+
+
+#' Test if two intervals share an endpoint
+#'
+#' int_aligns tests for the case where two intervals begin or end at the same 
+#' moment when arranged chronologically. The direction of each interval is ignored. 
+#' int_align tests whether the earliest or latest moments of each interval occur at 
+#' the same time.
+#'
+#' @export "int_aligns"
+#' @param int1 an Interval object
+#' @param int2 an Interval object
+#' @return Logical. TRUE if int1 and int2 begin or end on the same moment. FALSE otherwise.
+#' @examples
+#' int1 <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
+#' # 2001-01-01 UTC--2002-01-01 UTC
+#' int2 <- new_interval(ymd("2001-06-01"), ymd("2002-01-01"))
+#' # 2001-06-01 UTC--2002-01-01 UTC
+#' int3 <- new_interval(ymd("2003-01-01"), ymd("2004-01-01"))
+#' # 2003-01-01 UTC--2004-01-01 UTC
+#'
+#' int_aligns(int1, int2) # TRUE
+#' int_aligns(int1, int3) # FALSE
+int_aligns <- function(int1, int2){
+	int1 <- int_standardize(int1)
+	int2 <- int_standardize(int2)
+	
+	int1@start == int2@start | (int1@start + int1@.Data) == (int2@start + int2@.Data)
+}
+
+#' @export
+setGeneric("intersect")
+
+#' @export
+setMethod("intersect", signature(x = "Interval", y = "Interval"), function(x,y){
+	int1 <- int_standardize(x)
+	int2 <- int_standardize(y)
+	
+	starts <- pmax(int1@start, int2@start)
+	ends <- pmin(int1@start + int1@.Data, int2@start + int2@.Data)
+	spans <- as.numeric(ends) - as.numeric(starts) 
+	
+	no.int <- ends < starts
+	spans[no.int] <- NA
+	starts[no.int] <- NA
+	
+	new("Interval", spans, start = starts, tzone = x@tzone) * sign(x@.Data)
+})
+
+#' @export
+setGeneric("union")
+
+#' @export
+setMethod("union", signature(x = "Interval", y = "Interval"), function(x,y){
+	int1 <- int_standardize(x)
+	int2 <- int_standardize(y)
+	
+	starts <- pmin(int1@start, int2@start)
+	ends <- pmax(int1@start + int1@.Data, int2@start + int2@.Data)
+
+	spans <- as.numeric(ends) - as.numeric(starts) 
+	
+	if(any(!int_overlaps(int1, int2))) 
+		message("Union includes intervening time between intervals.")
+		
+	tz(starts) <- x@tzone
+	new("Interval", spans, start = starts, tzone = x@tzone) * sign(x@.Data)
+})
+
+#' @export
+setGeneric("setdiff")
+
+# returns the part of x that is not in y
+#' @export
+setMethod("setdiff", signature(x = "Interval", y = "Interval"), function(x,y){
+	aligned <- which(int_aligns(x, y))
+	inside <- which(y %within% x)
+	makes2 <- setdiff(aligned, inside)
+	
+	if (length(makes2)) {
+		stop(paste("Cases", makes2, 
+			"result in discontinuous intervals."))
+	}
+	
+	int1 <- int_standardize(x)
+	int2 <- int_standardize(y)
+	
+	first.y <- int_start(int2)
+	last.y <- int_end(int2)
+	
+	starts <- int_start(int1)
+	starts[(last.y + 1) %within% int1] <- last.y[(last.y + 1) %within% int1]
+
+	ends <- int_end(int1)
+	ends[(first.y - 1) %within% int1] <- first.y[(first.y - 1) %within% int1]
+	
+	spans <- as.numeric(ends) - as.numeric(starts)
+	
+	new("Interval", spans, start = starts, tzone = x@tzone) * sign(x@.Data)
+})
+
+
+#' Tests whether a date or interval falls within an interval
+#'
+#' %within% returns TRUE if a falls within interval b, FALSE otherwise. 
+#' If a is an interval, both its start and end dates must fall within b 
+#' to return TRUE.
+#'
+#' @export 
+#' @rdname within-interval
+#' @usage a \%within\% b
+#' @aliases %within%,Interval,Interval-method
+#' @aliases %within%,ANY,Interval-method
+#' @param a An interval or date-time object
+#' @param b An interval
+#' @return A logical
+#' int <- new_interval(ymd("2001-01-01"), ymd("2002-01-01"))
+#' # 2001-01-01 UTC--2002-01-01 UTC
+#' int2 <- new_interval(ymd("2001-06-01"), ymd("2002-01-01"))
+#' # 2001-06-01 UTC--2002-01-01 UTC
+#'
+#' ymd("2001-05-03") %within% int # TRUE
+#' int2 %within% int # TRUE
+#' ymd("1999-01-01") %within% int # FALSE
+"%within%" <- function(a,b) standardGeneric("%within%")
+
+#' @export
+setGeneric("%within%")
+
+setMethod("%within%", signature(b = "Interval"), function(a,b){
+	if(!is.instant(a)) stop("Argument 1 is not a recognized date-time")
+	a <- as.POSIXct(a)
+	as.numeric(a) - as.numeric(b@start) <= b@.Data & as.numeric(a) - as.numeric(b@start) >= 0
+})
+
+setMethod("%within%", signature(a = "Interval", b = "Interval"), function(a,b){
+	as.numeric(a@start) - as.numeric(b@start) <= b@.Data & as.numeric(a@start) - as.numeric(b@start) >= 0
+})

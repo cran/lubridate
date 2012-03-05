@@ -1,3 +1,6 @@
+#' @include periods.r
+NULL
+
 #' Get/set hours component of a date-time.
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo, 
@@ -13,7 +16,7 @@
 #' x <- now()
 #' hour(x)
 #' hour(x) <- 1
-#' hour(x) <- 61 
+#' hour(x) <- 25 
 #' hour(x) > 2
 hour <- function(x) 
   UseMethod("hour")
