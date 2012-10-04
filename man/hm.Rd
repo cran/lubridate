@@ -5,16 +5,16 @@
   hm(...)
 }
 \arguments{
-  \item{...}{a character vector of hour minute pairs}
+  \item{...}{character or numeric vectors of hour minute
+  pairs}
 }
 \value{
-  a vector of period objects
+  a vector of class \code{Period}
 }
 \description{
-  Transforms a character string into a period object with
-  the specified number of hours and minutes. hm()
-  recognizes all non-alphanumeric separators of length 1
-  with the exception of ".".
+  Transforms a character or numeric vectors into a period
+  object with the specified number of hours and minutes.
+  Arbitrary text can separate hours and minutes.
 }
 \examples{
 x <- c("09:10", "09:02", "1:10")

@@ -70,7 +70,11 @@ test_that("period objects handle vector input", {
 
 test_that("format.Period works as expected", {
   per <- new_period(second = 90, minute = 5)
-  expect_match(format(per), "5 minutes and 90 seconds")
+  per2 <- new_period(days = 0)
+  per3 <- new_period(years = 1, days = NA)
+  expect_match(format(per), "5M 90S")
+  expect_match(format(per2), "0S")
+  expect_equivalent(format(per3), as.character(NA))
 })
 
 test_that("as.period handles interval objects", {
@@ -99,3 +103,31 @@ test_that("as.period handles duration objects", {
   expect_that(as.period(dur), equals(seconds(5) + minutes(30)))
 })
 
+test_that("[<- can subset periods with new periods", {
+  Time <- data.frame(Time = c(hms("01:01:01"), hms("02:02:02")))
+  Time[1,1] <- Time[1,1] + hours(1)
+  
+  times <- days(1:3)
+  times[1] <- times[1] + hours(2)
+  
+  expect_equal(Time[1,1], hms("02:01:01"))
+  expect_equal(times[1], new_period(days = 1, hours = 2))
+  
+})
+
+test_that("period correctly handles week units", {
+  expect_equal(period(1, "week"), days(7))
+  expect_equal(period(8, "days"), days(8))
+  expect_equal(period(c(3,2), c("days", "week")), days(c(17)))
+})
+
+test_that("format.period correctly displays negative units", {
+  expect_match(format(days(-2)), "-2d 0H 0M 0S")
+  expect_match(format(new_period(second = -1, hour = -2, day = 3)), "3d -2H 0M -1S")
+})
+
+test_that("format.Period correctly displays intervals of length 0", {
+  per <- new_period(seconds = 5)
+  
+  expect_output(per[FALSE], "Period\\(0)")
+})

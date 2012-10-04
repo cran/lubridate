@@ -1,7 +1,7 @@
 \name{Timespan-class}
 \alias{*,Timespan,Timespan-method}
-\alias{\%/\%,Timespan,Timespan-method}
 \alias{Timespan-class}
+\alias{\%/\%,Timespan,Timespan-method}
 \title{Timespan class}
 \description{
   Timespan is an S4 class with no slots. It is extended by

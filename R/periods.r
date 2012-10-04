@@ -45,8 +45,8 @@ check_period <- function(object){
 		errors <- c(errors, msg)
 	}
 	
-	values <- c(object@year, object@month, object@day, object@hour, object@minute, 
-		object@.Data)
+  values <- c(object@year, object@month, object@day, object@hour, object@minute)
+	values <- na.omit(values)
 	if (sum(values - trunc(values))) {
 		msg <- "periods must have integer values"
 		errors <- c(errors, msg)
@@ -99,7 +99,7 @@ check_period <- function(object){
 #' @aliases c,Period-method
 #' @aliases rep,Period-method
 #' @aliases [,Period-method
-#' @aliases [<-,Period,Period-method
+#' @aliases [<-,Period,ANY,ANY,Period-method
 #' @aliases $,Period-method
 #' @aliases $<-,Period-method
 #' @aliases as.difftime,Period-method
@@ -156,61 +156,30 @@ setClass("Period", contains = c("Timespan", "numeric"),
 
 #' @export
 setMethod("show", signature(object = "Period"), function(object){
-	show <- vector(mode = "character")
-	per.mat <- matrix(c(object@year, object@month, object@day, object@hour, 
-		object@minute, object@.Data), ncol = 6) 
-	colnames(per.mat) <- c("year", "month", "day", "hour", "minute", "second")
-	
-	for (i in 1:nrow(per.mat)){
-		per <- per.mat[i,]
-		per <- per[which(per != 0)]
-		
-		if (length(per) == 0) {
-			show[i] <- "0 seconds"
-		} else {
-			singular <- names(per)
-			plural <- paste(singular, "s", sep = "")
-			IDs <- paste(per, ifelse(!is.na(per) & per == 1, singular, plural))
-			
-			if(length(IDs) == 1) {
-				show[i] <- IDs
-			} else {
-				show[i] <- paste(paste(paste(IDs[-length(IDs)], collapse = ", "),
-					IDs[length(IDs)], sep = " and "), "")  
-			}
-		}
-	}
-	print(show, quote = FALSE)
+  print(format(object))
 })
 
 #' @S3method format Period
 format.Period <- function(x, ...){
-	show <- vector(mode = "character")
-	per.mat <- matrix(c(x@year, x@month, x@day, x@hour, 
-		x@minute, x@.Data), ncol = 6) 
-	colnames(per.mat) <- c("year", "month", "day", "hour", "minute", "second")
-	
-	for (i in 1:nrow(per.mat)){
-		per <- per.mat[i,]
-		per <- per[which(per != 0)]
-		
-		if (length(per) == 0) {
-			show[i] <- "0 seconds"
-		} else {
-			singular <- names(per)
-			plural <- paste(singular, "s", sep = "")
-			IDs <- paste(per, ifelse(!is.na(per) & per == 1, singular, plural))
-			
-			if(length(IDs) == 1) {
-				show[i] <- IDs
-			} else {
-				show[i] <- paste(paste(paste(IDs[-length(IDs)], collapse = ", "),
-					IDs[length(IDs)], sep = " and "), "")  
-			}
-		}
-	}
-	show
+  if (length(x@.Data) == 0) return("Period(0)")
+  show <- vector(mode = "character")
+  na <- is.na(x)
+  
+  show <- paste(x@year, "y ", x@month, "m ", x@day, "d ",
+    x@hour, "H ", x@minute, "M ", x@.Data, "S", sep="")
+  start <- regexpr("[-1-9]", show)
+  show <- ifelse(start > 0, substr(show, start, nchar(show)), "0S")
+                 
+  show[na] <- NA
+  show
 }
+
+#' @S3method xtfrm Period
+xtfrm.Period <- function(x){
+  xtfrm(period_to_seconds(x))
+}
+
+
 
 #' @export
 setMethod("c", signature(x = "Period"), function(x, ...){
@@ -218,8 +187,8 @@ setMethod("c", signature(x = "Period"), function(x, ...){
 	years <- c(x@year, unlist(lapply(list(...), slot, "year")))
 	months <- c(x@month, unlist(lapply(list(...), slot, "month"))) 
 	days <- c(x@day, unlist(lapply(list(...), slot, "day")))
-	hours <- c(x@month, unlist(lapply(list(...), slot, "hour")))
-	minutes <- c(x@month, unlist(lapply(list(...), slot, "minute")))
+	hours <- c(x@hour, unlist(lapply(list(...), slot, "hour")))
+	minutes <- c(x@minute, unlist(lapply(list(...), slot, "minute")))
 	new("Period", seconds, year = years, month = months, day = days, 
 		hour = hours, minute = minutes)
 })
@@ -239,7 +208,7 @@ setMethod("[", signature(x = "Period"),
 })
 
 #' @export
-setMethod("[<-", signature(x = "Period", i = "Period"), 
+setMethod("[<-", signature(x = "Period", value = "Period"), 
   function(x, i, j, ..., value) {
   	x@.Data[i] <- value@.Data
   	x@year[i] <- value@year
@@ -300,18 +269,18 @@ setMethod("$<-", signature(x = "Period"), function(x, name, value) {
 #' @keywords chron classes
 #' @examples
 #' new_period (second = 90, minute = 5)
-#' #  5 minutes and 90 seconds
+#' # "5M 90S"
 #' new_period(day = -1)
-#' # -1 days
+#' # "-1d 0H 0M 0S"
 #' new_period(second = 3, minute = 1, hour = 2, day = 13, week = 1)
-#' # 13 days, 2 hours, 1 minute and 3 seconds
+#' # "20d 2H 1M 3S"
 #' new_period(hour = 1, minute = -60)
-#' # 1 hour and -60 minutes
+#' # "1H -60M 0S"
 #' new_period(second = 0)
-#' # 0 seconds
-new_period <- period <- function(...) {
-  pieces <- data.frame(...)
-    
+#' # "0S"
+new_period <- function(...) {
+  pieces <- data.frame(lapply(list(...), as.numeric))
+  
   names(pieces) <- standardise_date_names(names(pieces))
   defaults <- data.frame(
     second = 0, minute = 0, hour = 0, day = 0, week = 0, 
@@ -319,14 +288,13 @@ new_period <- period <- function(...) {
   )
   
   pieces <- cbind(pieces, defaults[setdiff(names(defaults), names(pieces))])
-  pieces <- pieces[c("year", "month", "week", "day", "hour", "minute", "second")] 
+  ## pieces <- pieces[c("year", "month", "week", "day", "hour", "minute", "second")] 
   
   pieces$day <- pieces$day + pieces$week * 7
-  pieces <- pieces[,-3]
-  
-  if(any(trunc(pieces[,1:5]) - pieces[,1:5] != 0))
-    stop("periods must have integer values", call. = FALSE)
-  
+
+  na <- is.na(rowSums(pieces))
+  pieces$second[na] <- NA ## if any of supplied pieces is NA whole vector should be NA
+
   new("Period", pieces$second, year = pieces$year, month = pieces$month, 
   	day = pieces$day, hour = pieces$hour, minute = pieces$minute)
 }
@@ -363,21 +331,22 @@ new_period <- period <- function(...) {
 #' @export period
 #' @aliases period
 #' @param num a numeric vector that lists the number of time units to be included in the period
-#' @param units a character vector that lists the type of units to be used. The units in units are matched to the values in num according to their order.
+#' @param units a character vector that lists the type of units to be used. The units in units 
+#' are matched to the values in num according to their order.
 #' @return a period object
 #' @seealso \code{\link{new_period}}, \code{\link{as.period}}
 #' @keywords chron classes
 #' @examples
 #' period(c(90, 5), c("second", "minute"))
-#' #  5 minutes and 90 seconds
+#' #  "5M 90S"
 #' period(-1, "days")
-#' # -1 days
+#' # "-1d 0H 0M 0S"
 #' period(c(3, 1, 2, 13, 1), c("second", "minute", "hour", "day", "week"))
-#' # 13 days, 2 hours, 1 minute and 3 seconds
+#' # "20d 2H 1M 3S"
 #' period(c(1, -60), c("hour", "minute"))
-#' # 1 hour and -60 minutes
+#' # "1H -60M 0S"
 #' period(0, "second")
-#' # 0 seconds
+#' # "0S"
 period <- function(num, units = "second") {
 	if (length(units) %% length(num) != 0)
 		stop("arguments must have same length")
@@ -389,6 +358,7 @@ period <- function(num, units = "second") {
 	defaults <- list(second = 0, minute = 0, hour = 0, day = 0, week = 0, 
     	month = 0, year = 0)
     pieces <- c(pieces, defaults[setdiff(names(defaults), names(pieces))])
+    pieces$day <- pieces$day + 7 * pieces$week
 		
 	new("Period", pieces$second, year = pieces$year, month = pieces$month, 
   		day = pieces$day, hour = pieces$hour, minute = pieces$minute)
@@ -436,11 +406,11 @@ period <- function(num, units = "second") {
 #' # converts to POSIXt class to accomodate time units
 #' 
 #' years(1) - months(7) 
-#' # 1 year and -7 months
+#' # "1y -7m 0d 0H 0M 0S"
 #' c(1:3) * hours(1) 
-#' # 1 hour   2 hours   3 hours
+#' # "1H 0M 0S" "2H 0M 0S" "3H 0M 0S"
 #' hours(1:3)
-#' # 1 hour   2 hours   3 hours
+#' # "1H 0M 0S" "2H 0M 0S" "3H 0M 0S"
 #'
 #' #sequencing
 #' y <- ymd(090101) # "2009-01-01 CST"
@@ -448,13 +418,6 @@ period <- function(num, units = "second") {
 #' # [1] "2009-01-01 CST" "2009-02-01 CST" "2009-03-01 CST" "2009-04-01 CDT"
 #' # [5] "2009-05-01 CDT" "2009-06-01 CDT" "2009-07-01 CDT" "2009-08-01 CDT"
 #' # [9] "2009-09-01 CDT" "2009-10-01 CDT" "2009-11-01 CDT" "2009-12-01 CST"
-#' 
-#' # end of month handling
-#' ymd(20090131) + months(0:11)
-#' # Undefined date. Defaulting to last previous real day.
-#' # [1] "2009-01-31 CST" "2009-02-28 CST" "2009-03-31 CDT" "2009-04-30 CDT"
-#' # [5] "2009-05-31 CDT" "2009-06-30 CDT" "2009-07-31 CDT" "2009-08-31 CDT"
-#' # [9] "2009-09-30 CDT" "2009-10-31 CDT" "2009-11-30 CST" "2009-12-31 CST"
 #' 
 #' # compare DST handling to durations
 #' boundary <- as.POSIXct("2009-03-08 01:59:59")

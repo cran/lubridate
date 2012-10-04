@@ -16,8 +16,9 @@
 #' with_tz(x, "GMT")
 #' # "2009-08-07 04:00:01 GMT"
 with_tz <- function (time, tzone = ""){
-  new <- as.POSIXct(format(as.POSIXct(time), tz = tzone), 
-    tz = tzone)
+  if (is.POSIXlt(time)) new <- as.POSIXct(time)
+  else new <- time
+  new <- as.POSIXlt(new, tz = tzone)
   reclass_date(new, time)
 }
 
@@ -46,7 +47,9 @@ force_tz <- function(time, tzone = ""){
   if(is.null(tzone)) tzone <- ""
   new <- ISOdatetime(year(x),  month(x), mday(x), hour(x),
     minute(x), second(x), tzone)
-  new[hour(with_tz(new, tzone)) != hour(time)] <- NA
+  
+  missing_hour <- hour(with_tz(new, tzone)) != hour(time)
+  new[missing_hour] <- NA
     
   reclass_date(new, time)
 }

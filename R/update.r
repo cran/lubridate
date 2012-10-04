@@ -39,6 +39,8 @@
 #' # "2009-02-10 00:10:03 CST"
 NULL
 
+#' @export
+#' @method update POSIXct
 update.POSIXct <- function(object, years = year(object), 
 	months = month(object), days = mday(object), 
 	mdays = mday(object), ydays = yday(object), 
@@ -60,7 +62,7 @@ update.POSIXct <- function(object, years = year(object),
     wdays - wday(object), 
     ydays - yday(object))
   
-  blank.rows <- rowSums(day.change, na.rm = TRUE)
+  blank.rows <- rowSums(abs(day.change), na.rm = TRUE)
   new.days <- day.change[which(blank.rows != 0),]
   
   if(is.matrix(new.days)){
@@ -89,6 +91,8 @@ update.POSIXct <- function(object, years = year(object),
   force_tz(utc, tzone = tzs)
 }
 
+#' @export
+#' @method update Date
 update.Date <- function(object, years = year(object), months = month(object), 
   days = mday(object), mdays = mday(object), ydays = yday(object), wdays = 
   wday(object), hours = hour(object), minutes = minute(object), seconds = 
@@ -97,7 +101,7 @@ update.Date <- function(object, years = year(object), months = month(object),
   time.change <- c(hours - hour(object), minutes - minute(object), 
     seconds - second(object))  
     
-  if(sum(time.change) != 0){
+  if(sum(na.omit(time.change)) != 0){
     return(update(with_tz(as.POSIXct(object), "UTC"), years = 
     years, months = months, days = days, mdays = mdays, ydays 
     = ydays, wdays = wdays, hours = hours, minutes = minutes, 
@@ -110,6 +114,8 @@ update.Date <- function(object, years = year(object), months = month(object),
     seconds = seconds, tzs = tzs))
 }
 
+#' @export
+#' @method update POSIXlt
 update.POSIXlt <- function(object, years = year(object), months = month(object), 
   days = mday(object), mdays = mday(object), ydays = yday(object), wdays = 
   wday(object), hours = hour(object), minutes = minute(object), seconds = 

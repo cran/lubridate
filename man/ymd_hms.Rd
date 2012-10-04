@@ -8,13 +8,14 @@
 \alias{ydm_h}
 \alias{ydm_hm}
 \alias{ydm_hms}
+\alias{ymdThms}
 \alias{ymd_h}
 \alias{ymd_hm}
 \alias{ymd_hms}
-\alias{ymdThms}
-\title{Parse dates that have hours, minutes, or seconds elements}
+\title{Parse dates that have hours, minutes, or seconds elements.}
 \usage{
-  ymd_hms(..., quiet = FALSE, tz = "UTC")
+  ymd_hms(..., quiet = FALSE, tz = "UTC",
+    locale = Sys.getlocale("LC_TIME"), truncated = 0)
 }
 \arguments{
   \item{...}{a character vector of dates in year, month,
@@ -26,32 +27,83 @@
   \item{tz}{a character string that specifies which time
   zone to parse the date with. The string must be a time
   zone that is recognized by the user's OS.}
+
+  \item{locale}{locale to be used, see \link{locales}. On
+  linux systems you can use \code{system("locale -a")} to
+  list all the installed locales.}
+
+  \item{truncated}{integer, indicating how many formats can
+  be missing. See details.}
 }
 \value{
   a vector of POSIXct date-time objects
 }
 \description{
-  Transforms dates stored as character vectors in year,
-  month, day, hour, minute, second format to POSIXct
-  objects. ymd_hms() type functions recognize all
-  non-alphanumeric separators of length 1 with the
-  exception of ".". ymd_hms() functions automatically
-  assigns the Universal Coordinated Time Zone (UTC) to the
-  parsed date. This time zone can be changed with
-  \code{\link{force_tz}}. ymdThms() specifically handles
-  combined dates and times written in the ISO 8601 format.
+  Transform dates stored as character or numeric vectors to
+  POSIXct objects. ymd_hms family of functions recognize
+  all non-alphanumeric separators (with the exception of
+  "." if \code{frac = TRUE}) and correctly handle
+  heterogeneous date-time representations. For more
+  flexibility in treatment of heterogeneous formats, see
+  low level parser \code{\link{parse_date_time}}.
+}
+\details{
+  ymd_hms() functions automatically assigns the Universal
+  Coordinated Time Zone (UTC) to the parsed date. This time
+  zone can be changed with \code{\link{force_tz}}.
+
+  The most common type of irregularity in date-time data is
+  the truncation due to rounding or unavailability of the
+  time stamp. If \code{truncated} parameter is non-zero
+  \code{ymd_hms} functions also check for truncated
+  formats. For example \code{ymd_hms} with \code{truncated
+  = 3} will also parse incomplete dates like
+  \code{2012-06-01 12:23}, \code{2012-06-01 12} and
+  \code{2012-06-01}. NOTE: \code{ymd} family of functions
+  are based on \code{strptime} which currently fails to
+  parse \code{\%y-\%m} formats.
+
+  ymdThms() specifically handles combined dates and times
+  written in the ISO 8601 format.
 }
 \examples{
 x <- c("2010-04-14-04-35-59", "2010-04-01-12-00-00")
 ymd_hms(x)
 # [1] "2010-04-14 04:35:59 UTC" "2010-04-01 12:00:00 UTC"
-y <- c("2011-12-31 12:59:59", "2010-01-01 12:00:00")
-ymd_hms(y)
+x <- c("2011-12-31 12:59:59", "2010-01-01 12:00:00")
+ymd_hms(x)
 # [1] "2011-12-31 12:59:59 UTC" "2010-01-01 12:00:00 UTC"
+
+
+## ** heterogenuous formats **
+x <- c(20100101120101, "2009-01-02 12-01-02", "2009.01.03 12:01:03",
+       "2009-1-4 12-1-4",
+       "2009-1, 5 12:1, 5",
+       "200901-08 1201-08",
+       "2009 arbitrary 1 non-decimal 6 chars 12 in between 1 !!! 6",
+       "OR collapsed formats: 20090107 120107 (as long as prefixed with zeros)",
+       "Automatic wday, Thu, detection, 10-01-10 10:01:10 and p format: AM",
+       "Created on 10-01-11 at 10:01:11 PM")
+ymd_hms(x)
+
+## ** truncated time-dates **
+x <- c("2011-12-31 12:59:59", "2010-01-01 12:11", "2010-01-01 12", "2010-01-01")
+ymd_hms(x, truncated = 3)
+## "2011-12-31 12:59:59 UTC" "2010-01-01 12:11:00 UTC" "2010-01-01 12:00:00 UTC" "2010-01-01 00:00:00 UTC"
+x <- c("2011-12-31 12:59", "2010-01-01 12", "2010-01-01")
+ymd_hm(x, truncated = 2)
+## "2011-12-31 12:59:00 UTC" "2010-01-01 12:00:00 UTC" "2010-01-01 00:00:00 UTC"
+
+## ** What lubridate might not handle **
+## Extremely weird cases when one of the separators is "" and some of the
+## formats are not in double digits might not be parsed correctly:
+\dontrun{ymd_hm("20100201 07-01", "20100201 07-1", "20100201 7-01")}
+## "2010-02-01 07:01:00 UTC" "2010-02-01 07:01:00 UTC"   NA
 }
 \seealso{
-  \code{\link{ymd}}, \code{\link{hms}}
+  \code{\link{ymd}}, \code{\link{hms}}.
+  \code{\link{parse_date_time}} for underlying mechanism.
 }
-\keyword{parse}
 \keyword{POSIXt}
+\keyword{parse}
 
