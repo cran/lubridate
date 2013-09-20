@@ -39,9 +39,12 @@ check_duration <- function(object){
 #' @aliases rep,Duration-method
 #' @aliases [,Duration-method
 #' @aliases [<-,Duration,ANY,ANY,ANY-method
+#' @aliases [[,Duration-method
+#' @aliases [[<-,Duration,ANY,ANY,ANY-method
 #' @aliases $,Duration-method
 #' @aliases $<-,Duration-method
 #' @aliases as.difftime,Duration-method
+#' @aliases as.character,Duration-method
 #' @aliases +,Duration,Duration-method
 #' @aliases +,Duration,Interval-method
 #' @aliases +,Duration,Period-method
@@ -71,39 +74,49 @@ check_duration <- function(object){
 #' @aliases %%,Duration,Period-method
 setClass("Duration", contains = c("Timespan", "numeric"), validity = check_duration)
 
+
+SECONDS_IN_ONE <- c(
+  second = 1, 
+  minute = 60, 
+  hour   = 3600, 
+  day    = 86400, 
+  year   = 31557600
+)
+
 compute_estimate <- function (x) {  
-  seconds <- abs(x)
-    if (any(seconds < 60)) 
-        units <- "secs"
-    else if (any(seconds < 3600))
-        units <- "mins"
-    else if (any(seconds < 86400))
-        units <- "hours"
-    else if (any(seconds < 31557600))
-        units <- "days"
-    else
-    	units <- "years"
-    
-    switch(units, secs = paste(round(x, 2), " seconds", sep = ""), 
-      mins = paste("~", round(x/60, 2), " minutes", sep = ""), 
-      hours = paste("~", round(x/3600, 2), " hours", sep = ""), 
-      days = paste("~", round(x/86400, 2), " days", sep = ""), 
-      years = paste("~", round(x/31557600, 2), " years", sep = ""))
+  seconds <- abs(na.omit(x))
+  unit <- if (length(seconds) == 0 || any(seconds < SECONDS_IN_ONE[["minute"]])) 
+    "second"
+  else if (any(seconds < SECONDS_IN_ONE[["hour"]])) 
+    "minute"
+  else if (any(seconds < SECONDS_IN_ONE[["day"]])) 
+    "hour"
+  else if (any(seconds < SECONDS_IN_ONE[["year"]])) 
+    "day"
+  else "year"
+  x <- x / SECONDS_IN_ONE[[unit]]
+  approx_prefix <- ifelse(unit != "second" & !is.na(x), "~", "")
+  paste(approx_prefix, round(x, 2), " ", unit, "s", sep = "")
 }
 
 
 #' @export
 setMethod("show", signature(object = "Duration"), function(object){
-	print(format.Duration(object), quote = FALSE)
+	print(format.Duration(object), quote = TRUE)
 })
 
 #' @S3method format Duration
 format.Duration <- function(x, ...) {
   if (length(x@.Data) == 0) return("Duration(0)")
+  show <- vector(mode = "character")
+  na <- is.na(x)
+  
 	if (all(abs(na.omit(x@.Data)) < 120))
-		paste(x@.Data, "s", sep = "")
+		show <- paste(x@.Data, "s", sep = "")
 	else
-		paste(x@.Data, "s", " (", compute_estimate(x@.Data), ")", sep = "")
+		show <- paste(x@.Data, "s", " (", compute_estimate(x@.Data), ")", sep = "")
+  show[na] <- NA
+  show
 }
 
 #' @export
@@ -124,9 +137,22 @@ setMethod("[", signature(x = "Duration"),
 })
 
 #' @export
+setMethod("[[", signature(x = "Duration"), 
+  function(x, i, j, ..., exact = TRUE) {
+    new("Duration", x@.Data[i])
+})
+
+#' @export
 setMethod("[<-", signature(x = "Duration"), 
   function(x, i, j, ..., value) {
   	x@.Data[i] <- value
+    new("Duration", x@.Data)
+})
+
+#' @export
+setMethod("[[<-", signature(x = "Duration"), 
+  function(x, i, j, ..., value) {
+    x@.Data[i] <- as.numeric(value)
     new("Duration", x@.Data)
 })
 
@@ -327,3 +353,19 @@ dpicoseconds <- epicoseconds <- function(x = 1) picoseconds(x)
 #' is.duration(as.Date("2009-08-03")) # FALSE
 #' is.duration(new_duration(days = 12.4)) # TRUE
 is.duration <- function(x) is(x, "Duration")
+
+#' @S3method summary Duration
+summary.Duration <- function(object, ...) {
+  nas <- is.na(object)
+  object <- object[!nas]
+  nums <- as.numeric(object)
+  qq <- stats::quantile(nums)
+  qq <- c(qq[1L:3L], mean(nums), qq[4L:5L])
+  qq <- dseconds(qq)
+  qq <- as.character(qq)
+  names(qq) <- c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", 
+                 "Max.")
+  if (any(nas)) 
+    c(qq, `NA's` = sum(nas))
+  else qq
+}

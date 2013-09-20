@@ -38,9 +38,12 @@
 \alias{Interval-class}
 \alias{[,Interval-method}
 \alias{[<-,Interval,ANY,ANY,ANY-method}
+\alias{[[,Interval-method}
+\alias{[[<-,Interval,ANY,ANY,ANY-method}
 \alias{\%\%,Interval,Duration-method}
 \alias{\%\%,Interval,Interval-method}
 \alias{\%\%,Interval,Period-method}
+\alias{as.character,Interval-method}
 \alias{as.difftime,Interval-method}
 \alias{as.numeric,Interval-method}
 \alias{c,Interval-method}

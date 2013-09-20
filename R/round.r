@@ -75,12 +75,14 @@ floor_date <- function(x, unit = c("second","minute","hour","day", "week", "mont
 ceiling_date <- function(x, unit = c("second","minute","hour","day", "week", "month", "year")) {
 	unit <- match.arg(unit) 
   
+	if(!length(x)) return(x)
+  
   if (unit == "second") {
     second(x) <- ceiling(second(x))
     return(x)
   }
   
-	y <- floor_date(x - seconds(1), unit)
+	y <- floor_date(x - eseconds(1), unit)
 	
 	switch(unit,
 		minute = minute(y) <- minute(y) + 1,
@@ -127,6 +129,9 @@ ceiling_date <- function(x, unit = c("second","minute","hour","day", "week", "mo
 #' round_date(x, "year")
 #' # "2010-01-01 CST"
 round_date <- function(x, unit = c("second","minute","hour","day", "week", "month", "year")) {
+
+  if(!length(x)) return(x)
+  
   unit <- match.arg(unit)
   
   below <- as.POSIXct(floor_date(x, unit))

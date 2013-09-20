@@ -28,9 +28,12 @@
 \alias{Duration-class}
 \alias{[,Duration-method}
 \alias{[<-,Duration,ANY,ANY,ANY-method}
+\alias{[[,Duration-method}
+\alias{[[<-,Duration,ANY,ANY,ANY-method}
 \alias{\%\%,Duration,Duration-method}
 \alias{\%\%,Duration,Interval-method}
 \alias{\%\%,Duration,Period-method}
+\alias{as.character,Duration-method}
 \alias{as.difftime,Duration-method}
 \alias{as.numeric,Duration-method}
 \alias{c,Duration-method}

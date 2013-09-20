@@ -1,12 +1,16 @@
 Package: lubridate
 Imports: plyr, stringr, memoise
-Maintainer: Garrett Grolemund <grolemund@rice.edu>
 License: GPL
 Title: Make dealing with dates a little easier
 LazyData: true
 Type: Package
-Author: Garrett Grolemund <grolemund@rice.edu>, Hadley Wickham
-        <h.wickham@gmail.com>
+Authors@R: c(person("Garrett", "Grolemund", email =
+        "lubridate@github.com", role = c("aut", "cre")),
+        person("Hadley", "Wickham", role = "aut"), person("Vitalie",
+        "Spinu", role = "ctb"), person("Imanuel", "Constigan", role =
+        "ctb"), person("Chel Hee", "Lee", role = "ctb"),
+        person("Richard", "Cotton", role = "ctb"), person("Winston",
+        "Chang", role = "ctb"))
 Description: Lubridate makes it easier to work with dates and times by
         providing functions to identify and parse date-time data,
         extract and modify components of a date-time (years, months,
@@ -15,9 +19,11 @@ Description: Lubridate makes it easier to work with dates and times by
         Lubridate has a consistent, memorable syntax, that makes
         working with dates fun instead of frustrating.
 Enhances: chron, timeDate, zoo, xts, its, tis, timeSeries, fts, tseries
-Version: 1.2.0
+Version: 1.3.0
 Depends: methods, R (>= 2.14)
-Suggests: testthat
+Suggests: testthat, knitr
+BugReports: https://github.com/hadley/lubridate/issues
+VignetteBuilder: knitr
 Collate: 'time-zones.r' 'POSIXt.r' 'timespans.r' 'numeric.r' 'util.r'
         'durations.r' 'periods.r' 'intervals.r' 'difftimes.r' 'Dates.r'
         'coercion.r' 'ops-addition.r' 'ops-division.r'
@@ -29,6 +35,15 @@ Collate: 'time-zones.r' 'POSIXt.r' 'timespans.r' 'numeric.r' 'util.r'
         'help.r' 'instants.r' 'leap-years.r' 'parse.r' 'pretty.r'
         'round.r' 'update.r' 'data.r' 'guess.r' 'stamp.r' 'ops-%m+%.r'
         'accessors-quarter.r'
-Packaged: 2012-10-04 16:22:32 UTC; garrettgrolemund
+Packaged: 2013-09-20 07:23:17 UTC; ripley
+NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2012-10-04 16:57:44
+Date/Publication: 2013-09-20 09:23:33
+Author: Garrett Grolemund [aut, cre],
+  Hadley Wickham [aut],
+  Vitalie Spinu [ctb],
+  Imanuel Constigan [ctb],
+  Chel Hee Lee [ctb],
+  Richard Cotton [ctb],
+  Winston Chang [ctb]
+Maintainer: Garrett Grolemund <lubridate@github.com>

@@ -85,6 +85,38 @@ test_that("as.period handles interval objects", {
   expect_that(as.period(int), equals(years(1)))
 })
 
+test_that("as.period handles NA interval objects", {
+  one_missing_date <- as.POSIXct(NA_real_, origin = origin)
+  one_missing_interval <- new_interval(one_missing_date, 
+    one_missing_date)
+  several_missing_dates <- rep(as.POSIXct(NA_real_, origin = origin), 2)
+  several_missing_intervals <- new_interval(several_missing_dates, 
+    several_missing_dates)
+  start_missing_intervals <- new_interval(several_missing_dates, origin)
+  end_missing_intervals <- new_interval(origin, several_missing_dates)
+  na.per <- new_period(sec= NA, min = NA, hour = NA, day = NA, 
+    month = NA, year = NA)
+  
+  expect_equal(as.period(one_missing_interval, "year"), na.per)
+  expect_equal(as.period(several_missing_intervals, "year"), c(na.per, na.per))
+  expect_equal(as.period(start_missing_intervals, "year"), c(na.per, na.per))
+  expect_equal(as.period(end_missing_intervals, "year"), c(na.per, na.per))
+})
+
+test_that("as.period handles NA duration objects", {
+  na.per <- new_period(sec= NA, min = NA, hour = NA, day = NA, 
+    month = NA, year = NA)
+  
+  expect_equal(suppressMessages(as.period(dyears(NA))), na.per)
+  expect_equal(suppressMessages(as.period(dyears(c(NA, NA)))), c(na.per, na.per))
+  expect_equal(suppressMessages(as.period(dyears(c(1, NA)))), c(years(1), na.per))
+})
+  
+test_that("as.period handles NA objects", { 
+  na.per <- seconds(NA)
+  expect_equal(as.period(NA), na.per)
+})
+
 test_that("as.period handles vectors", {
   time1 <- as.POSIXct("2008-08-03 13:01:59", tz = "UTC") 
   time2 <- as.POSIXct("2009-08-03 13:01:59", tz = "UTC")
@@ -130,4 +162,18 @@ test_that("format.Period correctly displays intervals of length 0", {
   per <- new_period(seconds = 5)
   
   expect_output(per[FALSE], "Period\\(0)")
+})
+
+test_that("c.Period correctly handles NAs", {
+  per <- new_period(seconds = 5)
+  
+  expect_true(is.na(c(per, NA)[2]))
+})
+
+test_that("summary.Period creates useful summary", {
+  per <- new_period(minutes = 5)
+  text <- c(rep("5M 0S", 6), 1)
+  names(text) <- c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max.", "NA's")
+  
+  expect_equal(summary(c(per, NA)), text)
 })
