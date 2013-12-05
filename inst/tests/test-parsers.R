@@ -410,10 +410,16 @@ test_that("ISO8601: xxx_hms functions work correctly with z, Ou, OO and Oo forma
 })
 
 
-
 test_that("ymd_hms parses Ou format correctly ",{
+  ## Correct usage
   expect_that(ymd_hms("2012-03-04T05:06:07Z"), 
               equals(ymd_hms("2012-03-04 05:06:07", tz="UTC")))
+  expect_that(ymd_hms("2012-03-04T05:06:07Z", tz="America/Chicago"), 
+              equals(ymd_hms("2012-03-03 23:06:07", tz="America/Chicago")))
+  
+  ## check for message
+  expect_that(ymd_hms("2012-03-04T05:06:07Z", tz="America/Chicago"), 
+              shows_message("Date in ISO8601 format"))  
 })
 
 test_that("ymd_hms parses OO and Oo formats correctly", {
@@ -441,9 +447,20 @@ test_that("ymd_hms parses OO and Oo formats correctly", {
   ## vectorizes
   expect_that(ymd_hms(c("2012-03-04T05:06:07+01", "2012-03-04T05:06:07+01:30")), 
               equals(ymd_hms(c("2012-03-04 04:06:07", "2012-03-04 03:36:07"), tz="UTC")))  
+
+  expect_that(ymd_hms("2012-03-04T05:06:07-01:30", tz="America/Chicago"), 
+              equals(ymd_hms("2012-03-04 00:36:07", tz="America/Chicago")))
+
+  expect_that(ymd_hms("2012-03-04T05:06:07-01:30", tz="America/Chicago"), 
+              shows_message("Date in ISO8601 format"))  
 })
 
-
+test_that("ymd_hms parses mixed ISO-8601/non-ISO-8601 formats",{
+  expect_that(ymd_hms(c("2012-03-04T05:06:07Z", "2001-02-03 04:05:06"), 
+                      tz="America/Chicago"), 
+              equals(ymd_hms(c("2012-03-03 23:06:07", "2001-02-03 04:05:06"), 
+                             tz="America/Chicago")))
+})
 
 
 ## c("2012-12-04 15:06:06.952000-08:00", "2012-12-04 15:04:01.640000-08:00", 
@@ -451,7 +468,7 @@ test_that("ymd_hms parses OO and Oo formats correctly", {
 ##   "2012-12-04 17:16:05.097000-08:00")
 
 
-## ## ### speed:
+## ### speed:
 ## options(digits.secs = 3)
 ## tt <- c(rep(as.character(Sys.time()), 1e5))#, "sfds", "sdfdsf")
 
@@ -461,7 +478,22 @@ test_that("ymd_hms parses OO and Oo formats correctly", {
 ## ttz <- paste(tt, "-0600", sep = "")
 ## system.time(parse_date_time(ttz, "YmdHMOSz"))
 ## head(parse_date_time(ttz, "YmdHMOSz"))
-## system.time(out <- ymd_hms(ttz))
+## system.time(out <- ymd_hms(ttz, tz = ""))
+
+## stamp_OO <- stamp("2013-01-01T00:00:00-06:00")
+## stamp_Ou <- stamp("2013-01-01T06:00:00Z")
+## stamp_Oo <- stamp("2013-01-01T00:00:00-06")
+## stamp_Oz <- stamp("2013-01-01T00:00:00-0600")
+## stamp_OO <- stamp("2013-01-01T00:00:00-06:00")
+
+## stamp_simple <- stamp("2013-01-01T00:00:00")
+
+## system.time(out_st <- stamp_simple(out))
+## system.time(out_st <- stamp_Ou(out))
+## system.time(out_st <- stamp_OO(out))
+## system.time(out_st <- stamp_OO(out))
+## system.time(out_st <- stamp_Oz(out))
+
 
 ## tt <- rep(c(as.character(Sys.time()), as.character(Sys.Date())), 5e5)
 ## system.time(out <- as.POSIXct(tt, tz = "UTC"))
