@@ -11,36 +11,28 @@ NULL
 
 #' Add and subtract months to a date without exceeding the last day of the new month
 #'
-#' Adding months frustrates basic arithmetic because consecutive months have different lengths.
-#' With other elements, it is helpful for arithmetic to perform automatic roll over. For 
-#' example, 12:00:00 + 61 seconds becomes 12:01:01. However, people often prefer that this behavior 
-#' NOT occur with months. For example, we sometimes want January 31 + 1 month = February 28 and not 
-#' March 3. %m+% performs this type of arithmetic. Date %m+% months(n) always returns a date in the 
-#' nth month after Date. If the new date would usually spill over into the n + 1th month, %m+% will 
-#' return the last day of the nth month. Date %m-% months(n) always returns a date in the 
-#' nth month before Date.
+#' Adding months frustrates basic arithmetic because consecutive months have
+#' different lengths. With other elements, it is helpful for arithmetic to
+#' perform automatic roll over. For example, 12:00:00 + 61 seconds becomes
+#' 12:01:01. However, people often prefer that this behavior NOT occur with
+#' months. For example, we sometimes want January 31 + 1 month = February 28 and
+#' not March 3. \%m+\% performs this type of arithmetic. Date \%m+\% months(n)
+#' always returns a date in the nth month after Date. If the new date would
+#' usually spill over into the n + 1th month, \%m+\% will return the last day of
+#' the nth month (\code{\link{rollback}}. Date \%m-\% months(n) always returns a
+#' date in the nth month before Date.
 #'  
-#' %m+% and %m-% do not handle periods less than a month. These must be added separately with traditional 
-#' arithmetic. %m+% and %m-% should be used with caution as they are not a one-to-one operations and 
-#' results for either will be sensitive to the order of operations. 
-#'   
+#' \%m+\% and \%m-\% handle periods with components less than a month by first
+#' adding/substracting months and then performing usual arithmetics with smaller
+#' units.
 #'
-#' @export 
+#' \%m+\% and \%m-\% should be used with caution as they are not one-to-one
+#' operations and results for either will be sensitive to the order of
+#' operations.
+#'   
 #' @rdname mplus
 #' @usage e1 \%m+\% e2
-#' @aliases m+ %m+% m- %m-%
-#' @aliases %m+%,Period,ANY-method
-#' @aliases %m+%,ANY,Period-method
-#' @aliases %m-%,Period,ANY-method
-#' @aliases %m-%,ANY,Period-method
-#' @aliases %m+%,Duration,ANY-method
-#' @aliases %m+%,ANY,Duration-method
-#' @aliases %m-%,Duration,ANY-method
-#' @aliases %m-%,ANY,Duration-method
-#' @aliases %m+%,Interval,ANY-method
-#' @aliases %m+%,ANY,Interval-method
-#' @aliases %m-%,Interval,ANY-method
-#' @aliases %m-%,ANY,Interval-method
+#' @aliases m+ %m+% m- %m-% %m+%,ANY,ANY-method %m-%,ANY,ANY-method %m+%,Period,ANY-method %m+%,ANY,Period-method %m-%,Period,ANY-method %m-%,ANY,Period-method %m+%,Duration,ANY-method %m+%,ANY,Duration-method %m-%,Duration,ANY-method %m-%,ANY,Duration-method %m+%,Interval,ANY-method %m+%,ANY,Interval-method %m-%,Interval,ANY-method %m-%,ANY,Interval-method
 #' @param e1 A period or a date-time object of class \code{\link{POSIXlt}}, \code{\link{POSIXct}} 
 #' or \code{\link{Date}}.
 #' @param e2 A period or a date-time object of class \code{\link{POSIXlt}}, \code{\link{POSIXct}} 
@@ -50,8 +42,8 @@ NULL
 #' @examples
 #' jan <- ymd_hms("2010-01-31 03:04:05")
 #' # "2010-01-31 03:04:05 UTC"
-#' jan + months(1:3) # Feb 31 and April 31 prompt "rollover"
-#' # "2010-03-03 03:04:05 UTC" "2010-03-31 03:04:05 UTC" "2010-05-01 03:04:05 UTC"
+#' jan + months(1:3) # Feb 31 and April 31 returned as NA
+#' # NA "2010-03-31 03:04:05 UTC" NA
 #' jan %m+% months(1:3) # No rollover
 #' # "2010-02-28 03:04:05 UTC" "2010-03-31 03:04:05 UTC" "2010-04-30 03:04:05 UTC"
 #'
@@ -62,6 +54,7 @@ NULL
 #' leap %m+% years(-1)
 #' leap %m-% years(1)
 #' # "2011-02-28 UTC"
+#' @export 
 "%m+%" <- function(e1,e2) standardGeneric("%m+%")
 
 #' @export
@@ -69,27 +62,16 @@ setGeneric("%m+%")
 
 #' @export   
 setMethod("%m+%", signature(e2 = "Period"), 
-  function(e1, e2) .month_plus(e1, e2))
+  function(e1, e2) add_with_rollback(e1, e2))
 
 #' @export   
 setMethod("%m+%", signature(e1 = "Period"), 
-  function(e1, e2) .month_plus(e2, e1))
-
-mplus_error <- function(e1, e2) 
-  stop("%m+% only handles Period objects with month or year units")
+  function(e1, e2) add_with_rollback(e2, e1))
 
 #' @export   
-setMethod("%m+%", signature(e2 = "Duration"), mplus_error)
-
-#' @export   
-setMethod("%m+%", signature(e1 = "Duration"), mplus_error)
-
-#' @export   
-setMethod("%m+%", signature(e2 = "Interval"), mplus_error)
-
-#' @export   
-setMethod("%m+%", signature(e1 = "Interval"), mplus_error)
-
+setMethod("%m+%", signature(e2 = "ANY"), 
+          function(e1, e2)
+            stop("%m+% handles only Period objects as second argument"))
 
 #' @export
 "%m-%" <- function(e1,e2) standardGeneric("%m-%")
@@ -99,41 +81,47 @@ setGeneric("%m-%")
 
 #' @export   
 setMethod("%m-%", signature(e2 = "Period"), 
-  function(e1, e2) .month_plus(e1, -e2))
+  function(e1, e2) add_with_rollback(e1, -e2))
 
 #' @export   
 setMethod("%m-%", signature(e1 = "Period"), 
-  function(e1, e2) .month_plus(e2, -e1))
-
-mminus_error <- function(e1, e2) 
-  stop("%m-% only handles Period objects with month or year units")
-
+  function(e1, e2) add_with_rollback(e2, -e1))
 
 #' @export   
-setMethod("%m-%", signature(e2 = "Duration"), mminus_error)
+setMethod("%m-%", signature(e2 = "ANY"), 
+          function(e1, e2)
+            stop("%m-% handles only Period objects as second argument"))
 
-#' @export   
-setMethod("%m-%", signature(e1 = "Duration"), mminus_error)
-
-#' @export   
-setMethod("%m-%", signature(e2 = "Interval"), mminus_error)
-
-#' @export   
-setMethod("%m-%", signature(e1 = "Interval"), mminus_error)
-
-
-.month_plus <- function(e1, e2) {
-  if (any(c(e2@.Data, e2@minute, e2@hour, e2@day) != 0))
-    stop("%m+% only handles month and years. Add other periods separately with '+'")
+#' \code{add_with_rollback} provides additional functionality to \%m+\% and
+#' \%m-\%. It allows rollback to first day of the month instead of the last day
+#' of the previous month and controls whether HMS component of the end date is
+#' preserved or not.
+#' @rdname mplus
+#' @param roll_to_first rollback to the first day of the month instead of the
+#' last day of the previous month (passed to \code{\link{rollback}})
+#' @param preserve_hms retains the same hour, minute, and second information? If
+#' FALSE, the new date will be at 00:00:00 (passed to \code{\link{rollback}})
+#' @export
+add_with_rollback <- function(e1, e2, roll_to_first = FALSE, preserve_hms = TRUE) {
   
-  if (any(e2@year != 0)) e2 <- months(12 * e2@year + e2@month)
+  HMS <- any(e2@.Data != 0) || any(e2@minute != 0) || any(e2@hour != 0) || any(e2@day != 0)
+  
+  if (any(e2@year != 0)) {
+    e2$month <- 12 * e2@year + e2@month
+    e2$year <- 0L
+  }
   
   new <- .quick_month_add(e1, e2@month)
   roll <- day(new) < day(e1)
-  new[roll] <- rollback(new[roll])
-  new
-}
+  new[roll] <- rollback(new[roll], roll_to_first = roll_to_first, preserve_hms = preserve_hms)
 
+  if(HMS) {
+    e2$month <- 0L
+    new + e2
+  } else {
+    new
+  }
+}
 
 .quick_month_add <- function(object, mval) {
   tzs <- tz(object)
@@ -146,26 +134,51 @@ setMethod("%m-%", signature(e1 = "Interval"), mminus_error)
 
 #' Roll back date to last day of previous month
 #'
-#' rollback changes a date to the last day of the previous month. The new date retains the same hour, 
-#' minute, and second information.
-#'   
+#' rollback changes a date to the last day of the previous month or to the first
+#' day of the month. Optionally, the new date can retain the same hour, minute,
+#' and second information.
 #'
 #' @export 
 #' @param dates A POSIXct, POSIXlt or Date class object.
-#' @return A date-time object of class POSIXlt, POSIXct or Date, whose day has been adjusted to the 
-#' last day of the previous month.
+#' @param roll_to_first Rollback to the first day of the month instead of the
+#' last day of the previous month
+#' @param preserve_hms Retains the same hour, minute, and second information? If
+#' FALSE, the new date will be at 00:00:00.
+#' @return A date-time object of class POSIXlt, POSIXct or Date, whose day has
+#' been adjusted to the last day of the previous month, or to the first day of
+#' the month.
+#' @examples
 #' date <- ymd("2010-03-03")
 #' # "2010-03-03 UTC"
 #' rollback(date)
 #' # "2010-02-28 UTC"
 #'
 #' dates <- date + months(0:2)
-#' "2010-03-03 UTC" "2010-04-03 UTC" "2010-05-03 UTC"
+#' # "2010-03-03 UTC" "2010-04-03 UTC" "2010-05-03 UTC"
 #' rollback(dates)
-#' "2010-02-28 UTC" "2010-03-31 UTC" "2010-04-30 UTC"
-rollback <- function(dates) {
+#' # "2010-02-28 UTC" "2010-03-31 UTC" "2010-04-30 UTC"
+#' 
+#' date <- ymd_hms("2010-03-03 12:44:22")
+#' rollback(date)
+#' # "2010-02-28 12:44:22 UTC"
+#' rollback(date, roll_to_first = TRUE)
+#' # "2010-03-01 12:44:22 UTC"
+#' rollback(date, preserve_hms = FALSE)
+#' # "2010-02-28 UTC"
+#' rollback(date, roll_to_first = TRUE, preserve_hms = FALSE)
+#' # "2010-03-01 UTC"
+rollback <- function(dates, roll_to_first = FALSE, preserve_hms = TRUE) {
   if (length(dates) == 0) 
-    return(structure(vector(length = 0), class = class(dates)))
+    return(dates)
   day(dates) <- 1
-  dates - days(1)
+  if (!preserve_hms) {
+    hour(dates) <- 0
+    minute(dates) <- 0
+    second(dates) <- 0
+  }
+  if (roll_to_first) {
+    dates
+  } else {
+    dates - days(1)
+  }
 }

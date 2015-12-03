@@ -5,6 +5,18 @@
 
 <title>Do more with dates and times in R with lubridate 1.3.0</title>
 
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
    pre .operator,
@@ -13,19 +25,21 @@
    }
 
    pre .literal {
-     color: rgb(88, 72, 246)
+     color: #990073
    }
 
    pre .number {
-     color: rgb(0, 0, 205);
+     color: #099;
    }
 
    pre .comment {
-     color: rgb(76, 136, 107);
+     color: #998;
+     font-style: italic
    }
 
    pre .keyword {
-     color: rgb(0, 0, 255);
+     color: #900;
+     font-weight: bold
    }
 
    pre .identifier {
@@ -33,7 +47,7 @@
    }
 
    pre .string {
-     color: rgb(3, 106, 7);
+     color: #d14;
    }
 </style>
 
@@ -43,64 +57,71 @@ var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/<
 hljs.initHighlightingOnLoad();
 </script>
 
-<!-- MathJax scripts -->
-<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
 
 
 <style type="text/css">
 body, td {
    font-family: sans-serif;
    background-color: white;
-   font-size: 12px;
-   margin: 8px;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
 }
 
 tt, code, pre {
    font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
 }
 
-h1 { 
-   font-size:2.2em; 
+h1 {
+   font-size:2.2em;
 }
 
-h2 { 
-   font-size:1.8em; 
+h2 {
+   font-size:1.8em;
 }
 
-h3 { 
-   font-size:1.4em; 
+h3 {
+   font-size:1.4em;
 }
 
-h4 { 
-   font-size:1.0em; 
+h4 {
+   font-size:1.0em;
 }
 
-h5 { 
-   font-size:0.9em; 
+h5 {
+   font-size:0.9em;
 }
 
-h6 { 
-   font-size:0.8em; 
+h6 {
+   font-size:0.8em;
 }
 
 a:visited {
    color: rgb(50%, 0%, 50%);
 }
 
-pre {	
-   margin-top: 0;
-   max-width: 95%;
-   border: 1px solid #ccc;
-   white-space: pre-wrap;
+pre, img {
+  max-width: 100%;
 }
-
+pre {
+  overflow-x: auto;
+}
 pre code {
    display: block; padding: 0.5em;
 }
 
-code.r, code.cpp {
-   background-color: #F8F8F8;
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
 }
 
 table, td, th {
@@ -123,54 +144,54 @@ hr {
 }
 
 @media print {
-   * { 
-      background: transparent !important; 
-      color: black !important; 
-      filter:none !important; 
-      -ms-filter: none !important; 
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
    }
 
-   body { 
-      font-size:12pt; 
-      max-width:100%; 
-   }
-       
-   a, a:visited { 
-      text-decoration: underline; 
+   body {
+      font-size:12pt;
+      max-width:100%;
    }
 
-   hr { 
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
       visibility: hidden;
       page-break-before: always;
    }
 
-   pre, blockquote { 
-      padding-right: 1em; 
-      page-break-inside: avoid; 
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
    }
 
-   tr, img { 
-      page-break-inside: avoid; 
+   tr, img {
+      page-break-inside: avoid;
    }
 
-   img { 
-      max-width: 100% !important; 
+   img {
+      max-width: 100% !important;
    }
 
-   @page :left { 
-      margin: 15mm 20mm 15mm 10mm; 
-   }
-     
-   @page :right { 
-      margin: 15mm 10mm 15mm 20mm; 
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
    }
 
-   p, h2, h3 { 
-      orphans: 3; widows: 3; 
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
    }
 
-   h2, h3 { 
-      page-break-after: avoid; 
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
    }
 }
 </style>
@@ -296,7 +317,7 @@ with_tz(mistake, &quot;Pacific/Auckland&quot;)
 
 <p>You can save an interval of time as an Interval class object with lubridate. This is quite useful! For example, my stay in Auckland lasted from June 4, 2011 to August 10, 2011 (which we&#39;ve already saved as arrive and leave). We can create this interval in one of two ways:</p>
 
-<pre><code class="r">auckland &lt;- interval(arrive, leave)
+<pre><code class="r">auckland &lt;- interval(arrive, leave) 
 auckland
 </code></pre>
 
@@ -321,15 +342,15 @@ jsm
 
 <p>Will my visit overlap with and his travels? Yes.</p>
 
-<p>&ldquo;{r]
-int_overlaps(jsm, auckland)</p>
+<pre><code class="r">int_overlaps(jsm, auckland)
+</code></pre>
 
-<pre><code>
-Then I better make hay while the sun shines! For what part of my visit will Chris be there?
+<pre><code>## [1] TRUE
+</code></pre>
 
+<p>Then I better make hay while the sun shines! For what part of my visit will Chris be there?</p>
 
-```r
-setdiff(auckland, jsm)
+<pre><code class="r">setdiff(auckland, jsm)
 </code></pre>
 
 <pre><code>## [1] 2011-06-04 12:00:00 NZST--2011-07-20 NZST
@@ -339,15 +360,15 @@ setdiff(auckland, jsm)
 
 <h2>Arithmetic with date times</h2>
 
-<p>Intervals are specific time spans (because they are tied to specific dates), but lubridate also supplies two general time span classes: Durations and Periods. Helper functions for creating periods are named after the units of time (plural). Helper functions for creating durations follow the same format but begin with a &quot;d&rdquo; (for duration) or, if you prefer, and &ldquo;e&rdquo; (for exact).</p>
+<p>Intervals are specific time spans (because they are tied to specific dates), but lubridate also supplies two general time span classes: Durations and Periods. Helper functions for creating periods are named after the units of time (plural). Helper functions for creating durations follow the same format but begin with a &ldquo;d&rdquo; (for duration) or, if you prefer, and &ldquo;e&rdquo; (for exact).</p>
 
-<pre><code class="r">minutes(2)  ## period
+<pre><code class="r">minutes(2) ## period
 </code></pre>
 
 <pre><code>## [1] &quot;2M 0S&quot;
 </code></pre>
 
-<pre><code class="r">dminutes(2)  ## duration
+<pre><code class="r">dminutes(2) ## duration
 </code></pre>
 
 <pre><code>## [1] &quot;120s (~2 minutes)&quot;
@@ -355,7 +376,7 @@ setdiff(auckland, jsm)
 
 <p>Why two classes? Because the timeline is not as reliable as the number line. The Duration class will always supply mathematically precise results. A duration year will always equal 365 days. Periods, on the other hand, fluctuate the same way the timeline does to give intuitive results. This makes them useful for modeling clock times. For example, durations will be honest in the face of a leap year, but periods may return what you want:</p>
 
-<pre><code class="r">leap_year(2011)  ## regular year
+<pre><code class="r">leap_year(2011) ## regular year
 </code></pre>
 
 <pre><code>## [1] FALSE
@@ -373,8 +394,7 @@ setdiff(auckland, jsm)
 <pre><code>## [1] &quot;2012-01-01 UTC&quot;
 </code></pre>
 
-<pre><code class="r">
-leap_year(2012)  ## leap year
+<pre><code class="r">leap_year(2012) ## leap year
 </code></pre>
 
 <pre><code>## [1] TRUE
@@ -407,19 +427,19 @@ leap_year(2012)  ## leap year
 
 <p>How long was my stay in Auckland?</p>
 
-<pre><code class="r">auckland/edays(1)
+<pre><code class="r">auckland / ddays(1)
 </code></pre>
 
-<pre><code>## [1] 67.08
+<pre><code>## [1] 67.08333
 </code></pre>
 
-<pre><code class="r">auckland/edays(2)
+<pre><code class="r">auckland / ddays(2)
 </code></pre>
 
-<pre><code>## [1] 33.54
+<pre><code>## [1] 33.54167
 </code></pre>
 
-<pre><code class="r">auckland/eminutes(1)
+<pre><code class="r">auckland / dminutes(1)
 </code></pre>
 
 <pre><code>## [1] 96600
@@ -427,13 +447,13 @@ leap_year(2012)  ## leap year
 
 <p>And so on. Alternatively, we can do modulo and integer division. Sometimes this is more sensible than division - it is not obvious how to express a remainder as a fraction of a month because the length of a month constantly changes.</p>
 
-<pre><code class="r">auckland%/%months(1)
+<pre><code class="r">auckland %/% months(1)
 </code></pre>
 
 <pre><code>## [1] 2
 </code></pre>
 
-<pre><code class="r">auckland%%months(1)
+<pre><code class="r">auckland %% months(1)
 </code></pre>
 
 <pre><code>## [1] 2011-08-04 12:00:00 NZST--2011-08-10 14:00:00 NZST
@@ -441,7 +461,7 @@ leap_year(2012)  ## leap year
 
 <p>Modulo with an timespan returns the remainder as a new (smaller) interval. You can turn this or any interval into a generalized time span with <code>as.period</code>.</p>
 
-<pre><code class="r">as.period(auckland%%months(1))
+<pre><code class="r">as.period(auckland %% months(1))
 </code></pre>
 
 <pre><code>## [1] &quot;6d 2H 0M 0S&quot;
@@ -499,7 +519,7 @@ jan31 + months(0:11)
 <p>The code in lubridate is vectorized and ready to be used in both interactive settings and within functions. As an example, I offer a function for advancing a date to the last day of the month</p>
 
 <pre><code class="r">last_day &lt;- function(date) {
-    ceiling_date(date, &quot;month&quot;) - days(1)
+  ceiling_date(date, &quot;month&quot;) - days(1)
 }
 </code></pre>
 

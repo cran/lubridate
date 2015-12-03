@@ -70,7 +70,7 @@
 #'
 #' Instants can be rounded to a convenient unit using the 
 #' functions \code{\link{ceiling_date}}, \code{\link{floor_date}} 
-#' and\code{\link{round_date}}.
+#' and \code{\link{round_date}}.
 #'
 #' Time zones
 #' 
@@ -128,7 +128,7 @@
 #'
 #' Functions for working with periods include 
 #' \code{\link{is.period}}, \code{\link{as.period}} and 
-#' \code{\link{new_period}}. \code{\link{seconds}}, 
+#' \code{\link{period}}. \code{\link{seconds}}, 
 #' \code{\link{minutes}}, \code{\link{hours}}, \code{\link{days}}, 
 #' \code{\link{weeks}}, \code{\link{months}} and 
 #' \code{\link{years}} quickly create periods of convenient 
@@ -143,7 +143,7 @@
 #' 
 #' Functions for working with intervals include 
 #' \code{\link{is.interval}}, \code{\link{as.interval}},  
-#' \code{\link{new_interval}}, \code{\link{int_shift}},
+#' \code{\link{interval}}, \code{\link{int_shift}},
 #' \code{\link{int_flip}}, \code{\link{int_aligns}},
 #' \code{\link{int_overlaps}}, and
 #' \code{\link{\%within\%}}. Intervals can also be manipulated with 
@@ -163,8 +163,11 @@
 #' @references Garrett Grolemund, Hadley Wickham (2011). Dates and Times Made
 #'   Easy with lubridate. Journal of Statistical Software, 40(3), 1-25. 
 #'   \url{http://www.jstatsoft.org/v40/i03/}.
-#' @import plyr stringr
+#' @import stringr
+#' @importFrom methods setClass setGeneric new show allNames callGeneric is slot slot<- slotNames validObject
+#' @importFrom utils packageVersion read.delim
+#' @importFrom stats na.omit setNames update
 #' @docType package
-#' @name lubridate
+#' @name lubridate-package
 #' @aliases lubridate lubridate-package
 NULL

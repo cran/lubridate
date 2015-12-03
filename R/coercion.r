@@ -6,6 +6,7 @@
 #' @include difftimes.r
 #' @include numeric.r
 #' @include POSIXt.r
+#' @include time-zones.r
 NULL
 
 
@@ -13,76 +14,76 @@ NULL
 #' @name DateCoercion
 #' @keywords internal 
 #'
-#' @S3method as.POSIXlt fts
-#' @S3method as.POSIXlt its
-#' @S3method as.POSIXlt timeSeries
-#' @S3method as.POSIXlt irts
-#' @S3method as.POSIXlt xts
-#' @S3method as.POSIXlt zoo
-#' @S3method as.POSIXlt tis
-#' @S3method as.POSIXct fts
-#' @S3method as.POSIXct its
-#' @S3method as.POSIXct timeSeries
-#' @S3method as.POSIXct irts
-#' @S3method as.POSIXct xts
-#' @S3method as.POSIXct zoo
 NULL
 
-as.POSIXct.fts <- function(x, tz = "", ...) as.POSIXct(fts::dates.fts(x))
-as.POSIXlt.fts <- function(x, tz = "", ...) as.POSIXlt(fts::dates.fts(x))
+#' @export
+as.POSIXct.fts <- function(x, tz = "", ...) as.POSIXct(zoo::index(x))
+#' @export
+as.POSIXlt.fts <- function(x, tz = "", ...) as.POSIXlt(zoo::index(x))
 
+#' @export
 as.POSIXlt.its <- function(x, tz = "", ...) as.POSIXlt(attr(x, "dates"))
+#' @export
 as.POSIXct.its <- function(x, tz = "", ...) as.POSIXct(attr(x, "dates"))
 
+#' @export
 as.POSIXlt.timeSeries <- function(x, tz = "", ...) {
   as.POSIXlt(timeDate::timeDate(x@positions, 
     zone = x@FinCenter, FinCenter = x@FinCenter))
 }
+#' @export
 as.POSIXct.timeSeries <- function(x, tz = "", ...) {
   as.POSIXct(timeDate::timeDate(x@positions, 
     zone = x@FinCenter, FinCenter = x@FinCenter))
 }
 
+#' @export
 as.POSIXlt.irts <- function(x, tz = "", ...) as.POSIXlt(x$time)
+#' @export
 as.POSIXct.irts <- function(x, tz = "", ...) as.POSIXct(x$time)
 
+#' @export
 as.POSIXlt.xts <- function(x, tz = "", ...) as.POSIXlt(zoo::index(x))
+#' @export
 as.POSIXct.xts <- function(x, tz = "", ...) as.POSIXct(zoo::index(x))
+#' @export
 as.POSIXlt.zoo <- function(x, tz = "", ...) as.POSIXlt(zoo::index(x))
+#' @export
 as.POSIXct.zoo <- function(x, tz = "", ...) as.POSIXct(zoo::index(x))
 
+#' @export
 as.POSIXlt.tis <- function(x, tz = "", ...) as.Date(x)
 
 #' Convenience method to reclass dates post-modification.
 #' @keywords internal
 #'
-#' @export reclass_date
-#' @S3method reclass_date POSIXlt
-#' @S3method reclass_date POSIXct
-#' @S3method reclass_date chron
-#' @S3method reclass_date timeDate
-#' @S3method reclass_date its
-#' @S3method reclass_date ti
-#' @S3method reclass_date Date
+#' @export
 reclass_date <- function(new, orig) UseMethod("reclass_date", orig)
+#' @export
 reclass_date.POSIXlt <- function(new, orig) {
   as.POSIXlt(new)
 }
+#' @export
 reclass_date.POSIXct <- function(new, orig) {
   as.POSIXct(new)
 }
+#' @export
 reclass_date.chron <- function(new, orig) {
   chron::as.chron(new)
 }
+#' @export
 reclass_date.timeDate <- function(new, orig) {
   timeDate::as.timeDate(new)
 }
+#' @export
 reclass_date.its <- function(new, orig) {
   its::its(new, format = "%Y-%m-%d %X")
 }
+#' @export
 reclass_date.ti <- function(new, orig) {
   tis::as.ti(new, tis::tifName(orig))
 }
+#' @export
 reclass_date.Date <- function(new, orig) {
   as.Date(new)
 }
@@ -95,16 +96,15 @@ period_to_difftime <- function(per){
 #' Convenience method to reclass timespans post-modification.
 #' @keywords internal
 #'
+#' @aliases reclass_timespan,ANY,Duration-method reclass_timespan,ANY,Interval-method
+#' reclass_timespan,ANY,Period-method reclass_timespan,ANY,difftime-method
 #' @export
-#' @aliases reclass_timespan,ANY,difftime-method
-#' @aliases reclass_timespan,ANY,Duration-method
-#' @aliases reclass_timespan,ANY,Interval-method
-#' @aliases reclass_timespan,ANY,Period-method
 reclass_timespan <- function(new, orig) standardGeneric("reclass_timespan")
 
-#' @export
+#' #' @export
 setGeneric("reclass_timespan")
 
+#' @export
 setMethod("reclass_timespan", signature(orig = "difftime"), function(new, orig){
 	if (is.period(new))
 		as.difftime(new)
@@ -112,14 +112,17 @@ setMethod("reclass_timespan", signature(orig = "difftime"), function(new, orig){
 		make_difftime(as.numeric(new))
 })
 
+#' @export
 setMethod("reclass_timespan", signature(orig = "Duration"), function(new, orig){
 	suppressMessages(as.duration(new))
 })
 
+#' @export
 setMethod("reclass_timespan", signature(orig = "Interval"), function(new, orig){
 	suppressMessages(as.duration(new))
 })
 	
+#' @export
 setMethod("reclass_timespan", signature(orig = "Period"), function(new, orig){
 	suppressMessages(as.period(new))
 })
@@ -159,13 +162,8 @@ setMethod("reclass_timespan", signature(orig = "Period"), function(new, orig){
 #' # 18316800s (~212 days)
 #' as.duration(10) # numeric
 #' # 10s
-#' @export 
-#' @aliases as.duration,numeric-method
-#' @aliases as.duration,logical-method
-#' @aliases as.duration,difftime-method
-#' @aliases as.duration,Interval-method
-#' @aliases as.duration,Duration-method
-#' @aliases as.duration,Period-method
+#' @aliases as.duration,numeric-method as.duration,logical-method as.duration,difftime-method as.duration,Interval-method as.duration,Duration-method as.duration,Period-method
+#' @export
 as.duration <- function(x) standardGeneric("as.duration")
 
 #' @export
@@ -202,10 +200,7 @@ setMethod("as.duration", signature(x = "Period"), function(x){
 
 
 
-
-
-
-#' Change an object to an interval.
+#' Change an object to an \code{interval}.
 #'
 #' as.interval changes difftime, Duration, Period and numeric class objects to 
 #' intervals that begin at the specified date-time. Numeric objects are first 
@@ -220,12 +215,11 @@ setMethod("as.duration", signature(x = "Period"), function(x){
 #' described. See 
 #' \code{\link{as.duration}}, \code{\link{as.period}}.
 #'
-#' @export as.interval
 #' @param x a duration, difftime, period, or numeric object that describes the length of the interval
 #' @param start a POSIXt or Date object that describes when the interval begins   
 #' @param ... additional arguments to pass to as.interval
 #' @return an interval object
-#' @seealso \code{\link{interval}}, \code{\link{new_interval}}
+#' @seealso \code{\link{interval}}
 #' @keywords classes manip methods chron
 #' @examples
 #' diff <- new_difftime(days = 31) #difftime
@@ -240,7 +234,7 @@ setMethod("as.duration", signature(x = "Period"), function(x){
 #' as.interval(dur, ymd("2009-02-01"))
 #' # 2009-02-01 UTC--2009-03-04 UTC
 #'
-#' per <- new_period(months = 1) #period
+#' per <- period(months = 1) #period
 #' as.interval(per, ymd("2009-01-01"))
 #' # 2009-01-01 UTC--2009-02-01 UTC 
 #' as.interval(per, ymd("2009-02-01"))
@@ -248,13 +242,8 @@ setMethod("as.duration", signature(x = "Period"), function(x){
 #'
 #' as.interval(3600, ymd("2009-01-01")) #numeric
 #' # 2009-01-01 UTC--2009-01-01 01:00:00 UTC
-#' @aliases as.interval,numeric-method
-#' @aliases as.interval,difftime-method
-#' @aliases as.interval,Interval-method
-#' @aliases as.interval,Duration-method
-#' @aliases as.interval,Period-method
-#' @aliases as.interval,POSIXt-method
-#' @aliases as.interval,logical-method
+#' @aliases as.interval,numeric-method as.interval,difftime-method as.interval,Interval-method as.interval,Duration-method as.interval,Period-method as.interval,POSIXt-method as.interval,logical-method
+#' @export
 as.interval <- function(x, start, ...) standardGeneric("as.interval")
 
 #' @export
@@ -287,9 +276,9 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
   else stopifnot(is.instant(start))
   
 	if (is.instant(x))
-		return(new_interval(x, start))
+		return(interval(x, start))
 	else
-		new_interval(start, start + x)
+		interval(start, start + x)
 }
 
 
@@ -300,7 +289,7 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #'
 #' Users must specify which time units to measure the period in. The exact length of 
 #' each time unit in a period will depend on when it occurs. See 
-#' \code{\link{Period-class}} and \code{\link{new_period}}. 
+#' \code{\link{Period-class}} and \code{\link{period}}. 
 #' The choice of units is not trivial; units that are 
 #' normally equal may differ in length depending on when the time period 
 #' occurs. For example, when a leap second occurs one minute is longer than 60 
@@ -334,7 +323,6 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #' setting the global \code{lubridate.verbose} option to FALSE with 
 #' \code{options(lubridate.verbose = FALSE)}.
 #'
-#' @export
 #' @param x an interval, difftime, or numeric object   
 #' @param unit A character string that specifies which time units to build period in. 
 #' unit is only implemented for the as.period.numeric method and the as.period.interval method. 
@@ -342,34 +330,30 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #' unit. 
 #' @param ... additional arguments to pass to as.period
 #' @return a period object
-#' @seealso \code{\link{Period-class}}, \code{\link{new_period}}
+#' @seealso \code{\link{Period-class}}, \code{\link{period}}
 #' @keywords classes manip methods chron
 #' @examples
-#' span <- new_interval(as.POSIXct("2009-01-01"), as.POSIXct("2010-02-02 01:01:01")) #interval
+#' span <- interval(as.POSIXct("2009-01-01"), as.POSIXct("2010-02-02 01:01:01")) #interval
 #' # 2009-01-01 CST--2010-02-02 01:01:01 CST
 #' as.period(span)
 #' # "1y 1m 1d 1H 1M 1S"
 #' as.period(span, units = "day")
 #' "397d 1H 1M 1S"
-#' leap <- new_interval(ymd("2016-01-01"), ymd("2017-01-01"))
+#' leap <- interval(ymd("2016-01-01"), ymd("2017-01-01"))
 #' # 2016-01-01 UTC--2017-01-01 UTC
 #' as.period(leap, unit = "days")
 #' # "366d 0H 0M 0S"
 #' as.period(leap, unit = "years")
 #' # "1y 0m 0d 0H 0M 0S"
-#' dst <- new_interval(ymd("2016-11-06", tz = "America/Chicago"), 
+#' dst <- interval(ymd("2016-11-06", tz = "America/Chicago"), 
 #' ymd("2016-11-07", tz = "America/Chicago"))
 #' # 2016-11-06 CDT--2016-11-07 CST
 #' # as.period(dst, unit = "seconds")
 #' # "86400S"
 #' as.period(dst, unit = "hours")
 #' # "24H 0M 0S"
-#' @aliases as.period,numeric-method
-#' @aliases as.period,difftime-method
-#' @aliases as.period,Interval-method
-#' @aliases as.period,Duration-method
-#' @aliases as.period,Period-method
-#' @aliases as.period,logical-method
+#' @aliases as.period,numeric-method as.period,difftime-method as.period,Interval-method as.period,Duration-method as.period,Period-method as.period,logical-method
+#' @export
 as.period <- function(x, unit, ...) standardGeneric("as.period")
 
 #' @export
@@ -392,64 +376,128 @@ setMethod("as.period", signature(x = "difftime"), function(x, unit = NULL, ...){
 })
 
 setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) {
-  negs <- int_length(x) < 0 & !is.na(int_length(x))
-  x[negs] <- int_flip(x[negs])
+  ## fixme: document this in the manual
+  
+  ## SEMANTICS: for postitive intervals all units of the period will be
+  ## positive, and the oposite for negatve intervals.
 
-  if (is.null(match.call()$unit)) {
-    pers <- .int_to_period(x)
-    pers[negs] <- -1 * pers[negs]
-    return(pers)
-  } else {
-    unit <- match.call()$unit
-    unit <- standardise_period_names(unit)
-    per <- get(paste(unit, "s", sep = ""))
-    num <- x %/% per(1)
-    left_over <- x %% per(1)
-    pers <- per(num) + .int_to_period(left_over)
-  }
-  
-  pers[negs] <- -1 * pers[negs]
-  pers
+  ## Periods are not symetric in the sense that as.period(int) might not be the
+  ## same as -as.period(int_flip(int)). See
+  ## https://github.com/hadley/lubridate/issues/285 for motivation.
+
+  unit <- 
+    if (missing(unit))  "year"
+    else standardise_period_names(unit)
+
+  switch(unit,
+         year = .int_to_period(x),
+         month = {
+           pers <- .int_to_period(x)
+           month(pers) <- month(pers) + year(pers)*12L
+           year(pers) <- 0L
+           pers
+         },
+         ## fixme: add note to the docs that unit <= days results in much faster conversion
+         ## fixme: add week
+         day = , hour = , minute = , second = {
+           secs <- x@.Data
+           negs <- secs < 0 & !is.na(secs)
+           units <- .units_within_seconds(abs(secs), unit)
+           pers <- do.call("new", c("Period", units))
+           pers[negs] <- -pers[negs]
+           pers
+         },
+         stop("Unsuported unit ", unit))
 })
-  
-  
-.int_to_period <- function(x){  
+
+.int_to_period <- function(x){
+  ## this function is called only for conversion with units > day
   start <- as.POSIXlt(x@start)
   end <- as.POSIXlt(start + x@.Data)
 
-  to.per <- as.data.frame(unclass(end)) - 
-    as.data.frame(unclass(start))
-    
-  names(to.per)[1:6] <- c("second", "minute", "hour", "day", "month", "year")
-  to.per <- to.per[1:6]
+  negs <- x@.Data < 0 & !is.na(x@.Data)
+
+  per <- list()
   
-  # remove negative periods
-  nsecs <- to.per$second < 0 & !is.na(to.per$second)
-  to.per$second[nsecs] <- 60 + to.per$second[nsecs]
-  to.per$minute[nsecs] <- to.per$minute[nsecs] - 1
-  
-  nmins <- to.per$minute < 0 & !is.na(to.per$minute)
-  to.per$minute[nmins] <- 60 + to.per$minute[nmins]
-  to.per$hour[nmins] <- to.per$hour[nmins] - 1
-  
-  nhous <- to.per$hour < 0 & !is.na(to.per$hour)
-  to.per$hour[nhous] <- 24 + to.per$hour[nhous]
-  to.per$day[nhous] <- to.per$day[nhous] - 1
-  
-  ndays <- to.per$day < 0 & !is.na(to.per$day)
-  if (any(ndays)) {
-    day.no <- floor_date(end, "month") - days(1)
-    day.no <- day.no$mday
-    to.per$day[ndays] <- day.no[ndays] + to.per$day[ndays]
-    to.per$month[ndays] <- to.per$month[ndays] - 1
+  for(nm in c("sec", "min", "hour", "mday", "mon", "year")){
+    per[[nm]] <- ifelse(negs, start[[nm]] - end[[nm]], end[[nm]] - start[[nm]])
   }
+
+  pero <- per
+  names(per) <- c("second", "minute", "hour", "day", "month", "year")
+
+  ## Remove negative ...
   
-  nmons <- to.per$month < 0 & !is.na(to.per$month)
-  to.per$month[nmons] <- 12 + to.per$month[nmons]
-  to.per$year[nmons] <- to.per$year[nmons] - 1
+  ## secons
+  nsecs <- per$second < 0L & !is.na(per$second)
+  per$second[nsecs] <- 60L + per$second[nsecs]
+  per$minute[nsecs] <- per$minute[nsecs] - 1L
+  per$second[negs] <- -per$second[negs]
+
+  ## minutes
+  nmins <- per$minute < 0L & !is.na(per$minute)
+  per$minute[nmins] <- 60L + per$minute[nmins]
+  per$hour[nmins] <- per$hour[nmins] - 1L
+  per$minute[negs] <- -per$minute[negs]
+
+  ## hours
+  nhous <- per$hour < 0L & !is.na(per$hour)
+  per$hour[nhous] <- 24L + per$hour[nhous]
+  per$hour[negs] <- -per$hour[negs]
+
+  ## days
+
+  ### postivie periods
+  ndays <- !negs & per$day < 0 & !is.na(per$day)
+  if (any(ndays)) {
+
+    ## compute nr days in previous month
+    add_months <- rep.int(-1L, sum(ndays))
+
+    ## no need to substract a month for negative months. For ex:
+    ## as.period(interval(ymd("1985-12-31"), ymd("1986-02-01")))
+    add_months[per$month[ndays] < 0] <- 0L
+    pmonth <- end$mon[ndays]
+    pmonth[pmonth == 0L] <- 1L #dec == jan == 31 days
+    prev_month_days <- .days_in_month(pmonth, end$year[ndays])
+
+    ## difference in days:
+    ## /need pmax to capture as.period(interval(ymd("1985-01-31"), ymd("1986-03-28")))/
+    per$day[ndays] <- pmax(prev_month_days - start$mday[ndays], 0) + end$mday[ndays]
+    per$month[ndays] <- per$month[ndays] + add_months
+  }
+
+  ## negative periods
+  ndays <- negs & per$day < 0 & !is.na(per$day)
+  if (any(ndays)) {
+
+    add_months <- rep.int(1L, sum(ndays))
+    ## no need to substract for negative months as in
+    ## as.period(interval(ymd("1986-02-01"), ymd("1985-12-31")))
+    add_months[per$month[ndays] < 0] <- 0L
+    this_month_days <- .days_in_month(end$mon[ndays] + 1L, end$year[ndays])
+
+    ## Compute nr of days:
+    ## /need pmax to capture as.period(interval(ymd("1985-01-31"), ymd("1986-03-28")))/
+    per$day[ndays] <- pmax(this_month_days - end$mday[ndays], 0) + start$mday[ndays]
+    per$month[ndays] <- per$month[ndays] - add_months
+  }
+
+  ## substract only after the day computation to capture intervals like:
+  ## as.period(interval(ymd_hms("1985-12-31 5:0:0"), ymd_hms("1986-02-01 3:0:0")))
+  per$day[nhous] <- per$day[nhous] - 1L
+  per$day[negs] <- -per$day[negs]
+
+  ## months
+  nmons <- per$month < 0L & !is.na(per$month)
+  per$month[nmons] <- 12L + per$month[nmons]
+  per$year[nmons] <- per$year[nmons] - 1L
+  per$month[negs] <- -per$month[negs]
+
+  per$year[negs] <- -per$year[negs]
   
-  new("Period", to.per$second, year = to.per$year, month = to.per$month, 
-    day = to.per$day, hour = to.per$hour, minute = to.per$minute)
+  new("Period", per$second, year = per$year, month = per$month, 
+    day = per$day, hour = per$hour, minute = per$minute)
 }
 
 setMethod("as.period", signature(x = "Duration"), function(x, unit = NULL, ...) {
@@ -459,7 +507,7 @@ setMethod("as.period", signature(x = "Duration"), function(x, unit = NULL, ...) 
   }
   span <- x@.Data
   remainder <- abs(span)
-  newper <- new_period(second = rep(0, length(x)))
+  newper <- period(second = rep(0, length(x)))
   
   slot(newper, "year") <- remainder %/% (3600 * 24 * 365)
   remainder <- remainder %% (3600 * 24 * 365)
@@ -476,7 +524,26 @@ setMethod("as.period", signature(x = "Duration"), function(x, unit = NULL, ...) 
   newper * sign(span)
 })
 
-setMethod("as.period", signature("Period"), function(x, unit = NULL, ...) x)
+setMethod("as.period", signature("Period"),
+          function(x, unit = NULL, ...){
+            if (missing(unit) || is.null(unit)) {
+              x
+            } else {
+              unit <- standardise_period_names(unit)
+              switch(unit, 
+                     year = x,
+                     month = {
+                       month(x) <- month(x) + year(x)*12L
+                       year(x) <- 0L
+                       x
+                     },
+                     day = , hour = , minute = , second = {
+                       N <- .units_within_seconds(period_to_seconds(x), unit)
+                       do.call("new", c("Period", N))
+                     },
+                     stop("Unsuported unit ", unit))
+            }
+          })
 
 setMethod("as.period", signature("logical"), function(x, unit = NULL, ...) {
   as.period(as.numeric(x), unit, ...)

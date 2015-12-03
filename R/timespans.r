@@ -8,9 +8,7 @@
 #' @name Timespan-class
 #' @rdname Timespan-class
 #' @exportClass Timespan
-#' @aliases *,Timespan,Timespan-method
-#' @aliases %/%,Timespan,Timespan-method
-#' @aliases %/%,difftime,Timespan-method
+#' @aliases *,Timespan,Timespan-method %/%,Timespan,Timespan-method %/%,difftime,Timespan-method
 setClass("Timespan")
 
 #' Is x a length of time?
@@ -85,15 +83,15 @@ is.timespan <- function(x) is(x, "Timespan")
 #' @aliases timespan timespans
 #' @name timespan
 #' @seealso \code{\link{new_duration}} for creating duration objects and
-#'   \code{\link{new_period}} for creating period objects, and
-#'   \code{\link{new_interval}} for creating interval objects
+#'   \code{\link{period}} for creating period objects, and
+#'   \code{\link{interval}} for creating interval objects
 #' @keywords classes chron
 #' @examples
 #' duration(3690, "seconds")
 #' # 3690s (~1.02 hours)
 #' period(3690, "seconds")
 #' # "3690S"
-#' new_period(second = 30, minute = 1, hour = 1)
+#' period(second = 30, minute = 1, hour = 1)
 #' # "1H 1M 30S"
 #' interval(ymd_hms("2009-08-09 13:01:30"), ymd_hms("2009-08-09 12:00:00"))
 #' # 2009-08-09 12:00:00 -- 2009-08-09 13:01:30
@@ -102,7 +100,7 @@ is.timespan <- function(x) is(x, "Timespan")
 #' # "2009-03-08 01:59:59 CST"
 #' date + days(1)
 #' # "2009-03-09 01:59:59 CDT" periods preserve clock time
-#' date + edays(1)
+#' date + ddays(1)
 #' # "2009-03-09 02:59:59 CDT" durations preserve exact passage of time
 #'
 #' date2 <- as.POSIXct("2000-02-29 12:00:00")
@@ -134,3 +132,42 @@ is.timespan <- function(x) is(x, "Timespan")
 #' months(6) + days(1)
 #' # "6m 1d 0H 0M 0S"
 NULL
+
+#' Compute the exact length of a time span.
+#'
+#' 
+#' @param x a duration, period, difftime or interval
+#' @param unit a character string that specifies with time units to use
+#' @return the length of the interval in the specified unit. A negative number
+#' connotes a negative interval or duration
+#'
+#' @details When \code{x} is an \code{\link{Interval-class}} object and
+#' \code{unit} are years or months, \code{timespan_length} takes into account
+#' the fact that all months and years don't have the same number of days.
+#' 
+#' When \code{x} is a \code{\link{Duration-class}}, \code{\link{Period-class}}
+#' or \code{\link{difftime}} object, length in months or years is based on their
+#' most common lengths in seconds (see \code{\link{timespan}}).
+#' @seealso \code{\link{timespan}}
+#' @keywords chron math period methods
+#' @examples
+#' int <- interval(ymd("1980-01-01"), ymd("2014-09-18"))
+#' time_length(int, "week")
+#' 
+#' # Exact age
+#' time_length(int, "year")
+#' 
+#' # Age at last anniversary
+#' trunc(time_length(int, "year"))
+#' 
+#' # Example of difference between intervals and durations
+#' int <- interval(ymd("1900-01-01"), ymd("1999-12-31"))
+#' time_length(int, "year")
+#' time_length(as.duration(int), "year")
+#' @export
+setGeneric("time_length",
+           useAsDefault =
+             function(x, unit = "second") {
+               as.duration(x) / duration(num = 1, units = unit)
+             })
+ 
