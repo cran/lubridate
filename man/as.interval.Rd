@@ -24,28 +24,28 @@ as.interval(x, start, ...)
 an interval object
 }
 \description{
-as.interval changes difftime, Duration, Period and numeric class objects to 
-intervals that begin at the specified date-time. Numeric objects are first 
+as.interval changes difftime, Duration, Period and numeric class objects to
+intervals that begin at the specified date-time. Numeric objects are first
 coerced to timespans equal to the numeric value in seconds.
 }
 \details{
-as.interval can be used to create accurate transformations between Period 
-objects, which measure time spans in variable length units, and Duration objects, 
+as.interval can be used to create accurate transformations between Period
+objects, which measure time spans in variable length units, and Duration objects,
 which measure timespans as an exact number of seconds. A start date-
-time must be supplied to make the conversion. Lubridate uses 
-this start date to look up how many seconds each variable 
-length unit (e.g. month, year) lasted for during the time span 
-described. See 
+time must be supplied to make the conversion. Lubridate uses
+this start date to look up how many seconds each variable
+length unit (e.g. month, year) lasted for during the time span
+described. See
 \code{\link{as.duration}}, \code{\link{as.period}}.
 }
 \examples{
-diff <- new_difftime(days = 31) #difftime
+diff <- make_difftime(days = 31) #difftime
 as.interval(diff, ymd("2009-01-01"))
 # 2009-01-01 UTC--2009-02-01 UTC
 as.interval(diff, ymd("2009-02-01"))
 # 2009-02-01 UTC--2009-03-04 UTC
 
-dur <- new_duration(days = 31) #duration
+dur <- duration(days = 31) #duration
 as.interval(dur, ymd("2009-01-01"))
 # 2009-01-01 UTC--2009-02-01 UTC
 as.interval(dur, ymd("2009-02-01"))
@@ -53,7 +53,7 @@ as.interval(dur, ymd("2009-02-01"))
 
 per <- period(months = 1) #period
 as.interval(per, ymd("2009-01-01"))
-# 2009-01-01 UTC--2009-02-01 UTC 
+# 2009-01-01 UTC--2009-02-01 UTC
 as.interval(per, ymd("2009-02-01"))
 # 2009-02-01 UTC--2009-03-01 UTC
 

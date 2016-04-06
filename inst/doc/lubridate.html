@@ -219,22 +219,33 @@ hr {
 <p>Getting R to agree that your data contains the dates and times you think it does can be tricky. Lubridate simplifies that. Identify the order in which the year, month, and day appears in your dates. Now arrange &ldquo;y&rdquo;, &ldquo;m&rdquo;, and &ldquo;d&rdquo; in the same order. This is the name of the function in lubridate that will parse your dates. For example,</p>
 
 <pre><code class="r">library(lubridate)
-ymd(&quot;20110604&quot;)
 </code></pre>
 
-<pre><code>## [1] &quot;2011-06-04 UTC&quot;
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;
+</code></pre>
+
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date
+</code></pre>
+
+<pre><code class="r">ymd(&quot;20110604&quot;)
+</code></pre>
+
+<pre><code>## [1] &quot;2011-06-04&quot;
 </code></pre>
 
 <pre><code class="r">mdy(&quot;06-04-2011&quot;)
 </code></pre>
 
-<pre><code>## [1] &quot;2011-06-04 UTC&quot;
+<pre><code>## [1] &quot;2011-06-04&quot;
 </code></pre>
 
 <pre><code class="r">dmy(&quot;04/06/2011&quot;)
 </code></pre>
 
-<pre><code>## [1] &quot;2011-06-04 UTC&quot;
+<pre><code>## [1] &quot;2011-06-04&quot;
 </code></pre>
 
 <p>Lubridate&#39;s parse functions handle a wide variety of formats and separators, which simplifies the parsing process.</p>
@@ -385,13 +396,13 @@ jsm
 <pre><code class="r">ymd(20110101) + dyears(1)
 </code></pre>
 
-<pre><code>## [1] &quot;2012-01-01 UTC&quot;
+<pre><code>## [1] &quot;2012-01-01&quot;
 </code></pre>
 
 <pre><code class="r">ymd(20110101) + years(1)
 </code></pre>
 
-<pre><code>## [1] &quot;2012-01-01 UTC&quot;
+<pre><code>## [1] &quot;2012-01-01&quot;
 </code></pre>
 
 <pre><code class="r">leap_year(2012) ## leap year
@@ -403,13 +414,13 @@ jsm
 <pre><code class="r">ymd(20120101) + dyears(1)
 </code></pre>
 
-<pre><code>## [1] &quot;2012-12-31 UTC&quot;
+<pre><code>## [1] &quot;2012-12-31&quot;
 </code></pre>
 
 <pre><code class="r">ymd(20120101) + years(1)
 </code></pre>
 
-<pre><code>## [1] &quot;2013-01-01 UTC&quot;
+<pre><code>## [1] &quot;2013-01-01&quot;
 </code></pre>
 
 <p>You can use periods and durations to do basic arithmetic with date times. For example, if I wanted to set up a reoccuring weekly skype meeting with Hadley, it would occur on:</p>
@@ -491,25 +502,25 @@ jsm
 jan31 + months(0:11)
 </code></pre>
 
-<pre><code>##  [1] &quot;2013-01-31 UTC&quot; NA               &quot;2013-03-31 UTC&quot; NA              
-##  [5] &quot;2013-05-31 UTC&quot; NA               &quot;2013-07-31 UTC&quot; &quot;2013-08-31 UTC&quot;
-##  [9] NA               &quot;2013-10-31 UTC&quot; NA               &quot;2013-12-31 UTC&quot;
+<pre><code>##  [1] &quot;2013-01-31&quot; NA           &quot;2013-03-31&quot; NA           &quot;2013-05-31&quot;
+##  [6] NA           &quot;2013-07-31&quot; &quot;2013-08-31&quot; NA           &quot;2013-10-31&quot;
+## [11] NA           &quot;2013-12-31&quot;
 </code></pre>
 
 <pre><code class="r">floor_date(jan31, &quot;month&quot;) + months(0:11) + days(31)
 </code></pre>
 
-<pre><code>##  [1] &quot;2013-02-01 UTC&quot; &quot;2013-03-04 UTC&quot; &quot;2013-04-01 UTC&quot; &quot;2013-05-02 UTC&quot;
-##  [5] &quot;2013-06-01 UTC&quot; &quot;2013-07-02 UTC&quot; &quot;2013-08-01 UTC&quot; &quot;2013-09-01 UTC&quot;
-##  [9] &quot;2013-10-02 UTC&quot; &quot;2013-11-01 UTC&quot; &quot;2013-12-02 UTC&quot; &quot;2014-01-01 UTC&quot;
+<pre><code>##  [1] &quot;2013-02-01&quot; &quot;2013-03-04&quot; &quot;2013-04-01&quot; &quot;2013-05-02&quot; &quot;2013-06-01&quot;
+##  [6] &quot;2013-07-02&quot; &quot;2013-08-01&quot; &quot;2013-09-01&quot; &quot;2013-10-02&quot; &quot;2013-11-01&quot;
+## [11] &quot;2013-12-02&quot; &quot;2014-01-01&quot;
 </code></pre>
 
 <pre><code class="r">jan31 %m+% months(0:11)
 </code></pre>
 
-<pre><code>##  [1] &quot;2013-01-31 UTC&quot; &quot;2013-02-28 UTC&quot; &quot;2013-03-31 UTC&quot; &quot;2013-04-30 UTC&quot;
-##  [5] &quot;2013-05-31 UTC&quot; &quot;2013-06-30 UTC&quot; &quot;2013-07-31 UTC&quot; &quot;2013-08-31 UTC&quot;
-##  [9] &quot;2013-09-30 UTC&quot; &quot;2013-10-31 UTC&quot; &quot;2013-11-30 UTC&quot; &quot;2013-12-31 UTC&quot;
+<pre><code>##  [1] &quot;2013-01-31&quot; &quot;2013-02-28&quot; &quot;2013-03-31&quot; &quot;2013-04-30&quot; &quot;2013-05-31&quot;
+##  [6] &quot;2013-06-30&quot; &quot;2013-07-31&quot; &quot;2013-08-31&quot; &quot;2013-09-30&quot; &quot;2013-10-31&quot;
+## [11] &quot;2013-11-30&quot; &quot;2013-12-31&quot;
 </code></pre>
 
 <p>Notice that this will only affect arithmetic with months (and arithmetic with years if your start date it Feb 29).</p>

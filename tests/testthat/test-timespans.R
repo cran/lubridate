@@ -37,6 +37,10 @@ test_that("time_length works as expected",{
               equals(time_length(int_flip(interval(ymd('1900-01-01'), ymd('2000-01-01'))), "days")))
 })
 
+test_that("time_length works with missing intervals", {
+  expect_equal(time_length(interval(NA,ymd("2016-01-01")), unit = "year"), NA_real_)
+})
+
 test_that("time_length works with birth date 29 Feb ", {
   expect_that(round(time_length(interval(ymd('1992-02-29'), ymd('1999-02-28')), "years"), 4), 
               equals(6.9973))
@@ -68,7 +72,7 @@ test_that("time_length works with negative interals", {
   
   ## ... otherwise not
   int <- interval(ymd('1992-02-28'), ymd('2002-01-01'))
-  expect_more_than(-time_length(int, "years"),  time_length(int_flip(int), "years"))
+  expect_gt(-time_length(int, "years"),  time_length(int_flip(int), "years"))
 })
 
 test_that("time_length handles vectors",{

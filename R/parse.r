@@ -24,22 +24,23 @@
 ##'
 ##' As of version 1.3.0, lubridate's parse functions no longer return a
 ##' message that displays which format they used to parse their input. You can
-##' change this by setting the \code{lubridate.verbose} option to true with
+##' change this by setting the \code{lubridate.verbose} option to TRUE with
 ##' \code{options(lubridate.verbose = TRUE)}.
 ##'
 ##' @export ymd myd dym ydm mdy dmy
 ##' @aliases yearmonthdate ymd myd dym ydm mdy dmy
 ##' @param ... a character or numeric vector of suspected dates
 ##' @param quiet logical. When TRUE function evalueates without displaying
-##' customary messages.
-##' @param tz a character string that specifies which time zone to parse the
-##' date with. The string must be a time zone that is recognized by the user's
-##' OS.
+##'   customary messages.
+##' @param tz Time zone indicator. If NULL (default) a Date object is
+##'   returned. Otherwise a POSIXct with time zone attribute set to \code{tz}.
 ##' @param locale locale to be used, see \link{locales}. On linux systems you
-##' can use \code{system("locale -a")} to list all the installed locales.
+##'   can use \code{system("locale -a")} to list all the installed locales.
 ##' @param truncated integer. Number of formats that can be truncated.
-##' @return a vector of class POSIXct
-##' @seealso \code{\link{parse_date_time}} for an even more flexible low level mechanism.
+##' @return a vector of class POSIXct if tz argument is non-NULL or Date if tz
+##'   is NULL (default)
+##' @seealso \code{\link{parse_date_time}} for an even more flexible low level
+##'   mechanism.
 ##' @keywords chron
 ##' @examples
 ##' x <- c("09-01-01", "09-01-02", "09-01-03")
@@ -66,17 +67,17 @@
 ##' ## formats are not in double digits might not be parsed correctly:
 ##' \dontrun{ymd("201002-01", "201002-1", "20102-1")
 ##' dmy("0312-2010", "312-2010")}
-ymd <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+ymd <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "ymd", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
-ydm <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+ydm <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "ydm", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
-mdy <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+mdy <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "mdy", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
-myd <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+myd <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "myd", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
-dmy <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+dmy <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "dmy", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
-dym <- function(..., quiet = FALSE, tz = "UTC", locale = Sys.getlocale("LC_TIME"),  truncated = 0)
+dym <- function(..., quiet = FALSE, tz = NULL, locale = Sys.getlocale("LC_TIME"),  truncated = 0)
   .parse_xxx(..., orders = "dym", quiet = quiet, tz = tz, locale = locale,  truncated = truncated)
 
 
@@ -259,8 +260,9 @@ hm <- function(..., quiet = FALSE) {
 ##'
 ##' Transforms a character or numeric vector into a period object with the
 ##' specified number of hours, minutes, and seconds. hms() recognizes all
-##' non-numeric separators. After hours, minutes and seconds have been parsed,
-##' the remaining input is ingored.
+##' non-numeric characters except '-' as separators ('-' is used for negative
+##' durations).  After hours, minutes and seconds have been parsed, the
+##' remaining input is ingored.
 ##'
 ##' @export hms
 ##' @param ... a character vector of hour minute second triples
@@ -275,7 +277,7 @@ hm <- function(..., quiet = FALSE) {
 ##' hms(x)
 ##' ## [1] "9H 10M 1S" "9H 10M 2S" "9H 10M 3S"
 ##'
-##' hms("7 6 5", "3-23---2", "2 : 23 : 33", "Finished in 9 hours, 20 min and 4 seconds")
+##' hms("7 6 5", "3:23:::2", "2 : 23 : 33", "Finished in 9 hours, 20 min and 4 seconds")
 ##' ## [1] "7H 6M 5S" "3H 23M 2S" "2H 23M 33S" "9H 20M 4S"
 hms <- function(..., quiet = FALSE) {
   out <- .parse_hms(..., order = "HMS", quiet = quiet)
@@ -309,12 +311,12 @@ hms <- function(..., quiet = FALSE) {
 ##' When several format-orders are specified \code{parse_date_time} sorts the
 ##' supplied format-orders based on a training set and then applies them
 ##' recursively on the input vector.
-##' 
-##' \code{parse_date_time}, and hence all the derived functions, such as
-##' \code{ymd_hms}, \code{ymd} etc, will drop into \code{fast_strptime} instead
-##' of \code{strptime} whenever the guesed from the input data formats are all
+##'
+##' \code{parse_date_time}, and all derived functions, such as \code{ymd_hms},
+##' \code{ymd} etc, will drop into \code{fast_strptime} instead of
+##' \code{strptime} whenever the guesed from the input data formats are all
 ##' numeric.
-##' 
+##'
 ##' The list below contains formats recognized by lubridate. For numeric formats
 ##' leading 0s are optional. In contrast to \code{strptime}, some of the formats
 ##' have been extended for efficiency reasons. They are marked with "*". Fast
@@ -331,27 +333,27 @@ hms <- function(..., quiet = FALSE) {
 ##' automatically handled if \code{preproc_wday = TRUE}}
 ##'
 ##' \item{\code{b}}{Abbreviated month name in the current locale.  (Also matches full name.)}
-##' 
+##'
 ##' \item{\code{B}}{Full month name in the current locale.  (Also matches abbreviated name.)}
 ##'
 ##' \item{\code{d}!}{Day of the month as decimal number (01--31 or 0--31)}
-##' 
+##'
 ##' \item{\code{H}!}{Hours as decimal number (00--24 or 0--24).}
-##' 
+##'
 ##' \item{\code{I}}{Hours as decimal number (01--12 or 1--12).}
-##' 
+##'
 ##' \item{\code{j}}{Day of year as decimal number (001--366 or 1--366).}
-##' 
+##'
 ##' \item{\code{m}!*}{Month as decimal number (01--12 or 1--12). For
 ##' \code{parse_date_time}, also matches abbreviated and full months names as
 ##' \code{b} and \code{B} formats.}
-##' 
+##'
 ##' \item{\code{M}!}{Minute as decimal number (00--59 or 0--59).}
-##' 
+##'
 ##' \item{\code{p}}{AM/PM indicator in the locale.  Used in
 ##'                   conjunction with \code{I} and \bold{not} with \code{H}.  An
 ##'                   empty string in some locales.}
-##' 
+##'
 ##' \item{\code{S}!}{Second as decimal number (00--61 or 0--61), allowing for up
 ##' to two leap-seconds (but POSIX-compliant implementations will ignore leap
 ##' seconds).}
@@ -361,16 +363,16 @@ hms <- function(..., quiet = FALSE) {
 ##' \item{\code{U}}{Week of the year as decimal number (00--53 or 0-53) using
 ##' Sunday as the first day 1 of the week (and typically with the first Sunday
 ##' of the year as day 1 of week 1).  The US convention.}
-##' 
+##'
 ##' \item{\code{w}}{Weekday as decimal number (0--6, Sunday is 0).}
-##' 
+##'
 ##' \item{\code{W}}{Week of the year as decimal number (00--53 or 0-53) using
 ##' Monday as the first day of week (and typically with the first Monday of the
 ##' year as day 1 of week 1).  The UK convention.}
 ##'
 ##' \item{\code{y}!*}{Year without century (00--99 or 0--99).  In
 ##' \code{parse_date_time} also matches year with century (Y format).}
-##' 
+##'
 ##' \item{\code{Y}!}{Year with century.}
 ##'
 ##' \item{\code{z}!*}{ISO8601 signed offset in hours and minutes from UTC. For
@@ -381,7 +383,7 @@ hms <- function(..., quiet = FALSE) {
 ##' these four orders as any other but it is rarely
 ##' necessary. \code{parse_date_time2} and \code{fast_strptime} support all of
 ##' the timezone formats.}
-##' 
+##'
 ##' \item{\code{r}*}{Matches \code{Ip} and \code{H} orders.}
 ##' \item{\code{R}*}{Matches \code{HM} and\code{IMp} orders.}
 ##' \item{\code{T}*}{Matches \code{IMSp}, \code{HMS}, and \code{HMOS} orders.}
@@ -391,37 +393,38 @@ hms <- function(..., quiet = FALSE) {
 ##' @aliases parse_date_time2 fast_strptime
 ##' @param x a character or numeric vector of dates
 ##' @param orders a character vector of date-time formats. Each order string is
-##' series of formatting characters as listed \code{\link[base]{strptime}} but
-##' might not include the "\%" prefix, for example "ymd" will match all the
-##' possible dates in year, month, day order.  Formatting orders might include
-##' arbitrary separators. These are discarded.  See details for implemented
-##' formats.
+##'   series of formatting characters as listed \code{\link[base]{strptime}} but
+##'   might not include the "\%" prefix, for example "ymd" will match all the
+##'   possible dates in year, month, day order.  Formatting orders might include
+##'   arbitrary separators. These are discarded.  See details for implemented
+##'   formats.
 ##' @param tz a character string that specifies the time zone with which to
-##' parse the dates
+##'   parse the dates
 ##' @param truncated integer, number of formats that can be missing. The most
-##' common type of irregularity in date-time data is the truncation due to
-##' rounding or unavailability of the time stamp. If \code{truncated} parameter is
-##' non-zero \code{parse_date_time} also checks for truncated formats. For
-##' example,  if the format order is "ymdhms" and \code{truncated = 3},
-##' \code{parse_date_time} will correctly parse incomplete dates like
-##' \code{2012-06-01 12:23}, \code{2012-06-01 12} and \code{2012-06-01}. \bold{NOTE:}
-##' \code{ymd} family of functions are based on \code{strptime} which currently
-##' fails to parse \code{\%y-\%m} formats.
-##' @param quiet logical. When TRUE progress messages are not printed, and "no
-##' formats found" error is surpresed and the function simply returns a vector
-##' of NAs.  This mirrors the behavior of base R functions \code{strptime} and
-##' \code{as.POSIXct}. Default is FALSE.
+##'   common type of irregularity in date-time data is the truncation due to
+##'   rounding or unavailability of the time stamp. If \code{truncated}
+##'   parameter is non-zero \code{parse_date_time} also checks for truncated
+##'   formats. For example,  if the format order is "ymdhms" and \code{truncated
+##'   = 3}, \code{parse_date_time} will correctly parse incomplete dates like
+##'   \code{2012-06-01 12:23}, \code{2012-06-01 12} and
+##'   \code{2012-06-01}. \bold{NOTE:} \code{ymd} family of functions are based
+##'   on \code{strptime} which currently fails to parse \code{\%y-\%m} formats.
+##' @param quiet logical. When TRUE progress messages are not printed, and
+##'   "no formats found" error is surpresed and the function simply returns a
+##'   vector of NAs.  This mirrors the behavior of base R functions
+##'   \code{strptime} and \code{as.POSIXct}. Default is FALSE.
 ##' @param locale locale to be used, see \link{locales}. On linux systems you
-##' can use \code{system("locale -a")} to list all the installed locales.
+##'   can use \code{system("locale -a")} to list all the installed locales.
 ##' @param select_formats A function to select actual formats for parsing from a
-##' set of formats which matched a training subset of \code{x}. it receives a
-##' named integer vector and returns a character vector of selected
-##' formats. Names of the input vector are formats (not orders) that matched the
-##' training set. Numeric values are the number of dates (in the training set)
-##' that matched the corresponding format. You should use this argument if the
-##' default selection method fails to select the formats in the right order. By
-##' default the formats with most formating tockens (\%) are selected and \%Y
-##' counts as 2.5 tockens (so that it has a priority over \%y\%m). Se examples.
+##'   set of formats which matched a training subset of \code{x}. it receives a
+##'   named integer vector and returns a character vector of selected
+##'   formats. Names of the input vector are formats (not orders) that matched
+##'   the training set. Numeric values are the number of dates (in the training
+##'   set) that matched the corresponding format. You should use this argument
+##'   if the default selection method fails to select the formats in the right
+##'   order. By default the formats with most formating tockens (\%) are
+##'   selected and \%Y counts as 2.5 tockens (so that it has a priority over
+##'   \%y\%m). Se examples.
 ##' @param exact logical. If \code{TRUE}, \code{orders} parameter is interpreted
 ##'   as an exact \code{strptime} format and no trainign or guessing are
 ##'   performed.
@@ -429,12 +432,22 @@ hms <- function(..., quiet = FALSE) {
 ##' @seealso \code{strptime}, \code{\link{ymd}}, \code{\link{ymd_hms}}
 ##' @keywords chron
 ##' @note \code{parse_date_time} (and the derivatives \code{ymb}, \code{ymd_hms}
-##' etc) rely on a sparse guesser that takes at most 501 elements from the
-##' supplied character vector in order to identify appropriate formats from the
-##' supplied orders. If you get the error \code{All formats failed to parse} and
-##' you are confident that your vector contains valid dates, you should use
-##' functions that don't perform format guessing (\code{strptime},
-##' \code{fast_strptime} and \code{parse_date_time2}).
+##'   etc) rely on a sparse guesser that takes at most 501 elements from the
+##'   supplied character vector in order to identify appropriate formats from
+##'   the supplied orders. If you get the error \code{All formats failed to
+##'   parse} and you are confident that your vector contains valid dates, you
+##'   should either set \code{exact} argument to TRUE or use functions that
+##'   don't perform format guessing (\code{fast_strptime},
+##'   \code{parse_date_time2} or \code{strptime} ).
+##' @note For performance reasons, when timezone is not UTC,
+##'   \code{parse_date_time2} and \code{fast_strptime} perform no validity
+##'   checks for daylight savings time. Thus, if your input string contains an
+##'   invalid date time which falls into DST gap and \code{lt=TRUE} you will get
+##'   an \code{POSIXlt} object with a non-existen time. If \code{lt=FALSE} your
+##'   time instant will be adjusted to a valid time by adding an hour. See
+##'   examples. If you want to get NA for invalid date-times use
+##'   \code{\link{fit_to_timeline}} explicitely.
+##'
 ##' @examples
 ##'
 ##' ## ** orders are much easier to write **
@@ -466,24 +479,24 @@ hms <- function(..., quiet = FALSE) {
 ##' parse_date_time(c('12/17/1996 04:00:00','4/18/1950 0130'),
 ##'                 c('%m/%d/%Y %I:%M:%S','%m/%d/%Y %H%M'), exact = TRUE)
 ##' ## [1] "1996-12-17 04:00:00 UTC" "1950-04-18 01:30:00 UTC"
-##' 
+##'
 ##' ## ** fast parsing **
 ##' \dontrun{
 ##'   options(digits.secs = 3)
 ##'   ## random times between 1400 and 3000
 ##'   tt <- as.character(.POSIXct(runif(1000, -17987443200, 32503680000)))
 ##'   tt <- rep.int(tt, 1000)
-##' 
+##'
 ##'   system.time(out <- as.POSIXct(tt, tz = "UTC"))
 ##'   system.time(out1 <- ymd_hms(tt)) # constant overhead on long vectors
 ##'   system.time(out2 <- parse_date_time2(tt, "YmdHMOS"))
 ##'   system.time(out3 <- fast_strptime(tt, "%Y-%m-%d %H:%M:%OS"))
-##' 
+##'
 ##'   all.equal(out, out1)
 ##'   all.equal(out, out2)
 ##'   all.equal(out, out3)
 ##' }
-##' 
+##'
 ##' ## ** how to use `select_formats` argument **
 ##' ## By default %Y has precedence:
 ##' parse_date_time(c("27-09-13", "27-09-2013"), "dmy")
@@ -497,7 +510,15 @@ hms <- function(..., quiet = FALSE) {
 ##' }
 ##'
 ##' parse_date_time(c("27-09-13", "27-09-2013"), "dmy", select_formats = my_select)
-##' ## '[1] "2013-09-27 UTC" "2013-09-27 UTC"
+##' ## [1] "2013-09-27 UTC" "2013-09-27 UTC"
+##'
+##' ## ** invalid times with "fast" parcing **
+##' parse_date_time("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
+##' ## [1] NA
+##' parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
+##' ## [1] "2010-03-14 03:05:06 EDT"
+##' parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York", lt = TRUE)
+##' ## [1] "2010-03-14 02:05:06 America/New_York"
 parse_date_time <- function(x, orders, tz = "UTC", truncated = 0, quiet = FALSE,
                             locale = Sys.getlocale("LC_TIME"), select_formats = .select_formats,
                             exact = FALSE){
@@ -552,27 +573,56 @@ parse_date_time <- function(x, orders, tz = "UTC", truncated = 0, quiet = FALSE,
 
 ##' @rdname parse_date_time
 ##' @export parse_date_time2
-parse_date_time2 <- function(x, orders, tz = "UTC", exact = FALSE){
-  if( length(orders) > 1) warning("Multiple orders supplied. Only the first one is used")
+##' @param lt logical. If TRUE returned object is of class POSIXlt, and POSIXct
+##'   otherwise. For compatibility with base `strptime` function default is TRUE
+##'   for `fast_strptime` and FALSE for `parse_date_time2`.
+parse_date_time2 <- function(x, orders, tz = "UTC", exact = FALSE, lt = FALSE){
+  if(length(orders) > 1)
+    warning("Multiple orders supplied. Only first order is used.")
   if(!exact)
     orders <- gsub("[^[:alpha:]]+", "", as.character(orders[[1]])) ## remove all separators
-  .POSIXct(.Call("parse_dt", x, orders, FALSE), tz = tz)
+  if(lt){
+    .mklt(.Call("parse_dt", x, orders, FALSE, TRUE), tz)
+  } else {
+    if (tz == "UTC"){
+      .POSIXct(.Call("parse_dt", x, orders, FALSE, FALSE), tz = "UTC")
+    } else {
+      as.POSIXct(.mklt(.Call("parse_dt", x, orders, FALSE, TRUE), tz))
+    }
+  }
 }
 
 ##' @useDynLib lubridate parse_dt
 ##' @rdname parse_date_time
 ##' @export fast_strptime
 ##' @param format a character string of formats. It should include all the
-##' separators and each format must be prefixed with %, just as in the format
-##' argument of \code{strptime}.
-fast_strptime <- function(x, format, tz = "UTC"){
-  if( length(format) > 1 ) warning("Multiple formats supplied. Only the first one is used")
+##'   separators and each format must be prefixed with %, just as in the format
+##'   argument of \code{strptime}.
+fast_strptime <- function(x, format, tz = "UTC", lt = TRUE){
+  if(length(format) > 1)
+    warning("Multiple formats supplied. Only first format is used.")
   format <- as.character(format[[1]])
-  .POSIXct(.Call("parse_dt", x, format, TRUE), tz = tz)
+  if(lt){
+    .mklt(.Call("parse_dt", x, format, TRUE, TRUE), tz)
+  } else{
+    if(tz == "UTC"){
+      .POSIXct(.Call("parse_dt", x, format, TRUE, FALSE), "UTC")
+    } else {
+      as.POSIXct(.mklt(.Call("parse_dt", x, format, TRUE, TRUE), tz))
+    }
+  }
 }
 
 
 ### INTERNAL
+.mklt <- function(dtlist, tz){
+  na_fill <- rep_len(NA_integer_, length(dtlist$sec))
+  dtlist[["wday"]] <- na_fill
+  dtlist[["yday"]] <- na_fill
+  dtlist[["isdst"]] <- -1L
+  .POSIXlt(dtlist, tz = tz)
+}
+
 .parse_date_time <- function(x, formats, tz, quiet){
   out <- .strptime(x, formats[[1]], tz = tz, quiet = quiet)
   na <- is.na(out)
@@ -607,17 +657,19 @@ fast_strptime <- function(x, format, tz = "UTC"){
   if ( num_only ){
     ## C PARSER:
 
-    if ( tz != "UTC" ){
+    out <- fast_strptime(x, fmt, tz = "UTC", lt = FALSE)
+
+    if ( tz == "UTC" ){
+      out
+    } else {
       if( zpos > 0 ){
         if( !quiet )
           message("Date in ISO8601 format; converting timezone from UTC to \"", tz,  "\".")
-        with_tz(fast_strptime(x, fmt, tz = "UTC"), tzone = tz)
+        with_tz(out, tzone = tz)
       } else {
-        ## force_tz is very slow :(
-        force_tz(fast_strptime(x, fmt, tz = "UTC"), tzone = tz)
+        ## force_tz is very slow
+        force_tz(out, tzone = tz)
       }
-    } else {
-      fast_strptime(x, fmt, tz = tz)
     }
 
   } else {
@@ -710,12 +762,18 @@ fast_strptime <- function(x, format, tz = "UTC"){
   parse_date_time(dates, orders, tz = tz, quiet = quiet, locale = locale)
 }
 
-.parse_xxx <- function(..., orders, quiet, tz, locale = locale,  truncated){
+.parse_xxx <- function(..., orders, quiet, tz = NULL, locale = locale,  truncated){
+  ## if(!missing(tz))
+  ##   .deprecated_arg("tz", "1.5.6", 2)
   dates <- unlist(lapply(list(...), .num_to_date), use.names = FALSE)
-  parse_date_time(dates, orders, quiet = quiet, tz = tz,
-                  locale = locale, truncated = truncated)
+  if(is.null(tz)){
+    as.Date.POSIXct(parse_date_time(dates, orders, quiet = quiet, tz = "UTC",
+                                    locale = locale, truncated = truncated))
+  } else {
+    parse_date_time(dates, orders, quiet = quiet, tz = tz,
+                    locale = locale, truncated = truncated)
+  }
 }
-
 
 .num_to_date <- function(x) {
   if (is.numeric(x)) {

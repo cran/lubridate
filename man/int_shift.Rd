@@ -15,17 +15,17 @@ int_shift(int, by)
 An interval object
 }
 \description{
-Shifts the start and end dates of an interval up or down the timeline 
-by a specified amount. Note that this may change the exact length of the 
-interval if the interval is shifted by a Period object. Intervals shifted by a 
+Shifts the start and end dates of an interval up or down the timeline
+by a specified amount. Note that this may change the exact length of the
+interval if the interval is shifted by a Period object. Intervals shifted by a
 Duration or difftime object will retain their exact length in seconds.
 }
 \examples{
 int <- interval(ymd("2001-01-01"), ymd("2002-01-01"))
 # 2001-01-01 UTC--2002-01-01 UTC
-int_shift(int, new_duration(days = 11))
+int_shift(int, duration(days = 11))
 # 2001-01-12 UTC--2002-01-12 UTC
-int_shift(int, new_duration(hours = -1))
+int_shift(int, duration(hours = -1))
 # 2000-12-31 23:00:00 UTC--2001-12-31 23:00:00 UTC
 }
 \seealso{
