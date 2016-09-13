@@ -114,6 +114,57 @@ test_that("ymd functions correctly parse dates with no separators", {
               equals(as.Date(c("2010-01-02","2010-01-03"))))
   expect_that(ymd("100102"),
               equals(as.Date("2010-01-02")))
+  expect_that(ymd("20100102"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("20100201"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("01022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("01201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02012010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("02201001"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("20100102","20100103")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("100102"),
+              equals(as.Date("2010-01-02")))
+})
+
+test_that("ymd functions correctly parse dates with no separators", {
+  expect_that(ymd("20100102"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("20100201"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("01022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("01201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02012010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("02201001"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("20100102","20100103")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("100102"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd("20100102"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("20100201"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("01022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("01201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02012010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("02201001"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("20100102","20100103")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("100102"),
+              equals(as.Date("2010-01-02")))
 })
 
 test_that("ymd function correctly parse b and B formats",{
@@ -124,6 +175,97 @@ test_that("ymd function correctly parse b and B formats",{
                  as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
     expect_equal(ymd("2004-Jan-15", "2004-Feb-15", "1904-January-15", "1904-February-15"),
                  as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+    expect_equal(mdy("Jan-15-2004"), as.Date("2004-01-15"))
+    expect_equal(mdy("January-15-2004"),
+                 as.Date("2004-01-15"))
+    expect_equal(mdy("Jan-15-2004", "Feb-15-2004", "Jan-15-1904", "Feb-15-1904"),
+                 as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+    expect_equal(mdy("Jan-15-2004", "Feb-15-2004", "January-15-1904", "February-15-1904"),
+                 as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+})
+
+test_that("ymd function correctly parse b and B formats",{
+  expect_equal(ymd("2004-Jan-15"), as.Date("2004-01-15"))
+  expect_equal(ymd("2004-January-15"),
+               as.Date("2004-01-15"))
+  expect_equal(ymd("2004-Jan-15", "2004-Feb-15", "1904-Jan-15", "1904-Feb-15"),
+               as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+  expect_equal(ymd("2004-Jan-15", "2004-Feb-15", "1904-January-15", "1904-February-15"),
+               as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+  expect_equal(mdy("Jan-15-2004"), as.Date("2004-01-15"))
+  expect_equal(mdy("January-15-2004"),
+               as.Date("2004-01-15"))
+  expect_equal(mdy("Jan-15-2004", "Feb-15-2004", "Jan-15-1904", "Feb-15-1904"),
+               as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+  expect_equal(mdy("Jan-15-2004", "Feb-15-2004", "January-15-1904", "February-15-1904"),
+               as.Date(c("2004-01-15 UTC", "2004-02-15 UTC", "1904-01-15 UTC", "1904-02-15 UTC")))
+})
+
+test_that("ymd functions correctly parse dates with no separators and b and B formats", {
+  expect_that(ymd("2010January02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("201002January"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("January022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("January201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02January2010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("022010January"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("2010January02","2010January03")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("10January02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd("2010January02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("201002January"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("January022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("January201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02January2010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("022010January"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("2010January02","2010January03")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("10January02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd("2010Jan02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("201002Jan"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("Jan022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("Jan201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02Jan2010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("022010Jan"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("2010Jan02","2010Jan03")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("10Jan02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd("2010Jan02"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ydm("201002Jan"),
+              equals(as.Date("2010-01-02")))
+  expect_that(mdy("Jan022010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(myd("Jan201002"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dmy("02Jan2010"),
+              equals(as.Date("2010-01-02")))
+  expect_that(dym("022010Jan"),
+              equals(as.Date("2010-01-02")))
+  expect_that(ymd(c("2010Jan02","2010Jan03")) ,
+              equals(as.Date(c("2010-01-02","2010-01-03"))))
+  expect_that(ymd("10Jan02"),
+              equals(as.Date("2010-01-02")))
 })
 
 test_that("ymd functions correctly parse dates with no separators and no quotes", {
@@ -220,6 +362,28 @@ test_that("ymd_hms correctly handles a variety of formats", {
               equals(as.POSIXct("2010-01-02 23:59:59", tz = "UTC")))
 })
 
+test_that("C parser correctly handles month formats", {
+  expect_equal(ymd_hms("2010-Jan-02 23:59:59"), as.POSIXct( "2010-01-02 23:59:59", tz = "UTC"))
+  expect_equal(ymd_hms("2010-January-02 23:59:59"), as.POSIXct( "2010-01-02 23:59:59", tz = "UTC"))
+  expect_equal(ymd_hms("2010-Dec-02 23:59:59"), as.POSIXct( "2010-12-02 23:59:59", tz = "UTC"))
+  expect_equal(ymd_hms("2010-Dec-02 23:59:59"), parse_date_time2("2010-Dec-02 23:59:59", "YOmdHMS"))
+  expect_equal(ymd_hms("2010-Dec-02 23:59:59"), parse_date_time2("2010-Dec-02 23:59:59", "YbdHMS"))
+  expect_equal(ymd_hms("2010-Dec-02 03:59:59 PM"), parse_date_time2("2010-Dec-02 15:59:59", "YbdHMS"))
+  expect_equal(ymd_hms("2010-Dec-02 03:59:59 PM"), parse_date_time2("2010-Dec-02 03:59:59 PM", "YOmdHMSOp"))
+  expect_equal(ymd_hms("2010-Dec-02 23:59:59"), parse_date_time2("2010-December-02 23:59:59", "YBdHMS"))
+
+  yy <- c("10-Feb-28 23:59:59", "10-May-28 23:59:59", "10-September-28 23:59:59")
+  zz <- c("2010-Feb-28 23:59:59", "2010-May-28 23:59:59", "2010-September-28 23:59:59")
+  tt <- c("2010-02-28 23:59:59", "2010-05-28 23:59:59", "2010-09-28 23:59:59")
+
+  expect_equal(parse_date_time2(yy, "ybdHMS"), as.POSIXct(tt, tz = "UTC"))
+  expect_equal(parse_date_time2(zz, "YbdHMS"), as.POSIXct(tt, tz = "UTC"))
+  expect_equal(parse_date_time2(yy, "ybdHMS"), as.POSIXct(tt, tz = "UTC"))
+  expect_equal(parse_date_time2(yy, "ymdHMS"), as.POSIXct(tt, tz = "UTC"))
+  expect_equal(parse_date_time2(zz, "YOmdHMS"), as.POSIXct(tt, tz = "UTC"))
+  expect_equal(ymd_hms(c(yy, zz)), as.POSIXct(c(tt, tt), tz = "UTC"))
+})
+
 
 test_that("hms functions correctly handle : separators", {
   expect_that(hms("3:3:3"), equals(hours(3) + minutes(3) +
@@ -276,6 +440,13 @@ test_that("hms functions correctly handle / separators", {
   expect_that(hm("03/3"), equals(hours(3) + minutes(3)))
 })
 
+
+test_that("hms functions correctly roll", {
+  expect_equal(hms("3:59:120", roll = T), period(hours = 4, minutes = 1))
+  expect_equal(ms("59:125", roll = T), period(hours = 1, minutes = 1, seconds = 5))
+  expect_equal(hm("159:125", roll = T), period(hours = 161, minutes = 5))
+})
+
 test_that("hms functions return NA on shorter inputs", {
   expect_that(is.na(hms("3:3:3:4", quiet = TRUE)), is_true())
   expect_that(is.na(hms("03:03", quiet = TRUE)), is_true())
@@ -301,19 +472,136 @@ test_that("hms functions correctly negative components separators", {
   expect_that(hm("03-3"), equals(hours(3) -  minutes(3)))
 })
 
+test_that("AM/PM indicators are parsed correctly", {
+  expect_equal(parse_date_time2('12/17/1996 04:00:00  PM', "mdYHMSp"),
+               ymd_hms('1996-12-17 16:00:00'))
+  expect_equal(parse_date_time2('12/17/1996 04:00:00  PM', "mdYHMSOp"),
+               ymd_hms('1996-12-17 16:00:00'))
+  expect_equal(parse_date_time2('12/17/1996 04:00:00  AM', "mdYHMSp"),
+               ymd_hms('1996-12-17 04:00:00'))
+  expect_equal(parse_date_time2('12/17/1996 04:00:00  PM', "mdYHMSp", tz = "CEST"),
+               ymd_hms('1996-12-17 16:00:00', tz = "CEST"))
+  expect_equal(parse_date_time2('12/17/1996 04:00:00  TM', "mdYHMSp"),
+               make_datetime(NA))
+  expect_equal(fast_strptime('1996-05-17 04:00:00 PM', "%Y-%m-%d %H:%M:%S %Op"),
+               ymd_hms('1996-05-17 16:00:00'))
+  expect_equal(ymd_hms('1996-05-17 04:00:00 PM'), ymd_hms('1996-05-17 16:00:00'))
+  expect_equal(ydm_hms('1996-17-05 04:00:00 PM'), ydm_hms('1996-17-05 16:00:00'))
+  expect_equal(dmy_hms('17-05-1996 04:00:00 PM'), dmy_hms('17-05-1996 16:00:00'))
+
+
+  expect_equal(parse_date_time("2010-Dec-02 03:59:59 PM", "YmdT"),
+               parse_date_time2("2010-12-02 15:59:59", "YmdHMS"))
+
+  expect_equal(parse_date_time("2010-Dec-02 03:59:59 PM", "YmdT"),
+               parse_date_time2("2010-12-02 15:59:59", "YmdHMS"))
+
+  expect_equal(parse_date_time("2010-Dec-02 03:59 PM", "YmdR"),
+               parse_date_time2("2010-12-02 15:59:00", "YmdHMS"))
+
+  expect_equal(parse_date_time("2010-Dec-02 03 PM", "Ymdr"),
+               parse_date_time2("2010-12-02 15:00:00", "YmdHMS"))
+})
+
+test_that("AM/PM is parse correctly", {
+
+  raw <- c("09/17/2015 02:55:00 PM", "09/17/2015 04:22:00 PM", "09/17/2015 11:01:00 AM",
+           "09/17/2015 08:11:00 PM", "09/17/2015 03:00:00 PM", "09/17/2015 12:43:00 AM",
+           "09/17/2015 12:09:00 PM", "09/17/2015 04:57:00 PM", "09/17/2015 12:25:00 PM",
+           "09/17/2015 06:52:00 AM", "09/17/2015 11:08:00 AM", "09/17/2015 10:25:00 AM",
+           "09/17/2015 02:39:00 PM", "09/17/2015 10:28:00 AM", "09/17/2015 06:39:00 AM",
+           "09/17/2015 09:41:00 AM", "09/17/2015 09:12:00 AM", "09/17/2015 12:40:00 AM",
+           "09/17/2015 11:53:08 AM", "09/17/2015 04:40:30 PM", "09/17/2015 04:19:44 PM",
+           "09/17/2015 08:26:00 AM", "09/17/2015 02:32:17 PM", "09/17/2015 06:09:00 PM",
+           "09/17/2015 10:27:00 AM", "09/17/2015 12:59:00 PM", "09/17/2015 09:20:00 AM",
+           "09/17/2015 07:25:00 AM", "09/17/2015 05:49:04 AM", "09/17/2015 04:58:18 PM",
+           "09/17/2015 11:35:00 AM", "09/17/2015 10:21:48 AM", "09/17/2015 09:48:41 AM",
+           "09/17/2015 01:11:00 PM", "09/17/2015 08:52:00 AM", "09/17/2015 05:49:00 AM",
+           "09/17/2015 06:19:00 PM", "09/17/2015 10:17:19 AM", "09/17/2015 01:59:00 PM",
+           "09/17/2015 11:08:00 AM", "09/17/2015 03:37:59 AM", "09/16/2015 07:00:00 AM",
+           "09/17/2015 02:26:00 PM", "09/17/2015 10:58:00 AM", "09/17/2015 05:56:00 AM",
+           "09/17/2015 05:01:00 PM", "09/17/2015 10:15:00 AM", "09/17/2015 10:02:00 AM",
+           "09/17/2015 10:10:00 PM", "09/17/2015 12:56:00 PM", "09/17/2015 03:58:00 PM",
+           "09/17/2015 05:23:00 PM", "09/17/2015 12:20:00 PM", "09/17/2015 07:48:00 PM",
+           "09/17/2015 02:54:00 PM", "09/17/2015 10:02:00 PM", "09/17/2015 11:53:21 AM",
+           "09/17/2015 10:15:59 AM", "09/17/2015 08:22:00 AM", "09/17/2015 04:33:00 PM",
+           "09/17/2015 08:26:00 PM", "09/17/2015 08:01:00 AM", "09/17/2015 12:28:00 PM",
+           "09/17/2015 11:07:00 PM", "09/17/2015 11:09:00 PM", "09/17/2015 03:08:32 PM",
+           "09/17/2015 08:25:00 PM", "09/17/2015 01:45:00 PM", "09/17/2015 08:42:00 AM",
+           "09/17/2015 03:25:00 PM", "09/17/2015 09:32:00 AM", "09/17/2015 10:13:13 AM",
+           "09/17/2015 11:36:02 AM", "09/17/2015 03:23:00 PM", "09/17/2015 12:00:00 AM",
+           "09/17/2015 07:19:19 PM", "09/17/2015 08:59:06 AM", "09/17/2015 09:14:00 PM",
+           "09/17/2015 01:16:00 PM", "09/17/2015 08:54:35 AM", "09/17/2015 05:56:29 PM",
+           "09/17/2015 03:56:51 PM", "09/17/2015 09:52:22 AM", "09/17/2015 03:49:28 PM",
+           "09/17/2015 01:00:27 PM", "09/17/2015 09:52:32 PM", "09/17/2015 11:08:15 AM",
+           "09/17/2015 05:26:26 PM", "09/17/2015 04:53:56 PM", "09/02/2015 10:33:00 AM",
+           "09/17/2015 10:13:22 AM", "09/17/2015 12:50:00 PM", "09/17/2015 12:46:00 PM",
+           "09/02/2015 06:44:00 PM", "09/17/2015 02:21:06 PM", "09/17/2015 01:56:00 PM",
+           "09/17/2015 02:10:00 PM", "09/17/2015 05:43:28 AM", "09/17/2015 11:24:00 AM",
+           "09/17/2015 10:56:00 AM")
+
+  ## dput(as.character(parse_date_time2(raw, "mdYHMSp")))
+  utc <- c("2015-09-17 14:55:00", "2015-09-17 16:22:00", "2015-09-17 11:01:00",
+           "2015-09-17 20:11:00", "2015-09-17 15:00:00", "2015-09-17 00:43:00",
+           "2015-09-17 12:09:00", "2015-09-17 16:57:00", "2015-09-17 12:25:00",
+           "2015-09-17 06:52:00", "2015-09-17 11:08:00", "2015-09-17 10:25:00",
+           "2015-09-17 14:39:00", "2015-09-17 10:28:00", "2015-09-17 06:39:00",
+           "2015-09-17 09:41:00", "2015-09-17 09:12:00", "2015-09-17 00:40:00",
+           "2015-09-17 11:53:08", "2015-09-17 16:40:30", "2015-09-17 16:19:44",
+           "2015-09-17 08:26:00", "2015-09-17 14:32:17", "2015-09-17 18:09:00",
+           "2015-09-17 10:27:00", "2015-09-17 12:59:00", "2015-09-17 09:20:00",
+           "2015-09-17 07:25:00", "2015-09-17 05:49:04", "2015-09-17 16:58:18",
+           "2015-09-17 11:35:00", "2015-09-17 10:21:48", "2015-09-17 09:48:41",
+           "2015-09-17 13:11:00", "2015-09-17 08:52:00", "2015-09-17 05:49:00",
+           "2015-09-17 18:19:00", "2015-09-17 10:17:19", "2015-09-17 13:59:00",
+           "2015-09-17 11:08:00", "2015-09-17 03:37:59", "2015-09-16 07:00:00",
+           "2015-09-17 14:26:00", "2015-09-17 10:58:00", "2015-09-17 05:56:00",
+           "2015-09-17 17:01:00", "2015-09-17 10:15:00", "2015-09-17 10:02:00",
+           "2015-09-17 22:10:00", "2015-09-17 12:56:00", "2015-09-17 15:58:00",
+           "2015-09-17 17:23:00", "2015-09-17 12:20:00", "2015-09-17 19:48:00",
+           "2015-09-17 14:54:00", "2015-09-17 22:02:00", "2015-09-17 11:53:21",
+           "2015-09-17 10:15:59", "2015-09-17 08:22:00", "2015-09-17 16:33:00",
+           "2015-09-17 20:26:00", "2015-09-17 08:01:00", "2015-09-17 12:28:00",
+           "2015-09-17 23:07:00", "2015-09-17 23:09:00", "2015-09-17 15:08:32",
+           "2015-09-17 20:25:00", "2015-09-17 13:45:00", "2015-09-17 08:42:00",
+           "2015-09-17 15:25:00", "2015-09-17 09:32:00", "2015-09-17 10:13:13",
+           "2015-09-17 11:36:02", "2015-09-17 15:23:00", "2015-09-17 00:00:00",
+           "2015-09-17 19:19:19", "2015-09-17 08:59:06", "2015-09-17 21:14:00",
+           "2015-09-17 13:16:00", "2015-09-17 08:54:35", "2015-09-17 17:56:29",
+           "2015-09-17 15:56:51", "2015-09-17 09:52:22", "2015-09-17 15:49:28",
+           "2015-09-17 13:00:27", "2015-09-17 21:52:32", "2015-09-17 11:08:15",
+           "2015-09-17 17:26:26", "2015-09-17 16:53:56", "2015-09-02 10:33:00",
+           "2015-09-17 10:13:22", "2015-09-17 12:50:00", "2015-09-17 12:46:00",
+           "2015-09-02 18:44:00", "2015-09-17 14:21:06", "2015-09-17 13:56:00",
+           "2015-09-17 14:10:00", "2015-09-17 05:43:28", "2015-09-17 11:24:00",
+           "2015-09-17 10:56:00")
+
+  tparse <- as.POSIXct(utc, tz = "UTC")
+  ## DT(raw, tparse, R = parse_date_time(raw, "mdYT", locale = "C"))[, diff := R - tparse][diff != 0] %>% DF
+
+  expect_equal(mdy_hms(raw), tparse)
+  expect_equal(parse_date_time2(raw, "mdYHMSp"), tparse)
+  expect_equal(parse_date_time2(raw, "mdYHMSp"), tparse)
+  expect_equal(parse_date_time2(raw, "OmdYHMSOp"), tparse)
+  ## this one ends in strptime
+  expect_equal(parse_date_time(raw, "mdYT", locale = "C"), tparse)
+})
+
 test_that("heterogeneous formats are correctly parsed", {
   X <- c(20090101, "2009-01-02", "2009 01 03", "2009-1-4", "2009-1, 5", "2009....1--6", "200901-07", "200901-8")
   Y <- c("2009-01-01", "2009-01-02", "2009-01-03", "2009-01-04", "2009-01-05", "2009-01-06", "2009-01-07", "2009-01-08")
   expect_that(ymd(X) ,equals( as.Date(Y)))
   ## cbind(ymd(X), as.POSIXct(Y, tz = "UTC"))
-  X <- c(20100101120101, "2009-01-02 12-01-02", "2009.01.03 12:01:03", "2009-1-4 12-1-4",
-         "2009-1, 5 12:1, 5", "2009....1--6 - 12::1:6", "20090107 120107", "2009-01-08 1201-08",
-         "2010-01-09 12:01:09", "2010-01-10 10:01:10 AM", "2010-01-11 10:01:11 PM")
+  X <- c(20100101120101           , "2009-01-02 12-01-02", "2009.01.03 12:01:03",
+         "2009-1-4 12-1-4"        , "2009-1, 5 12:1, 5", "2009....1--6 - 12::1:6",
+         "20090107 120107"        , "2009-01-08 1201-08", "2010-01-09 12:01:09",
+         "2010-01-10 10:01:10 AM" , "2010-01-11 10:01:11 PM")
   Y <- c("2010-01-01 12:01:01", "2009-01-02 12:01:02", "2009-01-03 12:01:03",
          "2009-01-04 12:01:04", "2009-01-05 12:01:05", "2009-01-06 12:01:06",
          "2009-01-07 12:01:07", "2009-01-08 12:01:08", "2010-01-09 12:01:09",
          "2010-01-10 10:01:10", "2010-01-11 22:01:11")
-  expect_that( ymd_hms(X), equals(as.POSIXct(Y, tz = "UTC")))
+  ## cbind(as.character(ymd_hms(X)), as.character(as.POSIXct(Y, tz = "UTC")))
+  expect_that(ymd_hms(X), equals(as.POSIXct(Y, tz = "UTC")))
   cbind(as.character(ymd_hms(X)), as.character(as.POSIXct(Y, tz = "UTC")))
 })
 
@@ -331,6 +619,17 @@ test_that("truncation on non-dates results in NAs indeed", {
         tt <- c("NI PODATKA", "TUJINA", "GRAD")
         all(is.na(ymd_hms(tt, truncated = 3)))
       }))
+})
+
+test_that("missing months and days are allowed", {
+  expect_equal(parse_date_time2("2016", orders = "Y"), ymd("2016-01-01", tz = "UTC"))
+  expect_equal(parse_date_time2("2016-02", orders = "Ym"), ymd("2016-02-01", tz = "UTC"))
+  expect_equal(parse_date_time("2016", orders = "Y"), ymd("2016-01-01", tz = "UTC"))
+  expect_equal(parse_date_time("2016-02", orders = "Ym"), ymd("2016-02-01", tz = "UTC"))
+  expect_equal(parse_date_time(c("3:15:00"), c("IMS")), as.POSIXct("00-01-01 03:15:00", tz = "UTC"))
+  expect_equal(parse_date_time(c("3:15:00"), c("HMS")), as.POSIXct("00-01-01 03:15:00", tz = "UTC"))
+  expect_equal(parse_date_time(c("3:15:00 PM"), c("HMSp")), as.POSIXct("00-01-01 15:15:00", tz = "UTC"))
+  expect_equal(parse_date_time(c("3:15:00 PM"), c("IMSp")), as.POSIXct("00-01-01 15:15:00", tz = "UTC"))
 })
 
 test_that("fractional formats are correctly parsed", {
@@ -352,6 +651,15 @@ test_that( "NA's are parsed as NA's", {
   expect_true(is.na(hms(NA, quiet = TRUE)))
   expect_warning(ms(NA))
   expect_true(is.na(ms(NA, quiet = TRUE)))
+})
+
+test_that("Quarters are parsed correctly", {
+  qs <- c("2016.1", "2016:2", "2016-3", "2016 4", "2016.5")
+  out <- ymd(c("2016-01-01 UTC", "2016-04-01 UTC", "2016-07-01 UTC", "2016-10-01 UTC", NA), tz = "UTC")
+  expect_equal(parse_date_time2(qs, orders = "Yq"), out)
+  expect_equal(parse_date_time(qs, orders = "Yq", quiet = T), out)
+  expect_equal(yq(qs, tz = "UTC", quiet = T), out)
+  expect_equal(yq("16.1", "17.3", "2016.1"), ymd(c("2016-01-01", "2017-07-01", "2016-01-01")))
 })
 
 test_that( "Vectors of NA's are parsed as vectors of NA's", {
@@ -465,6 +773,16 @@ test_that("ymd_hms parses OO and Oo formats correctly", {
               equals(ymd_hms("2012-03-04 00:36:07", tz="America/Chicago")))
   expect_that(ymd_hms("2012-03-04T05:06:07-01:30", tz="America/Chicago"),
               shows_message("Date in ISO8601 format"))
+})
+
+test_that("ymd parses mixed y an Y formats", {
+  ## https://github.com/hadley/lubridate/issues/425
+  d3 <- c("6/25/15", "6/25/2015")
+  expect_equal(mdy(d3), as.Date(c("2015-06-25", "2015-06-25")))
+  d6 <- c("25/6/15", "25/6/2015")
+  expect_equal(dmy(d6), as.Date(c("2015-06-25", "2015-06-25")))
+  d9 <- c("15/6/25", "2015/6/25")
+  expect_equal(ymd(d9), as.Date(c("2015-06-25", "2015-06-25")))
 })
 
 test_that("ymd_hms parses mixed ISO-8601/non-ISO-8601 formats",{
@@ -583,6 +901,8 @@ test_that("`parse_date_time` parses heterogeneous formats with `exact=TRUE`", {
                             NA,  "2003-09-01 12:02:00 UTC"),
                           tz = "UTC"))
 })
+
+
 
 ## library(microbenchmark)
 ## library(lubridate)

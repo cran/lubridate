@@ -1,3 +1,48 @@
+Version 1.5.6.9000 (development)
+============
+
+### NEW FEATURES
+
+* [#464](https://github.com/hadley/lubridate/issues/464) New function `semester` to extract semesters form date-time objects.
+* [#459](https://github.com/hadley/lubridate/issues/459) Flexible C-level parsing for periods and durations has been implemented; `period` and `duration` constructors now accept string as first argument. Same parsing rules apply to the 'unit' parameter in rounding functions.
+* [#459](https://github.com/hadley/lubridate/issues/459) Comparison between character vectors and periods/durations is now possible.
+* [#287](https://github.com/hadley/lubridate/issues/287) C-level and derivative parsers now handle English months (%b and %B formats) irrespective of the current locale.
+* [#327](https://github.com/hadley/lubridate/issues/327) C-level and derivative parsers now handles English AM/PM indicator irrespective of the current locale.
+* [#417](https://github.com/hadley/lubridate/issues/417) `hms`, `hm`, `ms` gained new argument `roll=TRUE` which rolls minutes and seconds bigger than 59 towards higher units.
+* [#445](https://github.com/hadley/lubridate/issues/445) Division of intervals by periods is now accurate.
+* [#442](https://github.com/hadley/lubridate/issues/442) `round_date`, `floor_date` and `ceiling_date` now support rounding to multiple of units.
+* [#422](https://github.com/hadley/lubridate/issues/422) New parsing function `yq` for parsing most common version of quarter strings.
+* [#422](https://github.com/hadley/lubridate/issues/422) New format `q` for parsing quarters in all lubridate parsing functions.
+* [#441](https://github.com/hadley/lubridate/issues/441) Comparison between POSIXt and Date objects is now possible.
+* [#437](https://github.com/hadley/lubridate/issues/437) New function `as_datetime` to coerce to POSIXct object. A counterpart of `as_date`.
+* [#412](https://github.com/hadley/lubridate/issues/412) New function `make_date` to produce Date objects. A counterpart of `make_datetime`.
+* [#443](https://github.com/hadley/lubridate/issues/443) Behavior of `ceiling_date` for `Date` objects was changed to what most of the users expect. Rounding up by months now produces first day of the next months even for first day of the month.
+* [#268](https://github.com/hadley/lubridate/issues/268) `round_date`, `ceiling_date`, and `floor_date` now accept "quarter", "bimonth", and "halfyear" as `unit` options.
+* [#418](https://github.com/hadley/lubridate/issues/418) C level parsing functions understand 24:00:00 in datetime strings.
+
+### CHANGES
+
+* Low letter specs for HMS (hms,hm,ms) in `parse_date_time` and related functions are now deprecated.
+* [#445](https://github.com/hadley/lubridate/issues/445) No more warning on occasional imprecise period length conversions. Imprecise arithmetics with periods is extensively documented.
+* `pretty.*` family of functions were renamed and are no longer exported. If you need to use them, use `lubridate:::pretty_*` versions.
+* `change_on_boundary` argument in `ceiling_date` does not allow for global option anymore.
+* `as.duration`, `as.numeric` don't show "only estimate" messages on conversion from periods. The occasional approximate conversion is documented and deemed common knowledge.
+* `as.numeric` with `unit="month"` now works on duration objects.
+* [#403](https://github.com/hadley/lubridate/issues/403) Update on `Date` objects now return `POSIXct` instead of `POSIXlt`.
+* [#411](https://github.com/hadley/lubridate/issues/411) format `mdy` or `myd` beginning with `"January"` or `"Jan"` now parsing correctly
+* `here` and `olson_time_zones` were deprecated in favor of `new` and base `OlsonNames` respectively.
+* Internally, S4 Compare and Ops generics were cleaned and simplified.
+* [#456](https://github.com/hadley/lubridate/issues/456) Evaluation output in documentation examples was removed.
+
+### BUG FIXES
+
+* [#463](https://github.com/hadley/lubridate/issues/463) Fix NA subscripting error in %m+% when rollback is involved.
+* [#462](https://github.com/hadley/lubridate/issues/462) Non-numeric or non-character arguments are disallowed as arguments to `period` and `duration` constructors.
+* [#458](https://github.com/hadley/lubridate/issues/458) When year is missing in parsing, return consistently year 0.
+* [#448](https://github.com/hadley/lubridate/issues/448) Correctly handle missing months and days in C parser.
+* [#450](https://github.com/hadley/lubridate/issues/450) Fix incorrect handling of DST gaps in `date_decimal` and `decimal_date`.
+* [#420](https://github.com/hadley/lubridate/issues/420) `as.numeric` correctly converts periods to (aproximate) numeric time lengths.
+
 Version 1.5.6
 ============
 
@@ -33,11 +78,8 @@ Version 1.5.0
 
 * New `time_length` method.
 * Added `isoyear` function to line up with `isoweek`.
-* [#326](https://github.com/hadley/lubridate/issues/326) Added `exact = TRUE`
-  option to `parse_date_time` for faster and much more flexible specification of
-  formats.
-* New `simple` argument to `fit_to_timeline` and `update` methods mostly
-  intended for internal use.
+* [#326](https://github.com/hadley/lubridate/issues/326) Added `exact = TRUE` option to `parse_date_time` for faster and much more flexible specification of formats.
+* New `simple` argument to `fit_to_timeline` and `update` methods mostly intended for internal use.
 * [#315](https://github.com/hadley/lubridate/issues/315) Implement `unique` method for `interval` class.
 * [#295](https://github.com/hadley/lubridate/issues/295) New args `preserve_hms` and `roll_to_first` in `rollback` function.
 * [#303](https://github.com/hadley/lubridate/issues/303) New `quarter` option in `floor_date` and friends.
@@ -47,19 +89,13 @@ Version 1.5.0
 ### CHANGES
 
 * New maintainer Vitalie Spinu (@vspinu)
-* Time span constructors were re-factored; `new_interval`, `new_period`,
-  `new_duration`, `new_difftime` were deprecated in favour of the more powerful
-  `interval`, `period`, `duration` and `make_difftime` functions.
+* Time span constructors were re-factored; `new_interval`, `new_period`, `new_duration`, `new_difftime` were deprecated in favour of the more powerful `interval`, `period`, `duration` and `make_difftime` functions.
 * `eseconds`, `eminutes` etc. were deprecated in favour of `dsecons`, `dminutes` etc.
 * Many documentation improvements.
 * New testthat conventions are adopted. Tests are now in `test/testthat`.
 * Internally `isodate` was replaced with a much faster `parse_date_time2(paste(...))` alternative
-* [#325](https://github.com/hadley/lubridate/issues/325) `Lubridate`'s `trunc`,
-  `ceiling` and `floor` functions have been optimised and now are relying on R's
-  `trunc.POSIXct` whenever possible.
-* [#285](https://github.com/hadley/lubridate/issues/285) Algebraic computations
-  with negative periods are behaving asymmetrically with respect to their
-  positive counterparts.
+* [#325](https://github.com/hadley/lubridate/issues/325) `Lubridate`'s `trunc`, `ceiling` and `floor` functions have been optimised and now are relying on R's `trunc.POSIXct` whenever possible.
+* [#285](https://github.com/hadley/lubridate/issues/285) Algebraic computations with negative periods are behaving asymmetrically with respect to their positive counterparts.
 * Made necessary changes to accommodate new zoo-based `fst` objects.
 
 ### BUG FIXES
@@ -128,14 +164,10 @@ Version 1.3.3
 * infinite recursion on parsing non-existing leap times was fixed
 
 
-
 Version 1.3.2
 =============
 
-* Lubridate's s4 methods no longer use the representation argument, which has
-  been deprecated in R 3.0.0 (see ?setClass). As a result, lubridate is no
-  longer backwards compatible with R <3.0.0.
-
+* Lubridate's s4 methods no longer use the representation argument, which has been deprecated in R 3.0.0 (see ?setClass). As a result, lubridate is no longer backwards compatible with R <3.0.0.
 
 
 Version 1.3.0
@@ -143,83 +175,32 @@ Version 1.3.0
 
 ### CHANGES
 
-* v1.3.0. treats math with month and year Periods more consistently. If adding
-or subtracting n months would result in a non-existent date, lubridate will
-return an NA instead of a day in the following month or year. For example,
-`ymd("2013-01-31") + months(1)` will return `NA` instead of `2013-03-04`
-as in v1.2.0. `ymd("2012-02-29") + years(1)` will also return an `NA`. This
-rule change helps ensure that date + timespan - timespan = date (or NA). If
-you'd prefer that such arithmetic just returns the last day of the resulting
-month, see `%m+%` and `%m-%`.
-
-* update.POSIXct and update.POSIXlt have been rewritten to be 7x faster than
-their versions in v1.2.0. The speed gain is felt in `force_tz`, `with_tz`,
-`floor_date`, `ceiling_date`, `second<-`, `minute<-`, `hour<-`, `day<-`,
-`month<-`, `year<-`, and other functions that rely on update (such as math with
-Periods).
-
-* lubridate includes a Korean translation provided by
-http://korea.gnu.org/gnustats/
-
+* v1.3.0. treats math with month and year Periods more consistently. If adding or subtracting n months would result in a non-existent date, lubridate will return an NA instead of a day in the following month or year. For example, `ymd("2013-01-31") + months(1)` will return `NA` instead of `2013-03-04` as in v1.2.0. `ymd("2012-02-29") + years(1)` will also return an `NA`. This rule change helps ensure that date + timespan - timespan = date (or NA). If you'd prefer that such arithmetic just returns the last day of the resulting month, see `%m+%` and `%m-%`.
+* update.POSIXct and update.POSIXlt have been rewritten to be 7x faster than their versions in v1.2.0. The speed gain is felt in `force_tz`, `with_tz`, `floor_date`, `ceiling_date`, `second<-`, `minute<-`, `hour<-`, `day<-`, `month<-`, `year<-`, and other functions that rely on update (such as math with Periods).
+* lubridate includes a Korean translation provided by http://korea.gnu.org/gnustats/
 
 ### NEW FEATURES
 
-* lubridate parser and stamp functions now handle ISO8601 date format (e.g.,
-2013-01-24 19:39:07.880-06:00, 2013-01-24 19:39:07.880Z)
-
-* lubridate v1.3.0 comes with a new R vignette. see
-`browseVignettes("lubridate")` to view it.
-
-* The accessors `second`, `minute`, `hour`, `day`, `month`, `year` and the
-settors `second<-`, `minute<-`, `hour<-`, `day<-`, `month<-`, `year<-` now
-work on Period class objects
-
-* users can control which messages lubridate returns when parsing and estimating
-with the global option lubridate.verbose. Run
-`options(lubridate.verbose = TRUE)` to turn parsing messages on. Run
-`options(lubridate.verbose = FALSE)` to turn estimation and coercion messages
-off.
-
-* lubridate parser functions now propagate NA's just as as.POSIXct, strptime and
-other functions do. Previously lubridate's parse functions would only return an
-error.
-
+* lubridate parser and stamp functions now handle ISO8601 date format (e.g., 2013-01-24 19:39:07.880-06:00, 2013-01-24 19:39:07.880Z)
+* lubridate v1.3.0 comes with a new R vignette. see `browseVignettes("lubridate")` to view it.
+* The accessors `second`, `minute`, `hour`, `day`, `month`, `year` and the settors `second<-`, `minute<-`, `hour<-`, `day<-`, `month<-`, `year<-` now work on Period class objects
+* users can control which messages lubridate returns when parsing and estimating with the global option lubridate.verbose. Run `options(lubridate.verbose = TRUE)` to turn parsing messages on. Run `options(lubridate.verbose = FALSE)` to turn estimation and coercion messages off.
+* lubridate parser functions now propagate NA's just as as.POSIXct, strptime and other functions do. Previously lubridate's parse functions would only return an error.
 * added [[ and [[<- methods for INterval, Period and Duration class objects
-
-* added `%m+%` and `%m-%` methods for Interval and Duration class objects that
-throw useful errors.
-
-* `olson_time_zones` retreives a character vector is Olson-style time zone names
-to use in lubridate
-
+* added `%m+%` and `%m-%` methods for Interval and Duration class objects that throw useful errors.
+* `olson_time_zones` retreives a character vector is Olson-style time zone names to use in lubridate
 * summary methods for Interval, Period, and Duration classes
-
-* date_decimal converts a date written as a decimal of a year into a POSIXct
-date-time
+* date_decimal converts a date written as a decimal of a year into a POSIXct date-time
 
 ### BUG FIXES
 
-* fixed bug in way update.POSIXct and update.POSIXlt handle dates that occur in
-the fall daylight savings overlap. update will choose the date-time closest to
-the original date time (on the timeline) when two identical clock times exist
-due to the DST overlap.
-
+* fixed bug in way update.POSIXct and update.POSIXlt handle dates that occur in the fall daylight savings overlap. update will choose the date-time closest to the original date time (on the timeline) when two identical clock times exist due to the DST overlap.
 * fixed bugs that created unintuitive results for `as.interval`, `int_overlaps`, `%within%` and the interval methods of `c`, `intersect`, `union`, `setdiff`, and `summary`.
-
-* parse functions, `as.interval`, `as.period` and `as.duration` now handle
-vectors of NA's without returning errors.
-
-* parsers better handle vectors of input that have more than 100 elements and
-many NAs
-
-* data frames that contain timespan objects with NAs in thme no longer fail to
-print
-
-* `round_date`, `ceiling_date` and `update` now correctly handle input of length
-zero
-
+* parse functions, `as.interval`, `as.period` and `as.duration` now handlevectors of NA's without returning errors.
+* parsers better handle vectors of input that have more than 100 elements and many NAs
+* data frames that contain timespan objects with NAs in thme no longer fail toprint
+* `round_date`, `ceiling_date` and `update` now correctly handle input of length zero
 * `decimal_date` no longer returns NaN for first second of the year
-
 
 Version 1.2.0
 =============

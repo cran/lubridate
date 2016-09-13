@@ -32,7 +32,7 @@ parse the dates}
 common type of irregularity in date-time data is the truncation due to
 rounding or unavailability of the time stamp. If \code{truncated}
 parameter is non-zero \code{parse_date_time} also checks for truncated
-formats. For example,  if the format order is "ymdhms" and \code{truncated
+formats. For example,  if the format order is "ymdHMS" and \code{truncated
 = 3}, \code{parse_date_time} will correctly parse incomplete dates like
 \code{2012-06-01 12:23}, \code{2012-06-01 12} and
 \code{2012-06-01}. \bold{NOTE:} \code{ymd} family of functions are based
@@ -91,14 +91,14 @@ recursively on the input vector.
 
 \code{parse_date_time}, and all derived functions, such as \code{ymd_hms},
 \code{ymd} etc, will drop into \code{fast_strptime} instead of
-\code{strptime} whenever the guesed from the input data formats are all
+\code{strptime} whenever the guessed from the input data formats are all
 numeric.
 
 The list below contains formats recognized by lubridate. For numeric formats
-leading 0s are optional. In contrast to \code{strptime}, some of the formats
-have been extended for efficiency reasons. They are marked with "*". Fast
-perasers,  \code{parse_date_time2} and \code{fast_strptime}, currently
-accept only formats marked with "!".
+leading 0s are optional. As compared to base \code{strptime}, some of the
+formats are new or have been extended for efficiency reasons. These formats
+are marked with "*". Fast parsers, \code{parse_date_time2} and
+\code{fast_strptime}, accept only formats marked with "!".
 
 \describe{ \item{\code{a}}{Abbreviated weekday name in the current
 locale. (Also matches full name)}
@@ -109,27 +109,35 @@ abbreviated name).
 You need not specify \code{a} and \code{A} formats explicitly. Wday is
 automatically handled if \code{preproc_wday = TRUE}}
 
-\item{\code{b}}{Abbreviated month name in the current locale.  (Also matches full name.)}
+\item{\code{b}!}{Abbreviated month name in the current locale (also matches
+full name). C parser understands English months only.}
 
-\item{\code{B}}{Full month name in the current locale.  (Also matches abbreviated name.)}
+\item{\code{B}!}{Same as b.}
 
 \item{\code{d}!}{Day of the month as decimal number (01--31 or 0--31)}
 
 \item{\code{H}!}{Hours as decimal number (00--24 or 0--24).}
 
-\item{\code{I}}{Hours as decimal number (01--12 or 1--12).}
+\item{\code{I}!}{Hours as decimal number (01--12 or 1--12).}
 
 \item{\code{j}}{Day of year as decimal number (001--366 or 1--366).}
 
+\item{\code{q}!*}{Quarter (1-4). The quarter month is added to parsed month
+if \code{m} format is present.}
+
 \item{\code{m}!*}{Month as decimal number (01--12 or 1--12). For
-\code{parse_date_time}, also matches abbreviated and full months names as
-\code{b} and \code{B} formats.}
+                  \code{parse_date_time}. As lubridate extension, also
+                  matches abbreviated and full months names as \code{b} and
+                  \code{B} formats. C parser understands only English month
+                  names.}
 
 \item{\code{M}!}{Minute as decimal number (00--59 or 0--59).}
 
-\item{\code{p}}{AM/PM indicator in the locale.  Used in
-                  conjunction with \code{I} and \bold{not} with \code{H}.  An
-                  empty string in some locales.}
+\item{\code{p}!}{AM/PM indicator in the locale. Normally used in conjunction
+                  with \code{I} and \bold{not} with \code{H}.  But lubridate
+                  C parser accepts H format as long as hour is not greater
+                  than 12. C parser understands only English locale AM/PM
+                  indicator.}
 
 \item{\code{S}!}{Second as decimal number (00--61 or 0--61), allowing for up
 to two leap-seconds (but POSIX-compliant implementations will ignore leap
@@ -160,6 +168,11 @@ union of 4 orders: Ou (Z), Oz (-0800), OO (-08:00) and Oo (-08). You can use
 these four orders as any other but it is rarely
 necessary. \code{parse_date_time2} and \code{fast_strptime} support all of
 the timezone formats.}
+
+\item{\code{Om}!*}{Matches numeric month and English alphabetic months
+                   (Both, long and abbreviated forms).}
+
+\item{\code{Op}!*}{Matches AM/PM English indicator.}
 
 \item{\code{r}*}{Matches \code{Ip} and \code{H} orders.}
 \item{\code{R}*}{Matches \code{HM} and\code{IMp} orders.}
@@ -206,16 +219,15 @@ parse_date_time(x, c("dmY", "ymd"))
 ## ** truncated time-dates **
 x <- c("2011-12-31 12:59:59", "2010-01-01 12:11", "2010-01-01 12", "2010-01-01")
 parse_date_time(x, "Ymd HMS", truncated = 3)
-parse_date_time(x, "ymd_hms", truncated = 3)
-## [1] "2011-12-31 12:59:59 UTC" "2010-01-01 12:11:00 UTC"
-## [3] "2010-01-01 12:00:00 UTC" "2010-01-01 00:00:00 UTC"
 
 ## ** specifying exact formats and avoiding training and guessing **
 parse_date_time(x, c("\%m-\%d-\%y", "\%m\%d\%y", "\%m-\%d-\%y \%H:\%M"), exact = TRUE)
-## [1] "2001-09-01 00:00:00 UTC" "2002-09-01 00:00:00 UTC" NA "2003-09-01 12:02:00 UT
 parse_date_time(c('12/17/1996 04:00:00','4/18/1950 0130'),
                 c('\%m/\%d/\%Y \%I:\%M:\%S','\%m/\%d/\%Y \%H\%M'), exact = TRUE)
-## [1] "1996-12-17 04:00:00 UTC" "1950-04-18 01:30:00 UTC"
+
+## ** quarters and partial dates **
+parse_date_time(c("2016.2", "2016-04"), orders = "Yq")
+parse_date_time(c("2016", "2016-04"), orders = c("Y", "Ym"))
 
 ## ** fast parsing **
 \dontrun{
@@ -237,7 +249,6 @@ parse_date_time(c('12/17/1996 04:00:00','4/18/1950 0130'),
 ## ** how to use `select_formats` argument **
 ## By default \%Y has precedence:
 parse_date_time(c("27-09-13", "27-09-2013"), "dmy")
-## [1] "13-09-27 UTC"   "2013-09-27 UTC"
 
 ## to give priority to \%y format, define your own select_format function:
 
@@ -247,15 +258,11 @@ my_select <-   function(trained){
 }
 
 parse_date_time(c("27-09-13", "27-09-2013"), "dmy", select_formats = my_select)
-## [1] "2013-09-27 UTC" "2013-09-27 UTC"
 
 ## ** invalid times with "fast" parcing **
 parse_date_time("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
-## [1] NA
 parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
-## [1] "2010-03-14 03:05:06 EDT"
 parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York", lt = TRUE)
-## [1] "2010-03-14 02:05:06 America/New_York"
 }
 \seealso{
 \code{strptime}, \code{\link{ymd}}, \code{\link{ymd_hms}}

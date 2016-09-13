@@ -1,5 +1,30 @@
 context("Periods")
 
+test_that("period constructor doesn't accept non-numeric or non-character inputs", {
+  expect_error(period(interval(ymd("2014-01-01"), ymd("2015-01-01"))))
+})
+
+
+test_that("parsing works as expected", {
+  expect_equal(period("1min 2sec 2secs 1H 2M 1d"),
+               period(seconds = 4, minutes = 3, hours = 1, days = 1))
+  expect_equal(period("day day"),
+               period(days = 2))
+  expect_equal(period("S M H d m y"),
+               period(seconds = 1, minutes = 1, hours = 1, days = 1, months = 1, years = 1))
+  expect_equal(period("2S 3M 4H 5d 6w 7m 8y"),
+               period(seconds = 2, minutes = 3, hours = 4, days = 5, weeks = 6, months = 7, years = 8))
+})
+
+test_that("character comparison with periods works as expected", {
+  expect_true("day" == period(days = 1))
+  expect_true("2 days, 2 secs" == period(days = 2, seconds = 2))
+  expect_true(period("day 1s") >  period(days = 1))
+  expect_true("day 1s" >  period(days = 1))
+  expect_true("day 1S 2H" == period(days = 1, seconds = 1, hours = 2))
+  expect_false("day 1S 2H" < period(days = 1, hours = 2))
+  expect_true("day 1S 2H 3m 2y" >  period(days = 1, months = 3, years = 2, hours = 2))
+})
 
 test_that("is.period works as expected",{
   expect_that(is.period(234), is_false())
@@ -73,6 +98,15 @@ test_that("format.Period works as expected", {
   expect_match(format(per), "5M 90S")
   expect_match(format(per2), "0S")
   expect_equivalent(format(per3), as.character(NA))
+})
+
+test_that("as.numeric and as.duration correctly handle periods", {
+  tt <- period(24, "hours") + period(60, "minutes")
+  expect_equal(as.numeric(tt, "hour"), 25)
+  tt <- period(hours = 24, minutes = 6)
+  expect_equal(as.numeric(tt, "hour"), 24.1)
+  expect_equal(as.numeric(tt, "hour"),
+               as.numeric(as.duration(tt), "hour"))
 })
 
 test_that("as.period handles interval objects", {

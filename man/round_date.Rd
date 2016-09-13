@@ -6,118 +6,127 @@
 \alias{round_date}
 \title{Round, floor and ceiling methods for date-time objects.}
 \usage{
-round_date(x, unit = c("second", "minute", "hour", "day", "week", "month",
-  "year", "quarter"))
+round_date(x, unit = "second")
 
-floor_date(x, unit = c("second", "minute", "hour", "day", "week", "month",
-  "year", "quarter"))
+floor_date(x, unit = "seconds")
 
-ceiling_date(x, unit = c("second", "minute", "hour", "day", "week", "month",
-  "year", "quarter"),
-  change_on_boundary = getOption("lubridate.ceiling_date.change_on_boundary",
-  FALSE))
+ceiling_date(x, unit = "seconds", change_on_boundary = NULL)
 }
 \arguments{
 \item{x}{a vector of date-time objects}
 
-\item{unit}{a character string specifying the time unit to be rounded to. Should be one of
-"second", "minute", "hour", "day", "week", "month", "quarter", or "year."}
+\item{unit}{a character string specifying the time unit or a multiple of a
+unit to be rounded to. Valid base units are second, minute, hour, day,
+week, month, bimonth, quarter, halfyear, or year. Arbitrary unique English
+abbreviations as in \code{\link{period}} constructor are also
+supported. Rounding to multiple of units (except weeks) is supported from
+\code{v1.6.0}.}
 
-\item{change_on_boundary}{logical. If FALSE (the default) \code{ceiling_date}
-don't alter date-times on the corresponding boundary. The boundary is unit
-dependent. For second, minute, hour and day the boundary is `00` of next
-smaller unit. For week, month etc the boundary is on the first day within
-that unit. For example for the boundary date "2000-01-01"
-\code{ceiling_date(ymd("2000-01-01"), "month")} is \code{"2000-01-01"}
-while `ceiling_date(ymd("2000-01-01"), "month", TRUE)` is "2000-02-01". You
-can change this option globally with
-\code{options(lubridate.ceiling_date.change_on_boundary = TRUE)}.}
-}
-\value{
-x with the appropriate units floored
+\item{change_on_boundary}{If NULL (the default) don't change instants on the
+boundary (\code{ceiling_date(ymd_hms('2000-01-01 00:00:00'))} is
+\code{2000-01-01 00:00:00}), but round up \code{Date} objects to the next
+boundary (\code{ceiling_date(ymd("2000-01-01"), "month")} is
+\code{"2000-02-01"}). When \code{TRUE}, instants on the boundary are
+rounded up to the next boundary. When \code{FALSE}, date-time on the
+boundary are never rounded up (this was the default for \code{lubridate}
+prior to \code{v1.6.0}. See section \code{Rounding Up Date Objects} below
+for more details.}
 }
 \description{
-Users can specify whether to round to the nearest second, minute, hour, day,
-week, month, quarter, or year.
+Rounding to the nearest unit or multiple of a unit are supported. All
+meaningfull specifications in English language are supported - secs, min,
+mins, 2 minutes, 3 years etc.
+\cr
+\code{round_date} takes a date-time object and rounds it to the nearest value
+of the specified time unit. For rounding date-times which is exactly halfway
+between two consecutive units, the convention is to round up. Note that this
+is in line with the behavior of R's base \link[base]{round.POSIXt} function
+but does not follow the convention of the base \link[base]{round} function
+which "rounds to the even digit" per IEC 60559.
+\cr
+\code{floor_date} takes a date-time object and rounds it down to the nearest
+boundary of the specified  time unit.
+\cr
+\code{ceiling_date} takes a date-time object and rounds it up to the nearest
+boundary of the specified time unit.
 }
 \details{
-\code{round_date} takes a date-time object and rounds it to the nearest
-integer value of the specified time unit. For rounding date-ties which is
-exactly halfway between two consecutive units, the convention is to round
-up. Note that this is in line with the behavior of R's base
-\link[base]{round.POSIXt} function but does not follow the convention of the
-base \link[base]{round} function which "goes to the even digit" per IEC
-60559.
+In \code{lubridate} rounding of a date-time objects tries to preserve the
+class of the input object whenever it is meaningful. This is done by first
+rounding to an instant and then converting to the original class by usual R
+conventions.
+}
+\section{Rounding Up Date Objects}{
 
-\code{floor_date} takes a date-time object and rounds it down to the nearest integer
-value of the specified time unit.
 
-\code{ceiling_date} takes a date-time object and rounds it up to the nearest
-integer value of the specified time unit.
+ By default rounding up \code{Date} objects follows 3 steps:
 
-By convention the boundary for a month is the first second of the month. Thus
-\code{floor_date(ymd("2000-03-01"), "month")} gives "2000-03-01 UTC".
+   \enumerate{
+
+     \item Convert to an instant representing lower bound of the Date:
+          \code{2000-01-01} --> \code{2000-01-01 00:00:00}
+
+     \item Round up to the \strong{next} closest rounding unit boundary. For
+          example, if the rounding unit is \code{month} then next boundary
+          for \code{2000-01-01} will be \code{2000-02-01 00:00:00}.
+
+          The motivation for this behavior is that \code{2000-01-01} is
+          conceptually an interval \code{(2000-01-01 00:00:00 -- 2000-01-02
+          00:00:00)} and the day hasn't started clocking yet at the exact
+          boundary \code{00:00:00}. Thus, it seems wrong to round up a day to
+          its lower boundary.
+
+     \item If rounding unit is smaller than a day, return the instant from
+         step 2 above (\code{POSIXct}), otherwise return the \code{Date}
+         immediately following that instant.
+
+    }
+
+ The behavior on the boundary in the second step above can be changed by
+ setting \code{change_on_boundary} to a non-\code{NULL} value.
 }
 \examples{
 x <- as.POSIXct("2009-08-03 12:01:59.23")
 round_date(x, "second")
-# "2009-08-03 12:01:59 CDT"
 round_date(x, "minute")
-# "2009-08-03 12:02:00 CDT"
+round_date(x, "5 mins")
 round_date(x, "hour")
-# "2009-08-03 12:00:00 CDT"
+round_date(x, "2 hours")
 round_date(x, "day")
-# "2009-08-04 CDT"
 round_date(x, "week")
-# "2009-08-02 CDT"
 round_date(x, "month")
-# "2009-08-01 CDT"
-round_date(x, "quarter")
-# "2009-07-01 CDT"
+round_date(x, "bimonth")
+round_date(x, "quarter") == round_date(x, "3 months")
+round_date(x, "halfyear")
 round_date(x, "year")
-# "2010-01-01 CST"
 
 x <- as.POSIXct("2009-08-03 12:01:59.23")
 floor_date(x, "second")
-# "2009-08-03 12:01:59 CDT"
 floor_date(x, "minute")
-# "2009-08-03 12:01:00 CDT"
 floor_date(x, "hour")
-# "2009-08-03 12:00:00 CDT"
 floor_date(x, "day")
-# "2009-08-03 CDT"
 floor_date(x, "week")
-# "2009-08-02 CDT"
 floor_date(x, "month")
-# "2009-08-01 CDT"
+floor_date(x, "bimonth")
 floor_date(x, "quarter")
-# "2009-07-01 CDT"
+floor_date(x, "halfyear")
 floor_date(x, "year")
-# "2009-01-01 CST"
 
 x <- as.POSIXct("2009-08-03 12:01:59.23")
 ceiling_date(x, "second")
-# "2009-08-03 12:02:00 CDT"
 ceiling_date(x, "minute")
-# "2009-08-03 12:02:00 CDT"
+ceiling_date(x, "5 mins")
 ceiling_date(x, "hour")
-# "2009-08-03 13:00:00 CDT"
 ceiling_date(x, "day")
-# "2009-08-04 CDT"
 ceiling_date(x, "week")
-# "2009-08-09 CDT"
 ceiling_date(x, "month")
-# "2009-09-01 CDT"
+ceiling_date(x, "bimonth") == ceiling_date(x, "2 months")
 ceiling_date(x, "quarter")
-# "2009-10-01 CDT"
+ceiling_date(x, "halfyear")
 ceiling_date(x, "year")
-# "2010-01-01 CST"
-
 x <- ymd("2000-01-01")
 ceiling_date(x, "month")
-## [1] "2000-01-01"
 ceiling_date(x, "month", change_on_boundary = TRUE)
-## [1] "2000-02-01"
 }
 \seealso{
 \link[base]{round}

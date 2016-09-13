@@ -3,8 +3,8 @@
 #' An instant is a specific moment in time. Most common date-time
 #' objects (e.g, POSIXct, POSIXlt, and Date objects) are instants.
 #'
-#' @export is.instant is.timepoint
-#' @aliases instant instants is.instant timepoint is.timepoint
+#' @aliases instant instants
+#' @export
 #' @param x an R object
 #' @return TRUE if x is a POSIXct, POSIXlt, or Date object, FALSE otherwise.
 #' @seealso \code{\link{is.timespan}}, \code{\link{is.POSIXt}}, \code{\link{is.Date}}
@@ -12,7 +12,11 @@
 #' @examples
 #' is.instant(as.Date("2009-08-03")) # TRUE
 #' is.timepoint(5) # FALSE
-is.instant <- is.timepoint <- function(x) inherits(x, c("POSIXt", "POSIXct", "POSIXlt", "Date"))
+is.instant <- function(x) inherits(x, c("POSIXt", "POSIXct", "POSIXlt", "Date"))
+
+#' @export
+#' @rdname is.instant
+is.timepoint <- is.instant
 
 #' The current time
 #'
@@ -35,19 +39,6 @@ is.instant <- is.timepoint <- function(x) inherits(x, c("POSIXt", "POSIXct", "PO
 #' now() > now() # FALSE
 now <- function(tzone = "")
   with_tz(Sys.time(), tzone)
-
-#' The current time in your local timezone
-#'
-#' @export here
-#' @return the current date and time as a POSIXct object
-#'
-#' @seealso \code{\link{now}}
-#'
-#' @keywords chron utilities
-#' @examples
-#' here()
-here <- function() now("")
-
 
 #' The current date
 #'
@@ -78,18 +69,18 @@ today <- function(tzone = "") {
 #' @keywords data chron
 #' @examples
 #' origin
-#' # "1970-01-01 GMT"
 origin <- with_tz(structure(0, class = c("POSIXct", "POSIXt")), "UTC")
 
 
-##' Efficient creation of date-times from numeric representations.
+##' Efficient creation of date-times from numeric representations
 ##'
 ##' \code{make_datetime} is a very fast drop-in replacement for
-##' \code{base::ISOdate} and \code{base::ISOdatetime}.
+##' \code{base::ISOdate} and \code{base::ISOdatetime}. \code{make_date} produces
+##' objects of class \code{Date}.
 ##'
 ##' Input vectors are silently recycled. All inputs except \code{sec} are
-##' silently converted to integer vectors. Seconds \code{sec} can be either
-##' integer or double.
+##' silently converted to integer vectors; \code{sec} can be either integer or
+##' double.
 ##'
 ##' @param year numeric year
 ##' @param month numeric month
@@ -102,10 +93,8 @@ origin <- with_tz(structure(0, class = c("POSIXct", "POSIXt")), "UTC")
 ##' @useDynLib lubridate make_dt
 ##' @examples
 ##' make_datetime(year = 1999, month = 12, day = 22, sec = 10)
-##' ## "1999-12-22 00:00:10 UTC"
 ##' make_datetime(year = 1999, month = 12, day = 22, sec = c(10, 11))
-##' ## "1999-12-22 00:00:10 UTC" "1999-12-22 00:00:11 UTC"
-make_datetime <- function(year = 1970, month = 1L, day = 1L, hour = 0, min = 0, sec = 0, tz = "UTC"){
+make_datetime <- function(year = 1970L, month = 1L, day = 1L, hour = 0L, min = 0L, sec = 0, tz = "UTC"){
   lengths <- vapply(list(year, month, day, hour, min, sec), length, 1, USE.NAMES = FALSE)
   if (min(lengths) == 0L){
     .POSIXct(numeric(), tz = tz)
@@ -119,5 +108,22 @@ make_datetime <- function(year = 1970, month = 1L, day = 1L, hour = 0, min = 0, 
                    rep_len(as.integer(min), N),
                    rep_len(sec, N)),
              tz = tz)
+  }
+}
+
+##' @rdname make_datetime
+##' @useDynLib lubridate make_d
+##' @export
+make_date <- function(year = 1970L, month = 1L, day = 1L){
+  lengths <- vapply(list(year, month, day), length, 1, USE.NAMES = FALSE)
+  if (min(lengths) == 0L){
+    as.Date(integer(), origin = origin)
+  } else {
+    N <- max(lengths)
+    secs <- .Call("make_d",
+                  rep_len(as.integer(year), N),
+                  rep_len(as.integer(month), N),
+                  rep_len(as.integer(day), N))
+    structure(secs/86400L, class = "Date")
   }
 }

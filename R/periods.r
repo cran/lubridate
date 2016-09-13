@@ -4,58 +4,58 @@
 NULL
 
 check_period <- function(object){
-	errors <- character()
-	if (!is.numeric(object@.Data)) {
-		msg <- "seconds (.Data) value must be numeric."
-		errors <- c(errors, msg)
-	}
-	if (!is.numeric(object@year)) {
-		msg <- "year value must be numeric."
-		errors <- c(errors, msg)
-	}
-	if (!is.numeric(object@month)) {
-		msg <- "year value must be numeric."
-		errors <- c(errors, msg)
-	}
-	if (!is.numeric(object@day)) {
-		msg <- "year value must be numeric."
-		errors <- c(errors, msg)
-	}
-	if (!is.numeric(object@hour)) {
-		msg <- "year value must be numeric."
-		errors <- c(errors, msg)
-	}
-	if (!is.numeric(object@minute)) {
-		msg <- "year value must be numeric."
-		errors <- c(errors, msg)
-	}
+  errors <- character()
+  if (!is.numeric(object@.Data)) {
+    msg <- "seconds (.Data) value must be numeric."
+    errors <- c(errors, msg)
+  }
+  if (!is.numeric(object@year)) {
+    msg <- "year value must be numeric."
+    errors <- c(errors, msg)
+  }
+  if (!is.numeric(object@month)) {
+    msg <- "year value must be numeric."
+    errors <- c(errors, msg)
+  }
+  if (!is.numeric(object@day)) {
+    msg <- "year value must be numeric."
+    errors <- c(errors, msg)
+  }
+  if (!is.numeric(object@hour)) {
+    msg <- "year value must be numeric."
+    errors <- c(errors, msg)
+  }
+  if (!is.numeric(object@minute)) {
+    msg <- "year value must be numeric."
+    errors <- c(errors, msg)
+  }
 
-	length(object@.Data) -> n
-	lengths <- c(length(object@year), length(object@month),
-		length(object@day), length(object@hour), length(object@minute))
+  length(object@.Data) -> n
+  lengths <- c(length(object@year), length(object@month),
+    length(object@day), length(object@hour), length(object@minute))
 
-	if (any(lengths != n)) {
-		msg <- paste("Inconsistent lengths: year = ", lengths[1],
-			", month = ", lengths[2],
-			", day = ", lengths[3],
-			", hour = ", lengths[4],
-			", minute = ", lengths[5],
-			", second = ", n,
-			sep = "")
-		errors <- c(errors, msg)
-	}
+  if (any(lengths != n)) {
+    msg <- paste("Inconsistent lengths: year = ", lengths[1],
+      ", month = ", lengths[2],
+      ", day = ", lengths[3],
+      ", hour = ", lengths[4],
+      ", minute = ", lengths[5],
+      ", second = ", n,
+      sep = "")
+    errors <- c(errors, msg)
+  }
 
   values <- c(object@year, object@month, object@day, object@hour, object@minute)
-	values <- na.omit(values)
-	if (sum(values - trunc(values))) {
-		msg <- "periods must have integer values"
-		errors <- c(errors, msg)
-	}
+  values <- na.omit(values)
+  if (sum(values - trunc(values))) {
+    msg <- "periods must have integer values"
+    errors <- c(errors, msg)
+  }
 
-	if (length(errors) == 0)
-		TRUE
-	else
-		errors
+  if (length(errors) == 0)
+    TRUE
+  else
+    errors
 }
 
 #' Period class
@@ -106,49 +106,57 @@ check_period <- function(object){
 #' @name Period-class
 #' @rdname Period-class
 #' @exportClass Period
-#' @aliases second,Period-method second<-,Period-method minute,Period-method
-#' minute<-,Period-method hour,Period-method hour<-,Period-method
-#' day,Period-method day<-,Period-method month,Period-method
-#' month<-,Period-method year,Period-method year<-,Period-method
-#' date,Period-method date<-,Period-method
-#' as.numeric,Period-method show,Period-method c,Period-method rep,Period-method
-#' [,Period-method [<-,Period,ANY,ANY,Period-method [[,Period-method
-#' [[<-,Period,ANY,ANY,Period-method $,Period-method $<-,Period-method
-#' as.difftime,Period-method as.character,Period-method +,Period,Duration-method
-#' +,Period,Interval-method +,Period,Period-method +,Period,Date-method
-#' +,Date,Period-method +,Period,difftime-method +,difftime,Period-method
-#' +,Period,numeric-method +,numeric,Period-method +,Period,POSIXct-method
-#' +,POSIXct,Period-method +,Period,POSIXlt-method +,POSIXlt,Period-method
-#' /,Period,Duration-method /,Period,Interval-method /,Period,Period-method
-#' /,Period,difftime-method /,difftime,Period-method /,Period,numeric-method
-#' /,numeric,Period-method *,Period,ANY-method *,ANY,Period-method
-#' -,Period,missing-method -,ANY,Period-method %%,Period,Duration-method
-#' %%,Period,Interval-method %%,Period,Period-method >,Period,Period-method
-#' >=,Period,Period-method ==,Period,Period-method !=,Period,Period-method
-#' <=,Period,Period-method <,Period,Period-method >,Period,Duration-method
-#' >=,Period,Duration-method ==,Period,Duration-method !=,Period,Duration-method
-#' <=,Period,Duration-method <,Period,Duration-method >,Duration,Period-method
-#' >=,Duration,Period-method ==,Duration,Period-method !=,Duration,Period-method
-#' <=,Duration,Period-method <,Duration,Period-method >,Period,numeric-method
-#' >=,Period,numeric-method ==,Period,numeric-method !=,Period,numeric-method
-#' <=,Period,numeric-method <,Period,numeric-method >,numeric,Period-method
-#' >=,numeric,Period-method ==,numeric,Period-method !=,numeric,Period-method
-#' <=,numeric,Period-method <,numeric,Period-method !=,Duration,Period
-#' !=,Period,Duration !=,Period,Period !=,Period,numeric !=,numeric,Period
-#' %%,Period,Duration %%,Period,Interval %%,Period,Period *,ANY,Period
-#' *,Period,ANY -,ANY,Period -,Period,Interval -,Period,missing /,numeric,Period
-#' <,Duration,Period <,Period,Duration <,Period,Period <,Period,numeric
-#' <,numeric,Period <=,Duration,Period <=,Period,Duration <=,Period,Period
-#' <=,Period,numeric <=,numeric,Period ==,Duration,Period ==,Period,Duration
-#' ==,Period,Period ==,Period,numeric ==,numeric,Period >,Duration,Period
-#' >,Period,Duration >,Period,Period >,Period,numeric >,numeric,Period
-#' >=,Duration,Period >=,Period,Duration >=,Period,Period >=,Period,numeric
-#' >=,numeric,Period
 setClass("Period", contains = c("Timespan", "numeric"),
-	slots = c(year = "numeric", month = "numeric", day = "numeric",
-		hour = "numeric", minute = "numeric"),
-	prototype = prototype(year = 0, month = 0, day = 0, hour = 0, minute = 0),
-	validity = check_period)
+  slots = c(year = "numeric", month = "numeric", day = "numeric",
+    hour = "numeric", minute = "numeric"),
+  prototype = prototype(year = 0, month = 0, day = 0, hour = 0, minute = 0),
+  validity = check_period)
+
+#' @name hidden_aliases
+#' @aliases Arith,ANY,Period-method Arith,Duration,Period-method
+#'   Arith,Period,Duration-method Compare,Period,Duration-method
+#'   Compare,Period,Period-method Compare,Period,character-method
+#'   Compare,Period,numeric-method Compare,character,Period-method
+#'   second,Period-method second<-,Period-method minute,Period-method
+#'   minute<-,Period-method hour,Period-method hour<-,Period-method
+#'   Arith,Period,ANY-method day,Period-method day<-,Period-method
+#'   month,Period-method month<-,Period-method year,Period-method
+#'   year<-,Period-method date,Period-method date<-,Period-method
+#'   as.numeric,Period-method show,Period-method c,Period-method
+#'   rep,Period-method [,Period-method [<-,Period,ANY,ANY,Period-method
+#'   [[,Period-method [[<-,Period,ANY,ANY,Period-method $,Period-method
+#'   $<-,Period-method as.difftime,Period-method as.character,Period-method
+#'   +,Period,Duration-method +,Period,Interval-method +,Period,Period-method
+#'   +,Period,Date-method +,Date,Period-method +,Period,difftime-method
+#'   +,difftime,Period-method +,Period,numeric-method +,numeric,Period-method
+#'   +,Period,POSIXct-method +,POSIXct,Period-method +,Period,POSIXlt-method
+#'   +,POSIXlt,Period-method /,Period,Duration-method /,Period,Interval-method
+#'   /,Period,Period-method /,Period,difftime-method /,difftime,Period-method
+#'   /,Period,numeric-method /,numeric,Period-method *,Period,ANY-method
+#'   *,ANY,Period-method -,Period,ANY-method -,Period,missing-method
+#'   -,ANY,Period-method %%,Period,Duration-method %%,Period,Interval-method
+#'   %%,Period,Period-method >,Period,Period-method >=,Period,Period-method
+#'   ==,Period,Period-method !=,Period,Period-method <=,Period,Period-method
+#'   <,Period,Period-method >,Period,Duration-method >=,Period,Duration-method
+#'   ==,Period,Duration-method !=,Period,Duration-method
+#'   <=,Period,Duration-method <,Period,Duration-method >,Duration,Period-method
+#'   >=,Duration,Period-method ==,Duration,Period-method
+#'   !=,Duration,Period-method <=,Duration,Period-method
+#'   <,Duration,Period-method >,Period,numeric-method >=,Period,numeric-method
+#'   ==,Period,numeric-method !=,Period,numeric-method <=,Period,numeric-method
+#'   <,Period,numeric-method >,numeric,Period-method >=,numeric,Period-method
+#'   ==,numeric,Period-method !=,numeric,Period-method <=,numeric,Period-method
+#'   <,numeric,Period-method !=,Duration,Period !=,Period,Duration
+#'   !=,Period,Period !=,Period,numeric !=,numeric,Period %%,Period,Duration
+#'   %%,Period,Interval %%,Period,Period *,ANY,Period *,Period,ANY -,ANY,Period
+#'   -,Period,Interval -,Period,missing /,numeric,Period <,Duration,Period
+#'   <,Period,Duration <,Period,Period <,Period,numeric <,numeric,Period
+#'   <=,Duration,Period <=,Period,Duration <=,Period,Period <=,Period,numeric
+#'   <=,numeric,Period ==,Duration,Period ==,Period,Duration ==,Period,Period
+#'   ==,Period,numeric ==,numeric,Period >,Duration,Period >,Period,Duration
+#'   >,Period,Period >,Period,numeric >,numeric,Period >=,Duration,Period
+#'   >=,Period,Duration >=,Period,Period >=,Period,numeric >=,numeric,Period
+NULL
 
 setMethod("initialize", "Period", function(.Object, ...){
   dots <- list(...)
@@ -180,7 +188,7 @@ format.Period <- function(x, ...){
 
   show <- paste(x@year, "y ", x@month, "m ", x@day, "d ",
     x@hour, "H ", x@minute, "M ", x@.Data, "S", sep="")
-  start <- regexpr("[-1-9]", show)
+  start <- regexpr("[-1-9]|(0\\.)", show)
   show <- ifelse(start > 0, substr(show, start, nchar(show)), "0S")
 
   show[na] <- NA
@@ -195,28 +203,28 @@ xtfrm.Period <- function(x){
 #' @export
 setMethod("c", signature(x = "Period"), function(x, ...){
   elements <- lapply(list(...), as.period)
-	seconds <- c(x@.Data, unlist(lapply(elements, slot, ".Data")))
-	years <- c(x@year, unlist(lapply(elements, slot, "year")))
-	months <- c(x@month, unlist(lapply(elements, slot, "month")))
-	days <- c(x@day, unlist(lapply(elements, slot, "day")))
-	hours <- c(x@hour, unlist(lapply(elements, slot, "hour")))
-	minutes <- c(x@minute, unlist(lapply(elements, slot, "minute")))
-	new("Period", seconds, year = years, month = months, day = days,
-		hour = hours, minute = minutes)
+  seconds <- c(x@.Data, unlist(lapply(elements, slot, ".Data")))
+  years <- c(x@year, unlist(lapply(elements, slot, "year")))
+  months <- c(x@month, unlist(lapply(elements, slot, "month")))
+  days <- c(x@day, unlist(lapply(elements, slot, "day")))
+  hours <- c(x@hour, unlist(lapply(elements, slot, "hour")))
+  minutes <- c(x@minute, unlist(lapply(elements, slot, "minute")))
+  new("Period", seconds, year = years, month = months, day = days,
+    hour = hours, minute = minutes)
 })
 
 #' @export
 setMethod("rep", signature(x = "Period"), function(x, ...){
-	new("Period", rep(x@.Data, ...), year = rep(x@year, ...),
-		month = rep(x@month, ...), day = rep(x@day, ...),
-		hour = rep(x@hour, ...), minute = rep(x@minute, ...))
+  new("Period", rep(x@.Data, ...), year = rep(x@year, ...),
+    month = rep(x@month, ...), day = rep(x@day, ...),
+    hour = rep(x@hour, ...), minute = rep(x@minute, ...))
 })
 
 #' @export
 setMethod("[", signature(x = "Period"),
   function(x, i, j, ..., drop = TRUE) {
     new("Period", x@.Data[i], year = x@year[i], month = x@month[i],
-    	day = x@day[i], hour = x@hour[i], minute = x@minute[i])
+      day = x@day[i], hour = x@hour[i], minute = x@minute[i])
 })
 
 #' @export
@@ -229,12 +237,12 @@ setMethod("[[", signature(x = "Period"),
 #' @export
 setMethod("[<-", signature(x = "Period", value = "Period"),
   function(x, i, j, ..., value) {
-  	x@.Data[i] <- value@.Data
-  	x@year[i] <- value@year
-  	x@month[i] <- value@month
-  	x@day[i] <- value@day
-  	x@hour[i] <- value@hour
-  	x@minute[i] <- value@minute
+    x@.Data[i] <- value@.Data
+    x@year[i] <- value@year
+    x@month[i] <- value@month
+    x@day[i] <- value@day
+    x@hour[i] <- value@hour
+    x@minute[i] <- value@minute
     x
 })
 
@@ -252,13 +260,13 @@ setMethod("[[<-", signature(x = "Period", value = "Period"),
 
 #' @export
 setMethod("$", signature(x = "Period"), function(x, name) {
-	if (name == "second") name <- ".Data"
+  if (name == "second") name <- ".Data"
     slot(x, name)
 })
 
 #' @export
 setMethod("$<-", signature(x = "Period"), function(x, name, value) {
-	if (name == "second") name <- ".Data"
+  if (name == "second") name <- ".Data"
     slot(x, name) <- rep_len(value, length(x))
     x
 })
@@ -294,11 +302,14 @@ setMethod("$<-", signature(x = "Period"), function(x, name, value) {
 #' \code{\link{Period-class}} for more details and \code{\link{\%m+\%}} and
 #' \code{\link{add_with_rollback}} for alternative operations.
 #'
-#' @export
 #' @param num a numeric vector that lists the number of time units to be
-#'   included in the period
+#'   included in the period. From v1.6.0 \code{num} can also be a character
+#'   vector that specifies durations in a convenient shorthand format. All
+#'   unambiguous name units and abbreviations are supported. One letter "m"
+#'   stands for months, "M" stands for minutes. See examples.
 #' @param units a character vector that lists the type of units to be used. The
-#'   units in units are matched to the values in num according to their order.
+#'   units in units are matched to the values in num according to their
+#'   order. When \code{num} is character, this argument is ignored.
 #' @param ... a list of time units to be included in the period and their
 #'   amounts. Seconds, minutes,  hours, days, weeks, months, and years are
 #'   supported. Normally only one of \code{num} or \code{...} are present. If
@@ -311,28 +322,29 @@ setMethod("$<-", signature(x = "Period"), function(x, name, value) {
 #' period(c(90, 5), c("second", "minute"))
 #' #  "5M 90S"
 #' period(-1, "days")
-#' # "-1d 0H 0M 0S"
 #' period(c(3, 1, 2, 13, 1), c("second", "minute", "hour", "day", "week"))
-#' # "20d 2H 1M 3S"
 #' period(c(1, -60), c("hour", "minute"))
-#' # "1H -60M 0S"
 #' period(0, "second")
-#' # "0S"
 #' period (second = 90, minute = 5)
-#' # "5M 90S"
 #' period(day = -1)
-#' # "-1d 0H 0M 0S"
 #' period(second = 3, minute = 1, hour = 2, day = 13, week = 1)
-#' # "20d 2H 1M 3S"
 #' period(hour = 1, minute = -60)
-#' # "1H -60M 0S"
 #' period(second = 0)
-#' # "0S"
 #' period(c(1, -60), c("hour", "minute"), hour = c(1, 2), minute = c(3, 4))
-#' # "1H -60M 0S" "1H 3M 0S"   "2H 4M 0S"
+#' period("2M 1sec")
+#' period("2hours 2minutes 1second")
+#' period("2d 2H 2M 2S")
+#' period("2days 2hours 2mins 2secs")
+#' # Missing numerals default to 1. Repeated units are added up.
+#' duration("day day")
+#' # Comparison with characters is supported from v1.6.0.
+#' duration("day 2 sec") > "day 1sec"
+#' @export
 period <- function(num = NULL, units = "second", ...) {
   nums <- list(...)
-  if(!is.null(num) && length(nums) > 0){
+  if(is.character(num)){
+    parse_period(num)
+  } else if(!is.null(num) && length(nums) > 0){
     c(.period_from_num(num, units), .period_from_units(nums))
   } else if(!is.null(num)){
     .period_from_num(num, units)
@@ -343,22 +355,40 @@ period <- function(num = NULL, units = "second", ...) {
   }
 }
 
+##' @useDynLib lubridate c_parse_period
+parse_period <- function(x){
+  out <- matrix(.Call("c_parse_period", x), nrow = 7L)
+  new("Period", out[1, ],
+      minute = out[2, ],
+      hour   = out[3, ],
+      day    = out[4, ] + 7L*out[5, ],
+      month  = out[6, ],
+      year   = out[7, ])
+}
+
 .period_from_num <- function(num, units){
 
+  if(!is.numeric(num)){
+    stop(sprintf("First argument to `period` constructor must be character or numeric. Supplied object of class '%s'", class(num)))
+  }
+
+  if(is.interval(num))
+    stop("Interval objects cannot be used as input to 'period' constructor. Plese use 'as.period'.")
+
   if (length(units) %% length(num) != 0)
-		stop("arguments must have same length")
+    stop("Arguments `num` and `units` must have same length")
 
-	num <- num + rep(0, length(units))
-	unit <- standardise_date_names(units)
-	pieces <- setNames(as.list(num), unit)
+  num <- num + rep(0, length(units))
+  unit <- standardise_date_names(units)
+  pieces <- setNames(as.list(num), unit)
 
-	defaults <- list(second = 0, minute = 0, hour = 0, day = 0, week = 0,
+  defaults <- list(second = 0, minute = 0, hour = 0, day = 0, week = 0,
                    month = 0, year = 0)
   pieces <- c(pieces, defaults[setdiff(names(defaults), names(pieces))])
   pieces$day <- pieces$day + 7 * pieces$week
 
-	new("Period", pieces$second, year = pieces$year, month = pieces$month,
-  		day = pieces$day, hour = pieces$hour, minute = pieces$minute)
+  new("Period", pieces$second, year = pieces$year, month = pieces$month,
+      day = pieces$day, hour = pieces$hour, minute = pieces$minute)
 }
 
 .period_from_units <- function(units) {
@@ -409,7 +439,7 @@ is.period <- function(x) is(x,"Period")
 #' Note: Arithmetic with periods can results in undefined behavior when
 #' non-existent dates are involved (such as February 29th in non-leap
 #' years). Please see \code{\link{Period-class}} for more details and
-#' \code{\link{%m+%}} and \code{\link{add_with_rollback}} for alternative
+#' \code{\link{\%m+\%}} and \code{\link{add_with_rollback}} for alternative
 #' operations.
 #'
 #' @name quick_periods
@@ -423,41 +453,26 @@ is.period <- function(x) is(x,"Period")
 #' @examples
 #'
 #' x <- as.POSIXct("2009-08-03")
-#' # "2009-08-03 CDT"
 #' x + days(1) + hours(6) + minutes(30)
-#' # "2009-08-04 06:30:00 CDT"
 #' x + days(100) - hours(8)
-#' # "2009-11-10 15:00:00 CST"
 #'
 #' class(as.Date("2009-08-09") + days(1)) # retains Date class
-#' # "Date"
 #' as.Date("2009-08-09") + hours(12)
-#' # "2009-08-09 12:00:00 UTC"
 #' class(as.Date("2009-08-09") + hours(12))
-#' # "POSIXt"  "POSIXct"
 #' # converts to POSIXt class to accomodate time units
 #'
 #' years(1) - months(7)
-#' # "1y -7m 0d 0H 0M 0S"
 #' c(1:3) * hours(1)
-#' # "1H 0M 0S" "2H 0M 0S" "3H 0M 0S"
 #' hours(1:3)
-#' # "1H 0M 0S" "2H 0M 0S" "3H 0M 0S"
 #'
 #' #sequencing
 #' y <- ymd(090101) # "2009-01-01 CST"
 #' y + months(0:11)
-#' # [1] "2009-01-01 CST" "2009-02-01 CST" "2009-03-01 CST" "2009-04-01 CDT"
-#' # [5] "2009-05-01 CDT" "2009-06-01 CDT" "2009-07-01 CDT" "2009-08-01 CDT"
-#' # [9] "2009-09-01 CDT" "2009-10-01 CDT" "2009-11-01 CDT" "2009-12-01 CST"
 #'
 #' # compare DST handling to durations
 #' boundary <- as.POSIXct("2009-03-08 01:59:59")
-#' # "2009-03-08 01:59:59 CST"
 #' boundary + days(1) # period
-#' # "2009-03-09 01:59:59 CDT" (clock time advances by a day)
 #' boundary + ddays(1) # duration
-#' # "2009-03-09 02:59:59 CDT" (clock time corresponding to 86400
 #' # seconds later)
 #' @export seconds minutes hours days weeks years milliseconds microseconds microseconds nanoseconds picoseconds
 seconds <- function(x = 1) period(second = x)
@@ -498,7 +513,7 @@ months.numeric <- function(x, abbreviate) {
 #' @return A number (period) that roughly equates to the period (seconds) given.
 #' @export
 period_to_seconds <- function(x) {
-	x@.Data +
+  x@.Data +
     60 * x@minute +
     60 * 60 * x@hour +
     60 * 60 * 24 * x@day +
@@ -530,178 +545,6 @@ seconds_to_period <- function(x) {
 }
 
 #' @export
-setMethod(">", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) > period_to_seconds(e2)
-})
-
-#' @export
-setMethod(">=", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) >= period_to_seconds(e2)
-})
-
-#' @export
-setMethod("==", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) == period_to_seconds(e2)
-})
-
-#' @export
-setMethod("!=", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) != period_to_seconds(e2)
-})
-
-#' @export
-setMethod("<=", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) <= period_to_seconds(e2)
-})
-
-#' @export
-setMethod("<", signature(e1 = "Period", e2 = "Period"),
-	function(e1, e2) {
-	 period_to_seconds(e1) < period_to_seconds(e2)
-})
-
-#' @export
-setMethod(">", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod(">=", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")})
-
-#' @export
-setMethod("==", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")})
-
-#' @export
-setMethod("!=", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod("<=", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod("<", signature(e1 = "Period", e2 = "Duration"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")})
-
-#' @export
-setMethod(">", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod(">=", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")})
-
-#' @export
-setMethod("==", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod("!=", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod("<=", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod("<", signature(e1 = "Duration", e2 = "Period"),
-	function(e1, e2) {
-	 stop("cannot compare Period to Duration:\ncoerce with as.duration")
-})
-
-#' @export
-setMethod(">", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod(">=", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")})
-
-#' @export
-setMethod("==", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")})
-
-#' @export
-setMethod("!=", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod("<=", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod("<", signature(e1 = "Period", e2 = "numeric"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")})
-
-#' @export
-setMethod(">", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod(">=", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")})
-
-#' @export
-setMethod("==", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod("!=", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod("<=", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
-setMethod("<", signature(e1 = "numeric", e2 = "Period"),
-          function(e1, e2) {
-            stop("cannot compare Period to numeric:\ncoerce with as.numeric")
-          })
-
-#' @export
 summary.Period <- function(object, ...) {
   nas <- is.na(object)
   object <- object[!nas]
@@ -716,3 +559,52 @@ summary.Period <- function(object, ...) {
     c(qq, `NA's` = sum(nas))
   else qq
 }
+
+#' @export
+setMethod("Arith", signature(e1 = "Period", e2 = "ANY"), undefined_arithmetic)
+
+#' @export
+setMethod("Arith", signature(e1 = "ANY", e2 = "Period"), undefined_arithmetic)
+
+## duration is.numeric. So we need these explicits here:
+#' @export
+setMethod("Arith", signature(e1 = "Duration", e2 = "Period"), undefined_arithmetic)
+
+#' @export
+setMethod("Arith", signature(e1 = "Period", e2 = "Duration"), undefined_arithmetic)
+
+#' @export
+setMethod("Compare", signature(e1 = "character", e2 = "Period"),
+          function(e1, e2) {
+            callGeneric(as.period(e1), e2)
+          })
+
+#' @export
+setMethod("Compare", signature(e1 = "Period", e2 = "character"),
+          function(e1, e2) {
+            callGeneric(e1, as.period(e2))
+          })
+
+#' @export
+setMethod("Compare", signature(e1 = "Period", e2 = "Period"),
+          function(e1, e2) {
+            callGeneric(period_to_seconds(e1), period_to_seconds(e2))
+          })
+
+#' @export
+setMethod("Compare", signature(e1 = "Period", e2 = "Duration"),
+          function(e1, e2) {
+            stop("cannot compare Period to Duration:\ncoerce with 'as.duration' first.")
+          })
+
+#' @export
+setMethod("Compare", signature(e1 = "Duration", e2 = "Period"),
+          function(e1, e2) {
+            callGeneric(as.duration(e1), e2)
+          })
+
+#' @export
+setMethod("Compare", signature(e1 = "Period", e2 = "numeric"),
+          function(e1, e2) {
+            stop("cannot compare Period to Duration:\ncoerce with 'as.numeric' first.")
+          })

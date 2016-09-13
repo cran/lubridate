@@ -12,10 +12,12 @@
 \alias{eseconds}
 \alias{eweeks}
 \alias{eyears}
+\alias{here}
 \alias{new_difftime}
 \alias{new_duration}
 \alias{new_interval}
 \alias{new_period}
+\alias{olson_time_zones}
 \title{Deprecated function in \code{lubridate} package}
 \usage{
 new_period(...)
@@ -45,12 +47,19 @@ emicroseconds(x = 1)
 enanoseconds(x = 1)
 
 epicoseconds(x = 1)
+
+here()
+
+olson_time_zones(order_by = c("name", "longitude"))
 }
 \arguments{
 \item{...}{arguments to be passed to the functions
 (obscured to enforce the usage of new functions)}
 
 \item{x}{numeric value to be converted into duration}
+
+\item{order_by}{Return names alphabetically (the default) or from West to
+East.}
 }
 \description{
 Deprecated function in \code{lubridate} package

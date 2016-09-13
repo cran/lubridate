@@ -19,16 +19,15 @@ system.}
 a POSIXct object in the updated time zone
 }
 \description{
-with_tz returns a date-time as it would appear in a different time zone.  
-The actual moment of time measured does not change, just the time zone it is 
-measured in. with_tz defaults to the Universal Coordinated time zone (UTC) 
-when an unrecognized time zone is inputted. See \code{\link{Sys.timezone}} 
+with_tz returns a date-time as it would appear in a different time zone.
+The actual moment of time measured does not change, just the time zone it is
+measured in. with_tz defaults to the Universal Coordinated time zone (UTC)
+when an unrecognized time zone is inputted. See \code{\link{Sys.timezone}}
 for more information on how R recognizes time zones.
 }
 \examples{
 x <- as.POSIXct("2009-08-07 00:00:01", tz = "America/New_York")
 with_tz(x, "GMT")
-# "2009-08-07 04:00:01 GMT"
 }
 \seealso{
 \code{\link{force_tz}}

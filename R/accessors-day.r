@@ -21,15 +21,11 @@ NULL
 #' wday(x) #4
 #'
 #' wday(ymd(080101))
-#' # 3
 #' wday(ymd(080101), label = TRUE, abbr = FALSE)
-#' # "Tuesday"
 #' # Levels: Sunday < Monday < Tuesday < Wednesday < Thursday < Friday < Saturday
 #' wday(ymd(080101), label = TRUE, abbr = TRUE)
-#' # "Tues"
 #' # Levels: Sunday < Monday < Tuesday < Wednesday < Thursday < Friday < Saturday
 #' wday(ymd(080101) + days(-2:4), label = TRUE, abbr = TRUE)
-#' # "Sun"   "Mon"   "Tues"  "Wed"   "Thurs" "Fri"   "Sat"
 #' # Levels: Sunday < Monday < Tuesday < Wednesday < Thursday < Friday < Saturday
 #'
 #' x <- as.Date("2009-09-02")
@@ -129,7 +125,7 @@ setMethod("day<-", signature("Period"), function(x, value){
 #' @export
 "wday<-" <- function(x, value){
   if (!is.numeric(value)) {
-  	value <- pmatch(tolower(value), c("sunday", "monday", "tuesday",
+    value <- pmatch(tolower(value), c("sunday", "monday", "tuesday",
                                       "wednesday", "thursday", "friday", "saturday"))
   }
   x <- x + days(value - wday(x))
