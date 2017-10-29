@@ -1,7 +1,7 @@
 #' @include periods.r
 NULL
 
-#' Get/set minutes component of a date-time.
+#' Get/set minutes component of a date-time
 #'
 #' Date-time must be a  POSIXct, POSIXlt, Date, Period, chron, yearmon, yearqtr, zoo,
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
@@ -36,7 +36,7 @@ minute.Period <- function(x)
 setGeneric("minute<-")
 
 #' @export
-setMethod("minute<-", signature("Period"), function(x, value){
+setMethod("minute<-", signature("Period"), function(x, value) {
   slot(x, "minute") <- value
   x
 })

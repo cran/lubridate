@@ -8,7 +8,7 @@ setOldClass("difftime")
 
 #' Create a difftime object.
 #'
-#' \code{make_difftime} creates a difftime object with the specified number of
+#' `make_difftime()` creates a difftime object with the specified number of
 #' units. Entries for different units are cumulative. difftime displays
 #' durations in various units,  but these units are estimates given for
 #' convenience. The underlying object is always recorded as a fixed number of
@@ -19,18 +19,18 @@ setOldClass("difftime")
 #' made in larger units of time such as hours, months and years.
 #' This is because the length of larger time units can be affected
 #' by conventions such as leap years
-#' and Daylight Savings Time. lubridate provides a second class for measuring durations, the Duration class.
+#' and Daylight Savings Time. \pkg{lubridate} provides a second class for measuring durations, the Duration class.
 #' @param num Optional number of seconds
 #' @param units a character vector that lists the type of units to use for the
-#'   display of the return value (see examples). If \code{units} is "auto" (the
+#'   display of the return value (see examples). If `units` is "auto" (the
 #'   default) the display units are computed automatically. This might create
-#'   undesirable effects when converting \code{difftime} objects to numeric
+#'   undesirable effects when converting `difftime` objects to numeric
 #'   values in data processing.
 #' @param ... a list of time units to be included in the difftime and their amounts. Seconds,
-#'   minutes, hours, days, and weeks are supported. Normally only one of \code{num} or \code{...} are present. If
-#'   both are present, the \code{difftime} objects are concatenated.
+#'   minutes, hours, days, and weeks are supported. Normally only one of `num` or `...` are present. If
+#'   both are present, the `difftime` objects are concatenated.
 #' @return a difftime object
-#' @seealso \code{\link{duration}}, \code{\link{as.duration}}
+#' @seealso [duration()], [as.duration()]
 #' @keywords chron classes
 #' @export
 #' @examples
@@ -53,11 +53,11 @@ setOldClass("difftime")
 #' # Time differences in mins
 make_difftime <- function(num = NULL, units = "auto", ...) {
   pieces <- list(...)
-  if(!is.null(num) && length(pieces) > 0){
+  if (!is.null(num) && length(pieces) > 0) {
     .difftime_from_num(c(num, .difftime_from_pieces(pieces)), units)
-  } else if(!is.null(num)){
+  } else if (!is.null(num)) {
     .difftime_from_num(num, units)
-  } else if(length(pieces)){
+  } else if (length(pieces)) {
     .difftime_from_num(.difftime_from_pieces(pieces), units)
   } else {
     stop("No valid values have been passed to 'make_difftime' constructor")
@@ -66,7 +66,7 @@ make_difftime <- function(num = NULL, units = "auto", ...) {
 
 .difftime_from_num <- function(num, units = "auto") {
   seconds <- abs(na.omit(num))
-  if(units == "auto"){
+  if (units == "auto") {
     if (any(seconds < 60))
       units <- "secs"
     else if (any(seconds < 3600))
@@ -85,7 +85,7 @@ make_difftime <- function(num = NULL, units = "auto", ...) {
          stop(sprintf("invalid units '%s'. Only 'second', 'minute', 'hour' and 'day' are supported.", units)))
 }
 
-.difftime_from_pieces <- function(pieces){
+.difftime_from_pieces <- function(pieces) {
   names(pieces) <- standardise_difftime_names(names(pieces))
 
   defaults <- list(secs = 0, mins = 0, hours = 0, days = 0, weeks = 0)
@@ -105,8 +105,8 @@ make_difftime <- function(num = NULL, units = "auto", ...) {
 #' @export is.difftime
 #' @param x an R object
 #' @return TRUE if x is a difftime object, FALSE otherwise.
-#' @seealso \code{\link{is.instant}}, \code{\link{is.timespan}}, \code{\link{is.interval}},
-#'   \code{\link{is.period}}.
+#' @seealso [is.instant()], [is.timespan()], [is.interval()],
+#'   [is.period()].
 #' @keywords logic chron
 #' @examples
 #' is.difftime(as.Date("2009-08-03")) # FALSE

@@ -1,7 +1,7 @@
 #' @include periods.r
 NULL
 
-#' Get/set months component of a date-time.
+#' Get/set months component of a date-time
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, Period, chron, yearmon, yearqtr, zoo,
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
@@ -13,6 +13,7 @@ NULL
 #'   label, such as "January". TRUE will display an abbreviated version of the
 #'  label, such as "Jan". abbr is disregarded if label = FALSE.
 #' @param value a numeric object
+#' @param locale for month, locale to use for month names. Default to current locale.
 #' @return the months element of x as a number (1-12) or character string. 1 =
 #'   January.
 #' @keywords utilities manip chron methods
@@ -28,52 +29,49 @@ NULL
 #' month(ymd(080101), label = TRUE, abbr = FALSE)
 #' month(ymd(080101) + months(0:11), label = TRUE)
 #' @export
-month <- function(x, label = FALSE, abbr = TRUE)
+month <- function(x, label = FALSE, abbr = TRUE, locale = Sys.getlocale("LC_TIME"))
   UseMethod("month")
 
 #' @export
-month.default <- function(x, label = FALSE, abbr = TRUE)
-  month(as.POSIXlt(x, tz = tz(x))$mon + 1, label, abbr)
+month.default <- function(x, label = FALSE, abbr = TRUE, locale = Sys.getlocale("LC_TIME"))
+  month(as.POSIXlt(x, tz = tz(x))$mon + 1, label, abbr, locale = locale)
 
 #' @export
-month.numeric <- function(x, label = FALSE, abbr = TRUE) {
+month.numeric <- function(x, label = FALSE, abbr = TRUE, locale = Sys.getlocale("LC_TIME")) {
   if (!label) return(x)
 
-  if (abbr) {
-    labels <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-                "Oct", "Nov", "Dec")
-  } else {
-    labels <- c("January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November",
-                "December")
-  }
+  names <- .get_locale_regs(locale)$month_names
+  labels <- if (abbr) names$abr else names$full
 
   ordered(x, levels = 1:12, labels = labels)
 }
 
 #' @export
-month.Period <- function(x, label = FALSE, abbr = TRUE)
+month.Period <- function(x, label = FALSE, abbr = TRUE, locale = Sys.getlocale("LC_TIME"))
   slot(x, "month")
 
 #' @rdname month
 #' @export
 "month<-" <- function(x, value) {
+  ## FIXME: how to make this localized and preserve backward compatibility? Guesser?
   if (!is.numeric(value)) {
-      value <- pmatch(tolower(value), c("january", "february", "march",
-      "june", "july", "august", "september", "october", "november", "december"))
-    }
-    x <- x + months(value - month(x))
+    value <- pmatch(tolower(value),
+                    c("january", "february", "march",
+                      "june", "july", "august", "september",
+                      "october", "november", "december"))
+  }
+  x <- x + months(value - month(x))
  }
 
 setGeneric("month<-")
 
 #' @export
-setMethod("month<-", signature("Period"), function(x, value){
+setMethod("month<-", signature("Period"), function(x, value) {
   slot(x, "month") <- value
   x
 })
 
-#' Get the number of days in the month of a date-time.
+#' Get the number of days in the month of a date-time
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr,
 #' zoo, zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
@@ -82,21 +80,21 @@ setMethod("month<-", signature("Period"), function(x, value){
 #' @param x a date-time object
 #' @return An integer of the number of days in the month component of the date-time object.
 days_in_month <- function(x) {
-  month_x <- month(x, label = TRUE)
+  month_x <- month(x, label = TRUE, locale = "C")
   n_days <- N_DAYS_IN_MONTHS[month_x]
   n_days[month_x == "Feb" & leap_year(x)] <- 29L
   n_days
 }
 
 ## fixme: integrate with above, this oen is needed internally
-.days_in_month <- function(m, y){
+.days_in_month <- function(m, y) {
   n_days <- N_DAYS_IN_MONTHS[m]
   n_days[m == 2L & leap_year(y)] <- 29L
   n_days
 }
 
 ## tothink: export?
-days_in_months_so_far <- function(month, leap){
+days_in_months_so_far <- function(month, leap) {
   ## if month is negative, compute from the end of the year
   cum_days_pos <- c(0, cumsum(N_DAYS_IN_MONTHS)[-12])
   cum_days_neg <- c(0, cumsum(rev(N_DAYS_IN_MONTHS))[-12])

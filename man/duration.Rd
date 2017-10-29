@@ -2,18 +2,48 @@
 % Please edit documentation in R/durations.r
 \name{duration}
 \alias{duration}
+\alias{dseconds}
+\alias{dminutes}
+\alias{dhours}
+\alias{ddays}
+\alias{dweeks}
+\alias{dyears}
+\alias{dmilliseconds}
+\alias{dmicroseconds}
+\alias{dnanoseconds}
+\alias{dpicoseconds}
 \alias{is.duration}
 \title{Create a duration object.}
 \usage{
 duration(num = NULL, units = "seconds", ...)
 
+dseconds(x = 1)
+
+dminutes(x = 1)
+
+dhours(x = 1)
+
+ddays(x = 1)
+
+dweeks(x = 1)
+
+dyears(x = 1)
+
+dmilliseconds(x = 1)
+
+dmicroseconds(x = 1)
+
+dnanoseconds(x = 1)
+
+dpicoseconds(x = 1)
+
 is.duration(x)
 }
 \arguments{
-\item{num}{the number of time units to include in the duration. From v1.6.0
-\code{num} can also be a character vector that specifies durations in a
-convenient shorthand format. All unambiguous name units and abbreviations
-are supported. See examples.}
+\item{num}{the number or a character vector of time units. In string
+representation all unambiguous name units and abbreviations are supported;
+'m' stands for month and 'M' for minutes, see examples. Fractional units
+are supported.}
 
 \item{units}{a character string that specifies the type of units that num
 refers to. When \code{num} is character, this argument is ignored.}
@@ -21,13 +51,14 @@ refers to. When \code{num} is character, this argument is ignored.}
 \item{...}{a list of time units to be included in the duration and their
 amounts. Seconds, minutes, hours, days, and weeks are supported.}
 
-\item{x}{an R object}
+\item{x}{numeric value of the number of units to be contained in the
+duration.}
 }
 \value{
 a duration object
 }
 \description{
-\code{duration} creates a duration object with the specified values. Entries
+\code{duration()} creates a duration object with the specified values. Entries
 for different units are cumulative. durations display as the number of
 seconds in a time span. When this number is large, durations also display an
 estimate in larger units,; however, the underlying object is always recorded
@@ -45,12 +76,13 @@ by conventions such as leap years
 and Daylight Savings Time. Base R provides a second class for measuring
 durations, the difftime class.
 
-Duration objects can be easily created with the helper functions
-\code{\link{dweeks}}, \code{\link{ddays}}, \code{\link{dminutes}},
-\code{\link{dseconds}}. These objects can be added to and subtracted to date-
-times to create a user interface similar to object oriented programming.
+Duration objects can be easily created with the helper functions \code{\link[=dweeks]{dweeks()}},
+\code{\link[=ddays]{ddays()}}, \code{\link[=dminutes]{dminutes()}}, \code{\link[=dseconds]{dseconds()}}. These objects can be added to and
+subtracted to date- times to create a user interface similar to object
+oriented programming.
 }
 \examples{
+
 duration(day = -1)
 # -86400s (~-1 days)
 duration(90, "seconds")
@@ -70,12 +102,33 @@ duration("2days 2hours 2mins 2secs")
 duration("day day")
 # Comparison with characters is supported from v1.6.0.
 duration("day 2 sec") > "day 1sec"
+
+## ELEMENTARY CONSTRUCTORS:
+
+dseconds(1)
+dminutes(3.5)
+
+x <- as.POSIXct("2009-08-03")
+x + ddays(1) + dhours(6) + dminutes(30)
+x + ddays(100) - dhours(8)
+
+class(as.Date("2009-08-09") + ddays(1)) # retains Date class
+as.Date("2009-08-09") + dhours(12)
+class(as.Date("2009-08-09") + dhours(12))
+# converts to POSIXt class to accomodate time units
+
+dweeks(1) - ddays(7)
+c(1:3) * dhours(1)
+
+# compare DST handling to durations
+boundary <- as.POSIXct("2009-03-08 01:59:59")
+boundary + days(1) # period
+boundary + ddays(1) # duration
 is.duration(as.Date("2009-08-03")) # FALSE
 is.duration(duration(days = 12.4)) # TRUE
 }
 \seealso{
-\code{\link{as.duration}}
+\code{\link[=as.duration]{as.duration()}} \linkS4class{Duration}
 }
 \keyword{chron}
 \keyword{classes}
-

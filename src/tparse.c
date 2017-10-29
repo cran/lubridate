@@ -34,27 +34,30 @@
 
 
 static const char ltnames[][5] = {"sec", "min", "hour", "mday", "mon", "year"};
-static const char *en_months[] = {"January", "February","March","April","May","June",
-                                  "July","August","September","October","November","December"};
+static const char *en_months[] = {"january", "february","march","april","may","june",
+                                  "july","august","september","october","november","december"};
 
 // increment **c and return month ix in 1..12 if parsing was successful, 0 if not.
 int parse_alpha_month(const char **c){
-  return (parse_alphanum(c, en_months, 12) + 1);
+  return (parse_alphanum(c, en_months, 12, TRUE) + 1);
 }
 
-SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
-  // STR: character vector of date-times.
-  // ORD: formats (as in strptime) or orders (as in parse_date_time)
-  // FORMATS: TRUE if ord is a string of formats (as in strptime)
-  // LT: TRUE - return POSIXlt type list, FALSE - return POSIXct seconds
+SEXP C_parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt, SEXP cutoff_2000) {
+  // str: character vector of date-times.
+  // ord: formats (as in strptime) or orders (as in parse_date_time)
+  // formats: TRUE if ord is a string of formats (as in strptime)
+  // lt: TRUE - return POSIXlt type list, FALSE - return POSIXct seconds
+  // cutoff_2000: for `y` format years smaller or equal are read as 20th
+  // sentry's, otherwise 19ths. R's default is 68.
 
-  if ( !isString(str) ) error("Date-time must be a character vector");
+  if ( !isString(str) ) error("Argument to parsing functions must be a character vector.");
   if ( !isString(ord) || (LENGTH(ord) > 1))
-    error("Format argument must be a character vector of length 1");
+    error("Format/orders argument must be a character vector of length 1");
 
   R_len_t n = LENGTH(str);
   int is_fmt = *LOGICAL(formats);
   int out_lt = *LOGICAL(lt);
+  int cut2000 = *INTEGER(cutoff_2000);
 
   SEXP oYEAR, oMONTH, oDAY, oHOUR, oMIN, oSEC;
 
@@ -99,7 +102,7 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
 
         if ( *o == 'O' ) {
           // Special two letter orders/formats:
-		  // Ou (Z), Oz (-0800), OO (-08:00) and Oo (-08)
+		  // Ou (Z), Oz (-0800), OO (-08:00), Oo (-08) and Ob (alpha-month)
           O_format = 1;
           o++;
         } else {
@@ -120,7 +123,9 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
             break;
           case 'y': // year in yy format
             y = parse_int(&c, 2, FALSE);
-			if (y <= 68)
+            if (y < 0)
+              succeed = 0;
+			else if (y <= cut2000)
 			  y += 2000;
 			else
 			  y += 1900;
@@ -132,9 +137,9 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
           case 'm': // month (allowing all months formats - m, b and B)
             SKIP_NON_ALPHANUMS(c);
             m = parse_int(&c, 2, FALSE);
-            if (m == 0) {
+            if (m == -1) { // failed
               m = parse_alpha_month(&c);
-              if (m == 0) {
+              if (m == 0) { // failed
                 SKIP_NON_DIGITS(c);
                 m = parse_int(&c, 2, FALSE);
               }
@@ -179,10 +184,8 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
               if (O_format){
                 // Parse milliseconds; both . and , as decimal separator are allowed
                 if( *c == '.' || *c == ','){
-                  double ms = 0.0, msfact = 0.1;
                   c++;
-                  while (DIGIT(*c)) { ms = ms + (*c - '0')*msfact; msfact *= 0.1; c++; }
-                  secs += ms;
+                  secs += parse_fractional(&c);
                 }
               }
             } else succeed = 0;
@@ -217,7 +220,7 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
             break;
           case 'z':
             // for %z: "+O100" or "+O1" or "+01:00"
-            if( !O_format ){
+            if( !O_format ) {
               if( !is_fmt ) {
                 while (*c && *c != '+' && *c != '-' && *c != 'Z') c++; // skip non + -
                 if( !*c ) { succeed = 0; break; };
@@ -226,13 +229,14 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
               if( *c == 'Z') {c++; break;}
               else if ( *c == '+' ) sig = -1;
               else if ( *c == '-') sig = 1;
-              else { succeed = 0; break; }
+              else {succeed = 0; break;}
               c++;
               Z = parse_int(&c, 2, FALSE);
+              if (Z < 0) {succeed = 0; break;}
               secs += sig*Z*3600;
               if( *c == ':' ){
                 c++;
-                if ( !DIGIT(*c) ){ succeed = 0; break; }
+                if ( !DIGIT(*c) ) {succeed = 0; break;}
               }
               if( DIGIT(*c) ){
                 Z = 0;
@@ -240,7 +244,8 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
                 secs += sig*Z*60;
               }
               break;
-            } // else %Oz: "+0100". Pass through.
+            }
+            // else O_format %Oz: "+0100"; pass through
           case 'O':
             // %OO: "+01:00"
           case 'o':
@@ -253,14 +258,15 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
               else { succeed = 0; break; }
               c++;
               Z = parse_int(&c, 2, FALSE);
+              if (Z < 0) {succeed = 0; break;}
               secs += sig*Z*3600;
               if( *o == 'O'){
                 if ( *c == ':') c++;
 				else { succeed = 0; break; }
 			  }
-              if ( *o != 'o' ){
-                Z = 0;
+              if ( *o != 'o' ){ // z or O
                 Z = parse_int(&c, 2, FALSE);
+                if (Z < 0) {succeed = 0; break;}
                 secs += sig*Z*60;
               }
             } else error("Unrecognized format '%c' supplied", *o);
@@ -385,7 +391,7 @@ SEXP parse_dt(SEXP str, SEXP ord, SEXP formats, SEXP lt) {
 // STR: string in HxMyS format where x and y are arbitrary non-numeric separators
 // ORD: orders. Can be any combination of "h", "m" and "s"
 // RETURN: numeric vector (H1 M1 S1 H2 M2 S2 ...)
-SEXP parse_hms(SEXP str, SEXP ord) {
+SEXP C_parse_hms(SEXP str, SEXP ord) {
 
   if (TYPEOF(str) != STRSXP) error("HMS argument must be a character vector");
   if ((TYPEOF(ord) != STRSXP) || (LENGTH(ord) > 1))

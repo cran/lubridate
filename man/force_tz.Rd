@@ -2,39 +2,70 @@
 % Please edit documentation in R/time-zones.r
 \name{force_tz}
 \alias{force_tz}
+\alias{force_tzs}
 \title{Replace time zone to create new date-time}
 \usage{
-force_tz(time, tzone = "")
+force_tz(time, tzone = "", roll = FALSE)
+
+force_tzs(time, tzones, tzone_out = "UTC", roll = FALSE)
 }
 \arguments{
 \item{time}{a POSIXct, POSIXlt, Date, chron date-time object, or a data.frame
 object. When a data.frame all POSIXt elements of a data.frame are processed
-with \code{force_tz} and new data.frame is returned.}
+with \code{force_tz()} and new data.frame is returned.}
 
 \item{tzone}{a character string containing the time zone to convert to. R
 must recognize the name contained in the string as a time zone on your
 system.}
+
+\item{roll}{logical. If TRUE, and \code{time} falls into the DST-break, assume
+the next valid civil time, otherwise return NA. See examples.}
+
+\item{tzones}{character vector of timezones to be "enforced" on \code{time} time
+stamps. If \code{time} and \code{tzones} lengths differ, the smaller one is recycled
+in accordance with usual R conventions.}
+
+\item{tzone_out}{timezone of the returned date-time vector}
 }
 \value{
 a POSIXct object in the updated time zone
 }
 \description{
-force_tz returns a the date-time that has the same clock time as x in the new
- time zone.
-Although the new date-time has the same clock time (e.g. the
-same values in the year, month, days, etc. elements) it is a
-different moment of time than the input date-time. force_tz defaults to the
-Universal Coordinated time zone (UTC) when an unrecognized time zone is
-inputted. See \code{\link{Sys.timezone}} for more information on how R
-recognizes time zones.
+\code{force_tz} returns the date-time that has the same clock time as input time,
+but in the new time zone. \code{force_tzs} is the parallel version of \code{force_tz}
+in a sense that every element from \code{time} argument is matched with the
+corresponding time zone in \code{tzones} argument.
+}
+\details{
+Although the new date-time has the same clock time (e.g. the same values in
+the year, month, days, etc. elements) it is a different moment of time than
+the input date-time.
+
+As R date-time vectors cannot hold elements with non-uniform time zones,
+\code{force_tzs} returns a vector with time zone \code{tzone_out}, UTC by default.
 }
 \examples{
-x <- as.POSIXct("2009-08-07 00:00:01", tz = "America/New_York")
-force_tz(x, "GMT")
+x <- ymd_hms("2009-08-07 00:00:01", tz = "America/New_York")
+force_tz(x, "UTC")
+force_tz(x, "Europe/Amsterdam")
+
+## DST skip:
+
+y <- ymd_hms("2010-03-14 02:05:05 UTC")
+force_tz(y, "America/New_York", roll=FALSE)
+force_tz(y, "America/New_York", roll=TRUE)
+
+## Heterogeneous time-zones:
+
+x <- ymd_hms(c("2009-08-07 00:00:01", "2009-08-07 01:02:03"))
+force_tzs(x, tzones = c("America/New_York", "Europe/Amsterdam"))
+force_tzs(x, tzones = c("America/New_York", "Europe/Amsterdam"), tzone_out = "America/New_York")
+
+x <- ymd_hms("2009-08-07 00:00:01")
+force_tzs(x, tzones = c("America/New_York", "Europe/Amsterdam"))
 }
 \seealso{
-\code{\link{with_tz}}
+\code{\link[=with_tz]{with_tz()}}, \code{\link[=local_time]{local_time()}}
 }
 \keyword{chron}
 \keyword{manip}
-

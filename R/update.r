@@ -1,18 +1,22 @@
 #' Changes the components of a date object
 #'
-#' \code{update.Date} and \code{update.POSIXt} return a date with the specified
+#' `update.Date()` and `update.POSIXt()` return a date with the specified
 #' elements updated.  Elements not specified will be left unaltered. update.Date
 #' and update.POSIXt do not add the specified values to the existing date, they
 #' substitute them for the appropriate parts of the existing date.
 #'
 #'
-#' @name DateUpdate
+#' @name DateTimeUpdate
 #' @param object a date-time object
 #' @param ... named arguments: years, months, ydays, wdays, mdays, days, hours,
-#' minutes, seconds, tzs (time zone compnent)
-#' @param simple logical, passed to \code{fit_to_timeline}. If TRUE a simple fit
-#' to time line is performed and no NA are produced for invalid dates. Invalid
-#' dates are converted to meaningful dates by extrapolating the timezones.
+#'   minutes, seconds, tzs (time zone compnent)
+#' @param roll logical. If `TRUE`, and the resulting date-time lands on a
+#'   non-existent civil time instant (DST, 29th February, etc.) roll the date
+#'   till next valid point. When `FALSE`, the default, produce NA for non
+#'   existing date-times.
+#' @param week_start week starting day (Default is 7, Sunday). Set
+#'   `lubridate.week.start` option to control this.
+#' @param simple logical. Deprecated. Same as `roll`.
 #' @return a date object with the requested elements updated. The object will
 #'   retain its original class unless an element is updated which the original
 #'   class does not support. In this case, the date returned will be a POSIXlt
@@ -26,12 +30,51 @@
 #'
 #' update(date, minute = 10, second = 3)
 #' @export
-update.POSIXt <- function(object, ..., simple = FALSE){
+update.POSIXt <- function(object, ..., roll = FALSE,
+                          week_start = getOption("lubridate.week.start", 7),
+                          simple = NULL) {
+  if (!is.null(simple)) roll <- simple
+  do.call(update_date_time, c(list(object, roll = roll, week_start = week_start),
+                              list(...)))
+}
 
-  if(!length(object)) return(object)
+update_date_time <- function(object, years = integer(), months = integer(),
+                             days = integer(), mdays = integer(), ydays = integer(), wdays = integer(),
+                             hours = integer(), minutes = integer(), seconds = double(), tzs = NULL,
+                             roll = FALSE, week_start = 7) {
+
+  if (!length(object)) return(object)
+
+  if (length(days) > 0) mdays = days;
+  updates <- list(year = years, month = months,
+                  yday = ydays, mday = mdays, wday = wdays,
+                  hour = hours, minute = minutes, second = seconds)
+  maxlen <- max(unlist(lapply(updates, length)))
+
+  if (maxlen > 1) {
+    for (nm in names(updates)) {
+      len <- length(updates[[nm]])
+      ## len == 1 is treated at C_level
+      if (len != maxlen && len > 1)
+        updates[[nm]] <- rep_len(updates[[nm]], maxlen)
+    }
+  }
+
+  ## todo: check if the following lines make any unnecessary copies
+  updates[["dt"]] <- as.POSIXct(object)
+  updates[["roll"]] <- roll
+  updates[["tz"]] <- if (is.null(tzs)) tz(object) else tzs
+  updates[["week_start"]] <- week_start
+  reclass_date(do.call(C_update_dt, updates), object)
+}
+
+## prior to v1.7.0
+update_posixt_old <- function(object, ..., simple = FALSE) {
+
+  if (!length(object)) return(object)
   date <- as.POSIXlt(object)
 
-  # adjudicate units input
+  ## adjudicate units input
   units <- list(...)
   names(units) <- standardise_lt_names(names(units))
 
@@ -47,7 +90,7 @@ update.POSIXt <- function(object, ..., simple = FALSE){
     uname <- day.units[wunit]
     if (uname != "mday") {
       ## we compute everything with mdays (operating with ydays doesn't work)
-      if (uname != "day"){
+      if (uname != "day") {
         if (uname == "yday" & !is.null(units$year))
           warning("Updating on both 'year' and 'yday' can lead to wrong results. See bug #319.", call. = F)
         diff <- units[[uname]] - date[[uname]] - 1
@@ -60,7 +103,7 @@ update.POSIXt <- function(object, ..., simple = FALSE){
   if (!is.null(units$mon)) units$mon <- units$mon - 1
   if (!is.null(units$year)) units$year <- units$year - 1900
 
-  # make new date-times
+  ## make new date-times
   date <- unclass(date)
 
   date[names(units)] <- units
@@ -71,7 +114,7 @@ update.POSIXt <- function(object, ..., simple = FALSE){
 
   if (maxlen > 1) {
     for (nm in names(date))
-      if (length(date[[nm]]) != maxlen)
+ if (length(date[[nm]]) != maxlen)
         date[[nm]] <- rep_len(date[[nm]], maxlen)
   }
 
@@ -85,16 +128,16 @@ update.POSIXt <- function(object, ..., simple = FALSE){
 }
 
 #' @export
-update.Date <- function(object, ...){
+update.Date <- function(object, ...) {
 
-  lt <- as.POSIXlt(object, tz = "UTC")
-
-  new <- update(lt, ...)
-
-  if (sum(c(new$hour, new$min, new$sec), na.rm = TRUE)) {
-    as.POSIXct(new)
+  ct <- as_datetime(object, tz = "UTC")
+  new <- update(ct, ...)
+  ## fixme: figure out a way to avoid this, or write specialized update for Date
+  new_lt <- as.POSIXlt(new, tz = "UTC")
+  if (sum(c(new_lt$hour, new_lt$min, new_lt$sec), na.rm = TRUE)) {
+    new
   } else {
-    as.Date(new)
+    make_date(new_lt$year + 1900, new_lt$mon + 1, new_lt$mday)
   }
 }
 
@@ -112,13 +155,14 @@ update.Date <- function(object, ...){
 #' @param class a character string that describes what type of object to return,
 #'   POSIXlt or POSIXct. Defaults to POSIXct. This is an optimization to avoid
 #'   needless conversions.
-#' @param simple if TRUE, \code{lubridate} makes no attempt to detect
+#' @param simple if TRUE, \pkg{lubridate} makes no attempt to detect
 #'   meaningless time-dates or to correct time zones. No NAs are produced and
 #'   the most meaningful valid dates are returned instead. See examples.
 #' @return a POSIXct or POSIXlt object that contains no illusory date-times
 #'
 #' @examples
 #' \dontrun{
+#'
 #' tricky <- structure(list(sec   = c(5,    0,    0,    -1),
 #'                          min   = c(0L,   5L,   5L,   0L),
 #'                          hour  = c(2L,   0L,   2L,   2L),
@@ -132,36 +176,33 @@ update.Date <- function(object, ...){
 #'                                "year", "wday", "yday",  "isdst"),
 #'                     class = c("POSIXlt", "POSIXt"),
 #'                     tzone = c("America/Chicago", "CST", "CDT"))
+#'
 #' tricky
-#' ## because clocks "fall back" to 1:00 CST
-#'
-#' ## CDT, not CST at this instant
-#'
-#' ##because clocks "spring forward" past this time
-#' ## for daylight savings
-#'
-#' ## has deceptive internal structure
+#' ## [1] "2012-11-04 02:00:00 CDT" Doesn't exist because clocks "fall back" to 1:00 CST
+#' ## [2] "2012-11-04 00:05:00 CST" Times are still CDT, not CST at this instant
+#' ## [3] "2010-03-14 02:00:00 CDT" DST gap
+#' ## [4] "2012-11-04 01:59:59 CDT" Does exist, but has deceptive internal structure
 #'
 #' fit_to_timeline(tricky)
-#' [1] "2012-11-04 02:00:05 CST" "2012-11-04 00:05:00 CDT"
-#' [4] NA                        "2012-11-04 01:59:59 CDT"
-#'
-#' ## with correct timezone & DST combination
-#'
-#' ## with correct timezone & DST combination
-#'
+#' ## Returns:
+#' ## [1] "2012-11-04 02:00:00 CST" instant paired with correct tz & DST combination
+#' ## [2] "2012-11-04 00:05:00 CDT" instant paired with correct tz & DST combination
+#' ## [3] NA - fake time changed to NA (compare to as.POSIXct(tricky))
+#' ## [4] "2012-11-04 01:59:59 CDT" -real instant, left as is
 #'
 #' fit_to_timeline(tricky, simple = TRUE)
-#' ## Reduce to valid time-dates by extrapolating CDT and CST zones
+#' ## Returns valid time-dates by extrapolating CDT and CST zones:
+#' ## [1] "2012-11-04 01:00:05 CST" "2012-11-04 01:05:00 CDT"
+#' ## [3] "2010-03-14 03:05:00 CDT" "2012-11-04 01:59:59 CDT"
 #' }
 #' @export
 fit_to_timeline <- function(lt, class = "POSIXct", simple = FALSE) {
   if (class != "POSIXlt" && class != "POSIXct")
     stop("class argument must be POSIXlt or POSIXct")
 
-  if(simple){
+  if (simple) {
 
-    if(class == "POSIXct") as.POSIXct(lt)
+    if (class == "POSIXct") as.POSIXct(lt)
     else as.POSIXlt(as.POSIXct(lt))
 
   } else {

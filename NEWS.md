@@ -1,5 +1,56 @@
-Version 1.5.6.9000 (development)
-============
+Version 1.6.0.9000
+==================
+
+### NEW FEATURES
+
+* [#438](https://github.com/tidyverse/lubridate/issues/438) New function `force_tzs` for "enforcement" of heterogeneous time zones.
+* [#438](https://github.com/tidyverse/lubridate/issues/438) New function `local_time` for the retrieval of local day time in different time zones.
+* [#560](https://github.com/tidyverse/lubridate/issues/560) New argument `cutoff_2000` for parsing functions to indicate 20th century cutoff for `y` format.
+* [#257](https://github.com/tidyverse/lubridate/issues/257) New `week_start` parameter in `wday` and `wday<-` to set week start.
+* [#401](https://github.com/tidyverse/lubridate/issues/401) New parameter `locale` in `wday`. Labels of the returned factors (when `label=TRUE`) now respect current locale.
+* [#485](https://github.com/tidyverse/lubridate/pull/485) `quarter` gained a new argument `fiscal_start` to address the issue of different fiscal conventions.
+* [#492](https://github.com/tidyverse/lubridate/issues/492) New functions `epiweek` and `epiyear`.
+* [#508](https://github.com/tidyverse/lubridate/pull/508) New parameter `locale` in `month`. Labels of the returned factors (when `label=TRUE`) now respect current locale.
+* [#509](https://github.com/tidyverse/lubridate/issues/509) New parameter `week_start` to `floor_date`, `ceiling_date` and `round_date`.
+* [#519](https://github.com/tidyverse/lubridate/issues/519) Support fractional units in duration and period string constructors.
+* [#502](https://github.com/tidyverse/lubridate/issues/502) Support rounding to fractions of a seconds.
+* [#529](https://github.com/tidyverse/lubridate/issues/529) Internal parser now ignores the case of alpha months (B format)
+* [#535](https://github.com/tidyverse/lubridate/issues/535) Rounding to `season` is now supported.
+* [#536](https://github.com/tidyverse/lubridate/issues/536) `as_date` and `as_datetime` now understand character vectors.
+* New parsing parameters to `parse_date_time` - `train=TRUE` and `drop=FALSE` which allow more refined control of the format guessing. Formats are no longer dropped in the process by default, process which resulted in surprising behavior on several occasions ([#516](https://github.com/tidyverse/lubridate/issues/516),[#308](https://github.com/tidyverse/lubridate/issues/308),[#307](https://github.com/tidyverse/lubridate/issues/307)).
+
+### CHANGES
+
+* [#401](https://github.com/tidyverse/lubridate/issues/401) **Breaking change** `wday` labels are in current locale. The abbreviated labels in English locales have been also changed to standard abbreviations (Tues -> Tue, Thurs -> Thu etc.).
+* [#469](https://github.com/tidyverse/lubridate/issues/469) Throw warning in `with_tz` on invalid timezone.
+* [#572](https://github.com/tidyverse/lubridate/issues/572) `B` and `b` formats no longer match numeric months. This corresponds to the original intent, and was always documented as such.
+
+### BUG FIXES
+
+* [#314](https://github.com/tidyverse/lubridate/issues/314), [#407](https://github.com/tidyverse/lubridate/issues/407), [#499](https://github.com/tidyverse/lubridate/issues/499) Make `days`, `dhours`, `round_date` work when the methods package is not loaded.
+* [#543](https://github.com/tidyverse/lubridate/issues/543) Make `wday` work on character inputs as it is the case with all other day accessors.
+* [#566](https://github.com/tidyverse/lubridate/issues/566) Comparing durations and periods no-longer infloops.
+* [#556](https://github.com/tidyverse/lubridate/issues/556) Fix incorrect scoring of `y` format when it's the last in format order (as in `mdy`).
+* [#584](https://github.com/tidyverse/lubridate/issues/584) Fix interval by period division.
+* [#559](https://github.com/tidyverse/lubridate/issues/559) Parsing of alpha-months in English locales now drops correctly to low level C parsing. Thus, parsing with multiple orders containing `m` and `b` formats now works correctly.
+* [#570](https://github.com/tidyverse/lubridate/issues/570), [#574](https://github.com/tidyverse/lubridate/issues/574) Fix broken `date()` when called with missing argument.
+* [#567](https://github.com/tidyverse/lubridate/issues/567) Fix year update and rounding for leap years.
+* [#545](https://github.com/tidyverse/lubridate/pull/545) Fix wrong locale selection in stamp.
+* [#466](https://github.com/tidyverse/lubridate/pull/466) Fix wrong formats within ymd_h family of functions.
+* [#472](https://github.com/tidyverse/lubridate/pull/472) Printing method for duration doesn't throw format error on fractional seconds.
+* [#475](https://github.com/tidyverse/lubridate/pull/475) character<> comparisons is no longer slow.
+* [#483](https://github.com/tidyverse/lubridate/pull/483) Fix add_duration_to_date error when duration first element is NA.
+* [#486](https://github.com/tidyverse/lubridate/issues/486) ceiling_date handles `NA` properly.
+* [#491](https://github.com/tidyverse/lubridate/issues/491) `make_datetime` respects `tz` argument and is much faster now.
+* [#507](https://github.com/tidyverse/lubridate/issues/507) Period and duration parsers now understand 0 units.
+* [#524](https://github.com/tidyverse/lubridate/pull/524) Correctly compute length of period in months (issue #490)
+* [#525](https://github.com/tidyverse/lubridate/pull/525) Fix to prevent `day<-`, `minute<-`, etc. from producing an error when length(x) is 0 (issue #517)
+* [#530](https://github.com/tidyverse/lubridate/issues/530) `parse_date_time` now throw warnings only for actual parsing errors (input with all NAs are silent)
+* [#534](https://github.com/tidyverse/lubridate/issues/534) Fix arithmetics with large numbers
+* [#554](https://github.com/tidyverse/lubridate/pull/554) Fix tests when running in non-English locales
+
+Version 1.6.0
+=============
 
 ### NEW FEATURES
 
@@ -36,6 +87,7 @@ Version 1.5.6.9000 (development)
 
 ### BUG FIXES
 
+* [#479](https://github.com/hadley/lubridate/issues/479) Fix the inconsistent behavior in `ceiling_date` when `unit = "week"`
 * [#463](https://github.com/hadley/lubridate/issues/463) Fix NA subscripting error in %m+% when rollback is involved.
 * [#462](https://github.com/hadley/lubridate/issues/462) Non-numeric or non-character arguments are disallowed as arguments to `period` and `duration` constructors.
 * [#458](https://github.com/hadley/lubridate/issues/458) When year is missing in parsing, return consistently year 0.

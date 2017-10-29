@@ -1,12 +1,12 @@
-##' Format dates and times based on human-friendly templates.
+##' Format dates and times based on human-friendly templates
 ##'
-##' Stamps are just like \code{\link{format}}, but based on human-frendly
+##' Stamps are just like [format()], but based on human-frendly
 ##' templates like "Recorded at 10 am, September 2002" or "Meeting, Sunday May
 ##' 1, 2000, at 10:20 pm".
 ##'
-##' \code{stamp} is a stamping function date-time templates mainly, though it
+##' `stamp()` is a stamping function date-time templates mainly, though it
 ##' correctly handles all date and time formats as long as they are
-##' unambiguous. \code{stamp_date}, and \code{stamp_time} are the specialized
+##' unambiguous. `stamp_date()`, and `stamp_time()` are the specialized
 ##' stamps for dates and times (MHS). These function might be useful when the
 ##' input template is unambiguous and matches both a time and a date format.
 ##'
@@ -14,27 +14,27 @@
 ##' format can be interpreted in several ways. One way to deal with the
 ##' situation is to provide unambiguous formats like 22/05/81 instead of
 ##' 10/05/81 if you want d/m/y format. Another option is to use a more
-##' specialized stamp_date and stamp_time. The core function \code{stamp} give
+##' specialized stamp_date and stamp_time. The core function `stamp()` give
 ##' priority to longer date-time formats.
 ##'
-##' Another option is to proved a vector of several values as \code{x}
-##' parameter. Then lubridate will choose the format which fits \code{x} the
+##' Another option is to provide a vector of several values as `x`
+##' parameter. Then \pkg{lubridate} will choose the format which fits `x` the
 ##' best. Note that longer formats are preferred. If you have "22:23:00 PM" then
 ##' "HMSp" format will be given priority to shorter "HMS" order which also fits
 ##' the supplied string.
 ##'
-##' Finally, you can give desired format order directly as \code{orders}
+##' Finally, you can give desired format order directly as `orders`
 ##' argument.
 ##'
 ##' @param x a character vector of templates.
 ##' @param orders orders are sequences of formatting characters which might be
 ##' used for disambiguation. For example "ymd hms", "aym" etc. See
-##' \code{\link{guess_formats}} for a list of available formats.
-##' @param locale locale in which \code{x} is encoded. On linux like systems use
-##' \code{locale -a} in terminal to list available locales.
+##' [guess_formats()] for a list of available formats.
+##' @param locale locale in which `x` is encoded. On Linux-like systems use
+##' `locale -a` in the terminal to list available locales.
 ##' @param quiet whether to output informative messages.
 ##' @return a function to be applied on a vector of dates
-##' @seealso \link{guess_formats}, \link{parse_date_time}, \link{strptime}
+##' @seealso [guess_formats()], [parse_date_time()], [strptime()]
 ##' @export
 ##' @examples
 ##' D <- ymd("2010-04-05") - days(1:5)
@@ -50,25 +50,37 @@
 ##' stamp("2013-01-01T00:00:00-06")(D)
 ##' stamp("2013-01-01T00:00:00-08:00")(force_tz(D, "America/Chicago"))
 stamp <- function(x, orders = lubridate_formats,
-                  locale = Sys.getlocale("LC_TIME"), quiet = FALSE){
+                  locale = Sys.getlocale("LC_TIME"), quiet = FALSE) {
 
   fmts <- unique(guess_formats(x, orders, locale))
-  if( is.null(fmts) ) stop( "Couldn't guess formats of: ", x)
-  if( length(fmts) == 1L ){
+  if (is.null(fmts)) stop("Couldn't guess formats of: ", x)
+  if (length(fmts) == 1L) {
     FMT <- fmts[[1]]
-  }else{
-    trained <- .train_formats(x, fmts)
+  } else {
+    trained <- .train_formats(x, fmts, locale = locale)
     formats <- .select_formats(trained)
     FMT <- formats[[1]]
-    if( !quiet && length(trained) > 1 ) {
+    if (!quiet && length(trained) > 1) {
       message("Multiple formats matched: ",
-              paste("\"", names(trained),"\"(", trained, ")", sep = "",
-                    collapse= ", "))
+              paste("\"", names(trained), "\"(", trained, ")", sep = "",
+                    collapse = ", "))
     }
   }
 
-  if( !quiet )
+  if (!quiet)
       message("Using: \"", FMT, "\"")
+
+
+  ## format doesn't accept 'locale' argument; need a hard reset
+  reset_local_expr <-
+    quote(
+    {
+      old_lc_time <- Sys.getlocale("LC_TIME")
+      if (old_lc_time != locale) {
+        Sys.setlocale("LC_TIME", locale)
+        on.exit(Sys.setlocale("LC_TIME", old_lc_time))
+      }
+    })
 
   ## ISO8601
   ## %Ou: "2013-04-16T04:59:59Z"
@@ -77,7 +89,7 @@ stamp <- function(x, orders = lubridate_formats,
   ## %OO: "2013-04-16T04:59:59+01:00"
 
   ## Is a timezone format?
-  if( grepl("%O[oOzu]|%z", FMT) ){
+  if (grepl("%O[oOzu]|%z", FMT)) {
     ## We need to post-process x in the case of %Oo, %OO and %Oz formats
     ## because standard %z output format ignores timezone.
 
@@ -86,15 +98,16 @@ stamp <- function(x, orders = lubridate_formats,
 
     oOz_end <- str_extract(FMT, "%O[oOz]$")
 
-    if(is.na(oOz_end)){
+    if (is.na(oOz_end)) {
       FMT <- sub("%O[oOz]", "%z",
                  sub("%Ou", "Z", FMT, fixed = TRUE))
 
       eval(bquote(
-        function(x){
+        function(x, locale = .(locale)) {
           ## %z ignores timezone
-          if(tz(x[[1]]) != "UTC")
+          if (tz(x[[1]]) != "UTC")
             x <- with_tz(x, tzone = "UTC")
+          .(reset_local_expr)
           format(x, format = .(FMT))
         }))
 
@@ -102,22 +115,29 @@ stamp <- function(x, orders = lubridate_formats,
       FMT <- sub("%O[oOz]$", "", FMT)
 
       eval(bquote(
-        function(x) paste0(format(x, format = .(FMT)),
-                           .format_offset(x, fmt = .(oOz_end)))))
+        function(x, locale = .(locale)) {
+          .(reset_local_expr)
+          paste0(format(x, format = .(FMT)),
+                 .format_offset(x, fmt = .(oOz_end)))
+        }))
     }
 
   } else {
     ## most common case
-    eval(bquote(function(x) format(x, format = .(FMT))))
+    eval(bquote(function(x, locale = .(locale)) {
+      .(reset_local_expr)
+      format(x, format = .(FMT))
+    }))
   }
 }
 
-.format_offset <- function(x, fmt="%Oz"){
+
+.format_offset <- function(x, fmt="%Oz") {
   ## .format_offset
   ##
   ## function to format the offset of a time from UTC
   ##
-  ## This is an internal function, used in conjunction with \code{\link{stamp}}.
+  ## This is an internal function, used in conjunction with [stamp()].
   ## There are three available formats:
   ##
   ## \itemize{
@@ -155,10 +175,10 @@ stamp <- function(x, orders = lubridate_formats,
   .hr <- floor(offset_duration/dhours(1))
 
   ## determine minutes
-  .min <- floor((offset_duration-dhours(.hr))/dminutes(1))
+  .min <- floor((offset_duration - dhours(.hr))/dminutes(1))
 
   ## warning if we need minutes, but are using format without minutes
-  if (any(.min > 0) & fmt=="%Oo"){
+  if (any(.min > 0) & fmt == "%Oo") {
     warning("timezone offset-minutes are non-zero - changing format to %Oz")
     fmt <- "%Oz"
   }
@@ -186,10 +206,10 @@ stamp_time <- function(x, locale = Sys.getlocale("LC_TIME"))
 
 
 lubridate_formats <- local({
-  xxx <- c( "ymd", "ydm", "mdy", "myd", "dmy", "dym")
+  xxx <- c("ymd", "ydm", "mdy", "myd", "dmy", "dym")
   names(xxx) <- xxx
   out <- character()
-  for(D in xxx){
+  for (D in xxx) {
     out[[paste(D, "_hms", sep = "")]] <- paste(xxx[[D]], "T", sep = "")
     out[[paste(D, "_hm", sep = "")]] <- paste(xxx[[D]], "R", sep = "")
     out[[paste(D, "_h", sep = "")]] <- paste(xxx[[D]], "r", sep = "")
@@ -199,7 +219,7 @@ lubridate_formats <- local({
            hms = "T", hm = "R", ms = "MS", h = "r", m = "m", y = "y")
 
   ## adding ISO8601
-  out <- c(ymd_hmsz="ymdTz", out)
+  out <- c(ymd_hmsz = "ymdTz", out)
 
   out
 })

@@ -1,6 +1,7 @@
 #include "constants.h"
 #include "utils.h"
 #include <stdio.h>
+#include <ctype.h>
 
 // return adjustment (in seconds) due to leap years
 // y: years after (positive) or before (negative) 2000-01-01 00:00:00
@@ -44,28 +45,38 @@ int check_ymd(int y, int m, int d, int is_leap){
   return succeed;
 }
 
+// parse fractional part
+double parse_fractional(const char **c) {
+  double out = 0.0, factor = 0.1;
+  while (DIGIT(**c)) { out = out + (**c - '0')*factor; factor *= 0.1; (*c)++; }
+  return out;
+}
+
 /* parse N digit characters from **c. Return parsed non-negative integer. If
    failed to pass N chars, return -1.*/
 int parse_int (const char **c, const int N, const int strict) {
-  // maybe: fixme: this returns 0 if no parsing happened and strict = FALSE
   int tN = N, X = 0;
   while (DIGIT(**c) && tN > 0) {
     X = X * 10 + (**c - '0');
     (*c)++;
     tN--;
   }
-  if (strict && tN > 0) return -1;
+  if (strict && tN > 0) return -1; // not all numbers have been consumed
+  else if (tN == N) return -1; // no parsing happened
   else return X;
 }
 
 
-// Increment **c and return index in 0..length(strings) if match was found, -1
-// if not.
+// Find partial match in `strings`.
 //
-// - **c: pointer to a character in a C string (automatically incremented)
+// Increment *c and return index in 0..(length(strings)-1) if match was found,
+// -1 if not. Matching starts from *c, with all non-alpha-numeric characters
+// pre-skipped.
+//
+// - *c: pointer to a character in a C string (incremented by side effect)
 // - *stings: pointer to an array of C strings to be matched to.
 // - strings_len: length of strings array.
-int parse_alphanum(const char **c, const char **strings, const int strings_len){
+int parse_alphanum(const char **c, const char **strings, const int strings_len, const char ignore_case){
 
   // tracking array: all valid objects are marked with 1, invalid with 0
   int track[strings_len];
@@ -74,7 +85,7 @@ int parse_alphanum(const char **c, const char **strings, const int strings_len){
   }
 
   int j = 0, go = 1, out = -1;
-  while (**c && !ALPHA(**c)) (*c)++;
+  while (**c && !ALPHA(**c) && !DIGIT(**c)) (*c)++;
 
   while (**c && go) {
     // stop when all tracks where exhausted
@@ -83,7 +94,7 @@ int parse_alphanum(const char **c, const char **strings, const int strings_len){
       if (track[i]){
         // keep going while at least one valid track
         if (strings[i][j]){
-          if(**c == strings[i][j]){
+          if(**c == strings[i][j] || (ignore_case && (tolower(**c) == strings[i][j]))){
             out = i;
             go = 1;
           } else {

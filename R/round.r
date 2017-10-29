@@ -1,77 +1,76 @@
-#' Round, floor and ceiling methods for date-time objects.
+#' Round, floor and ceiling methods for date-time objects
 #'
+#' @description
 #' Rounding to the nearest unit or multiple of a unit are supported. All
 #' meaningfull specifications in English language are supported - secs, min,
 #' mins, 2 minutes, 3 years etc.
-#' \cr
-#' \code{round_date} takes a date-time object and rounds it to the nearest value
+#'
+#' Rounding to fractional seconds is supported. Please note that rounding to
+#' fractions smaller than 1s can lead to large precision errors due to the
+#' floating point representation of the POSIXct objects. See examples.
+#'
+#' `round_date()` takes a date-time object and rounds it to the nearest value
 #' of the specified time unit. For rounding date-times which is exactly halfway
 #' between two consecutive units, the convention is to round up. Note that this
-#' is in line with the behavior of R's base \link[base]{round.POSIXt} function
-#' but does not follow the convention of the base \link[base]{round} function
+#' is in line with the behavior of R's [base::round.POSIXt()] function
+#' but does not follow the convention of the base [base::round()] function
 #' which "rounds to the even digit" per IEC 60559.
-#' \cr
-#' \code{floor_date} takes a date-time object and rounds it down to the nearest
-#' boundary of the specified  time unit.
-#' \cr
-#' \code{ceiling_date} takes a date-time object and rounds it up to the nearest
-#' boundary of the specified time unit.
 #'
-#' In \code{lubridate} rounding of a date-time objects tries to preserve the
-#' class of the input object whenever it is meaningful. This is done by first
-#' rounding to an instant and then converting to the original class by usual R
-#' conventions.
+#' @details In \pkg{lubridate}, rounding of a date-time objects tries to
+#'   preserve the class of the input object whenever possible. This is done by
+#'   first rounding to an instant and then converting to the original class by
+#'   usual R conventions.
 #'
 #'
 #' @section Rounding Up Date Objects:
 #'
-#'  By default rounding up \code{Date} objects follows 3 steps:
+#' By default rounding up `Date` objects follows 3 steps:
 #'
-#'    \enumerate{
+#' 1. Convert to an instant representing lower bound of the Date:
+#'    `2000-01-01` --> `2000-01-01 00:00:00`
 #'
-#'      \item Convert to an instant representing lower bound of the Date:
-#'           \code{2000-01-01} --> \code{2000-01-01 00:00:00}
+#' 2. Round up to the \strong{next} closest rounding unit boundary. For example,
+#'    if the rounding unit is `month` then next closest boundary of `2000-01-01`
+#'    is `2000-02-01 00:00:00`.
 #'
-#'      \item Round up to the \strong{next} closest rounding unit boundary. For
-#'           example, if the rounding unit is \code{month} then next boundary
-#'           for \code{2000-01-01} will be \code{2000-02-01 00:00:00}.
+#'    The motivation for this is that the "partial" `2000-01-01` is conceptually
+#'    an interval (`2000-01-01 00:00:00` -- `2000-01-02 00:00:00`) and the day
+#'    hasn't started clocking yet at the exact boundary `00:00:00`. Thus, it
+#'    seems wrong to round up a day to its lower boundary.
 #'
-#'           The motivation for this behavior is that \code{2000-01-01} is
-#'           conceptually an interval \code{(2000-01-01 00:00:00 -- 2000-01-02
-#'           00:00:00)} and the day hasn't started clocking yet at the exact
-#'           boundary \code{00:00:00}. Thus, it seems wrong to round up a day to
-#'           its lower boundary.
+#'    The behavior on the boundary can be changed by setting
+#'    `change_on_boundary` to a non-`NULL` value.
 #'
-#'      \item If rounding unit is smaller than a day, return the instant from
-#'          step 2 above (\code{POSIXct}), otherwise return the \code{Date}
-#'          immediately following that instant.
-#'
-#'     }
-#'
-#'  The behavior on the boundary in the second step above can be changed by
-#'  setting \code{change_on_boundary} to a non-\code{NULL} value.
+#' 3. If rounding unit is smaller than a day, return the instant from step 2
+#'     (`POSIXct`), otherwise convert to and return a `Date` object.
 #'
 #' @rdname round_date
 #' @param x a vector of date-time objects
-#' @param unit a character string specifying the time unit or a multiple of a
-#'   unit to be rounded to. Valid base units are second, minute, hour, day,
-#'   week, month, bimonth, quarter, halfyear, or year. Arbitrary unique English
-#'   abbreviations as in \code{\link{period}} constructor are also
-#'   supported. Rounding to multiple of units (except weeks) is supported from
-#'   \code{v1.6.0}.
+#' @param unit a character string specifying a time unit or a multiple of a unit
+#'   to be rounded to. Valid base units are `second`, `minute`, `hour`, `day`,
+#'   `week`, `month`, `bimonth`, `quarter`, `season`, `halfyear` and
+#'   `year`. Arbitrary unique English abbreviations as in the [period()]
+#'   constructor are allowed. Rounding to multiple of units (except weeks) is
+#'   supported.
 #' @param change_on_boundary If NULL (the default) don't change instants on the
-#'   boundary (\code{ceiling_date(ymd_hms('2000-01-01 00:00:00'))} is
-#'   \code{2000-01-01 00:00:00}), but round up \code{Date} objects to the next
-#'   boundary (\code{ceiling_date(ymd("2000-01-01"), "month")} is
-#'   \code{"2000-02-01"}). When \code{TRUE}, instants on the boundary are
-#'   rounded up to the next boundary. When \code{FALSE}, date-time on the
-#'   boundary are never rounded up (this was the default for \code{lubridate}
-#'   prior to \code{v1.6.0}. See section \code{Rounding Up Date Objects} below
-#'   for more details.
+#'   boundary (`ceiling_date(ymd_hms('2000-01-01 00:00:00'))` is `2000-01-01
+#'   00:00:00`), but round up `Date` objects to the next boundary
+#'   (`ceiling_date(ymd("2000-01-01"), "month")` is `"2000-02-01"`). When
+#'   `TRUE`, instants on the boundary are rounded up to the next boundary. When
+#'   `FALSE`, date-time on the boundary are never rounded up (this was the
+#'   default for \pkg{lubridate} prior to `v1.6.0`. See section `Rounding Up
+#'   Date Objects` below for more details.
+#' @param week_start when unit is `weeks` specify the reference day; 7 being Sunday.
 #' @keywords manip chron
-#' @seealso \link[base]{round}
+#' @seealso [base::round()]
 #' @examples
+#'
+#' ## print fractional seconds
+#' options(digits.secs=6)
+#'
 #' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' round_date(x, ".5s")
+#' round_date(x, "sec")
 #' round_date(x, "second")
 #' round_date(x, "minute")
 #' round_date(x, "5 mins")
@@ -86,6 +85,7 @@
 #' round_date(x, "year")
 #'
 #' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' floor_date(x, ".1s")
 #' floor_date(x, "second")
 #' floor_date(x, "minute")
 #' floor_date(x, "hour")
@@ -94,10 +94,12 @@
 #' floor_date(x, "month")
 #' floor_date(x, "bimonth")
 #' floor_date(x, "quarter")
+#' floor_date(x, "season")
 #' floor_date(x, "halfyear")
 #' floor_date(x, "year")
 #'
 #' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' ceiling_date(x, ".1 sec") # imprecise representation at 0.1 sec !!!
 #' ceiling_date(x, "second")
 #' ceiling_date(x, "minute")
 #' ceiling_date(x, "5 mins")
@@ -107,19 +109,25 @@
 #' ceiling_date(x, "month")
 #' ceiling_date(x, "bimonth") == ceiling_date(x, "2 months")
 #' ceiling_date(x, "quarter")
+#' ceiling_date(x, "season")
 #' ceiling_date(x, "halfyear")
 #' ceiling_date(x, "year")
+#'
+#' ## POSIXct precision is pretty much limited to seconds:
+#' as.POSIXct("2009-08-03 12:01:59.3") ## -> "2009-08-03 12:01:59.2 CEST"
+#' ceiling_date(x, ".1 sec") ## -> "2009-08-03 12:01:59.2 CEST"
+#'
 #' @export
-round_date <- function(x, unit = "second") {
+round_date <- function(x, unit = "second", week_start = getOption("lubridate.week.start", 7)) {
 
-  if(!length(x)) return(x)
+  if (!length(x)) return(x)
 
   parsed_unit <- parse_period_unit(unit)
   n <- parsed_unit$n
   basic_unit <- standardise_period_names(parsed_unit$unit)
 
   new <-
-    if(n == 1 && basic_unit %in% c("second", "minute", "hour", "day")){
+    if (n == 1 && basic_unit %in% c("second", "minute", "hour", "day")) {
       ## special case for fast rounding
       round.POSIXt(x, units = lub2base_units[[basic_unit]])
     } else {
@@ -136,52 +144,58 @@ round_date <- function(x, unit = "second") {
   reclass_date(new, x)
 }
 
-reclass_date_maybe <- function(new, orig, unit){
-  if(is.Date(orig) && !unit %in% c("day", "month", "year")) as.POSIXct(new)
+reclass_date_maybe <- function(new, orig, unit) {
+  if (is.Date(orig) && !unit %in% c("day", "week", "month", "year")) as.POSIXct(new)
   else reclass_date(new, orig)
 }
 
+#' @description
+#' `floor_date()` takes a date-time object and rounds it down to the nearest
+#' boundary of the specified time unit.
 #' @rdname round_date
 #' @export
-floor_date <- function(x, unit = "seconds") {
-  if(!length(x)) return(x)
+floor_date <- function(x, unit = "seconds", week_start = getOption("lubridate.week.start", 7)) {
+  if (!length(x)) return(x)
 
   parsed_unit <- parse_period_unit(unit)
   n <- parsed_unit$n
   unit <- standardise_period_names(parsed_unit$unit)
 
-  if(unit %in% c("second", "minute", "hour", "day")){
+  if (unit %in% c("second", "minute", "hour", "day")) {
 
     out <- trunc_multi_unit(x, unit, n)
     reclass_date_maybe(out, x, unit)
 
   } else {
 
-    if(n > 1 && unit == "week"){
+    if (n > 1 && unit == "week") {
       ## fixme:
       warning("Multi-unit not supported for weeks. Ignoring.")
     }
 
-    if(unit %in% c("bimonth", "quarter", "halfyear")){
-      switch(unit,
-             bimonth = n <- 2 * n,
-             quarter = n <- 3 * n,
-             halfyear = n <- 6 * n)
+    if (unit %in% c("bimonth", "quarter", "halfyear", "season") ||
+       (n > 1 && unit == "month")) {
+      new_months <-
+        switch(unit,
+               month    = floor_multi_unit1(month(x), n),
+               bimonth  = floor_multi_unit1(month(x), 2 * n),
+               quarter  = floor_multi_unit1(month(x), 3 * n),
+               halfyear = floor_multi_unit1(month(x), 6 * n),
+               season   = floor_multi_unit(month(x), 3 * n))
+      n <- Inf
       unit <- "month"
     }
 
     switch(unit,
-           week     = update(x, wdays = 1, hours = 0, minutes = 0, seconds = 0),
+           week     = update(x, wdays = 1, hours = 0, minutes = 0, seconds = 0, week_start = week_start),
            month    = {
-             if(n > 1)
-               update(x, months = floor_multi_unit1(month(x), n), mdays = 1, hours = 0, minutes = 0, seconds = 0)
-             else
-               update(x, mdays = 1, hours = 0, minutes = 0, seconds = 0)
+             if (n > 1) update(x, months = new_months, mdays = 1, hours = 0, minutes = 0, seconds = 0)
+             else      update(x, mdays = 1, hours = 0, minutes = 0, seconds = 0)
            },
            year     = {
              ## due to bug https://github.com/hadley/lubridate/issues/319 we
              ## need to do it in two steps
-             if(n > 1){
+             if (n > 1) {
                y <- update(x, ydays = 1, hours = 0, minutes = 0, seconds = 0)
                update(y, years = floor_multi_unit(year(y), n))
              } else {
@@ -191,48 +205,51 @@ floor_date <- function(x, unit = "seconds") {
   }
 }
 
+#' @description
+#' `ceiling_date()` takes a date-time object and rounds it up to the nearest
+#' boundary of the specified time unit.
 #' @rdname round_date
 #' @export
 #' @examples
 #' x <- ymd("2000-01-01")
 #' ceiling_date(x, "month")
 #' ceiling_date(x, "month", change_on_boundary = TRUE)
-ceiling_date <- function(x, unit = "seconds", change_on_boundary = NULL) {
+ceiling_date <- function(x, unit = "seconds", change_on_boundary = NULL, week_start = getOption("lubridate.week.start", 7)) {
 
-  if(!length(x))
+  if (!length(x))
     return(x)
 
   parsed_unit <- parse_period_unit(unit)
   n <- parsed_unit$n
   unit <- standardise_period_names(parsed_unit$unit)
 
-  if(is.null(change_on_boundary)){
+  if (is.null(change_on_boundary)) {
     change_on_boundary <- is.Date(x)
   }
 
-  if(unit == "second"){
+  if (unit == "second") {
 
     sec <- second(x)
     csec <- ceil_multi_unit(sec, n)
-    if(!change_on_boundary){
+    if (!change_on_boundary) {
       wsec <- which(csec - n ==  sec)
-      if(length(wsec))
+      if (length(wsec))
         csec[wsec] <- sec[wsec]
     }
     update(x, seconds = csec, simple = T)
 
-  } else if (unit %in% c("minute", "hour", "day")){
+  } else if (unit %in% c("minute", "hour", "day")) {
 
     ## cannot use this for minute/hour for Date class; local tz interferes with
     ## the computation
     new <- as_datetime(x, tz = tz(x))
     delta <- switch(unit, minute = 60, hour = 3600, day = 86400) * n
     new <-
-      if(change_on_boundary){
+      if (change_on_boundary) {
         trunc_multi_unit(new, unit, n) + delta
-      } else{
+      } else {
         new1 <- trunc_multi_unit(new, unit, n)
-        not_same <- new1 != new
+        not_same <- which(new1 != new)
         new1[not_same] <- new1[not_same] + delta
         new1
       }
@@ -240,39 +257,42 @@ ceiling_date <- function(x, unit = "seconds", change_on_boundary = NULL) {
 
   } else {
 
-    if(n > 1 && unit == "week"){
+    if (n > 1 && unit == "week") {
       warning("Multi-unit not supported for weeks. Ignoring.")
     }
 
     ## need this to accomodate the case when date is on a boundary
     new <-
-      if(change_on_boundary) x
+      if (change_on_boundary) x
       else update(x, seconds = second(x) - 0.00001, simple = T)
 
-    if(unit %in% c("bimonth", "quarter", "halfyear")){
-      switch(unit,
-             bimonth = n <- 2 * n,
-             quarter = n <- 3 * n,
-             halfyear = n <- 6 * n)
+    if (unit %in% c("month", "bimonth", "quarter", "halfyear", "season")) {
+      new_month <-
+        switch(unit,
+               month    = ceil_multi_unit1(month(new), n),
+               bimonth  = ceil_multi_unit1(month(new), 2 * n),
+               quarter  = ceil_multi_unit1(month(new), 3 * n),
+               halfyear = ceil_multi_unit1(month(new), 6 * n),
+               season   = ceil_multi_unit(month(new), 3 * n))
       unit <- "month"
     }
 
     new <- switch(unit,
                   minute = update(new, minute = ceil_multi_unit(minute(new), n), second = 0, simple = T),
                   hour   = update(new, hour = ceil_multi_unit(hour(new), n), minute = 0, second = 0, simple = T),
-                  week   = update(new, wday = 8, hour = 0, minute = 0, second = 0),
-                  month  = update(new, month = ceil_multi_unit1(month(new), n), mdays = 1, hours = 0, minutes = 0, seconds = 0),
+                  week   = update(new, wday = 8, hour = 0, minute = 0, second = 0, week_start = week_start),
+                  month  = update(new, month = new_month, mdays = 1, hours = 0, minutes = 0, seconds = 0),
                   year   = update(new, year = ceil_multi_unit(year(new), n), month = 1, mday = 1,  hour = 0, minute = 0, second = 0))
 
     reclass_date_maybe(new, x, unit)
   }
 }
 
-trunc_multi_unit <- function(x, unit, n){
+trunc_multi_unit <- function(x, unit, n) {
   y <- as.POSIXlt(x)
   switch(unit,
          second = {
-           y$sec <- if(n == 1) trunc(y$sec) else floor_multi_unit(y$sec, n)
+           y$sec <- if (n == 1) trunc(y$sec) else floor_multi_unit(y$sec, n)
          },
          minute = {
            y$sec[] <- 0
@@ -294,18 +314,18 @@ trunc_multi_unit <- function(x, unit, n){
   y
 }
 
-floor_multi_unit <- function(n, len) {
-  (n %/% len) * len
+floor_multi_unit <- function(x, n) {
+  (x %/% n) * n
 }
 
-floor_multi_unit1 <- function(n, len) {
-  (((n - 1) %/% len) * len) + 1L
+floor_multi_unit1 <- function(x, n) {
+  (((x - 1) %/% n) * n) + 1L
 }
 
-ceil_multi_unit <- function(n, len) {
-  (n %/% len) * len + len
+ceil_multi_unit <- function(x, n) {
+  (x %/% n) * n + n
 }
 
-ceil_multi_unit1 <- function(n, len) {
-  (((n - 1) %/% len) *  len) + len + 1L
+ceil_multi_unit1 <- function(x, n) {
+  (((x - 1) %/% n) *  n) + n + 1L
 }

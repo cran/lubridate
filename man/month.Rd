@@ -3,9 +3,9 @@
 \name{month}
 \alias{month}
 \alias{month<-}
-\title{Get/set months component of a date-time.}
+\title{Get/set months component of a date-time}
 \usage{
-month(x, label = FALSE, abbr = TRUE)
+month(x, label = FALSE, abbr = TRUE, locale = Sys.getlocale("LC_TIME"))
 
 month(x) <- value
 }
@@ -16,14 +16,16 @@ month(x) <- value
 as "January." FALSE will display the month as a number.}
 
 \item{abbr}{logical. FALSE will display the month as a character string
- label, such as "January". TRUE will display an abbreviated version of the
+label, such as "January". TRUE will display an abbreviated version of the
 label, such as "Jan". abbr is disregarded if label = FALSE.}
+
+\item{locale}{for month, locale to use for month names. Default to current locale.}
 
 \item{value}{a numeric object}
 }
 \value{
 the months element of x as a number (1-12) or character string. 1 =
-  January.
+January.
 }
 \description{
 Date-time must be a POSIXct, POSIXlt, Date, Period, chron, yearmon, yearqtr, zoo,
@@ -45,4 +47,3 @@ month(ymd(080101) + months(0:11), label = TRUE)
 \keyword{manip}
 \keyword{methods}
 \keyword{utilities}
-

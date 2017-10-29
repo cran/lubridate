@@ -21,10 +21,10 @@ as.POSIXct.fts <- function(x, tz = "", ...) as.POSIXct(zoo::index(x))
 #' @export
 as.POSIXlt.fts <- function(x, tz = "", ...) as.POSIXlt(zoo::index(x))
 
-#' @export
-as.POSIXlt.its <- function(x, tz = "", ...) as.POSIXlt(attr(x, "dates"))
-#' @export
-as.POSIXct.its <- function(x, tz = "", ...) as.POSIXct(attr(x, "dates"))
+## #' @export
+## as.POSIXlt.its <- function(x, tz = "", ...) as.POSIXlt(attr(x, "dates"))
+## #' @export
+## as.POSIXct.its <- function(x, tz = "", ...) as.POSIXct(attr(x, "dates"))
 
 #' @export
 as.POSIXlt.timeSeries <- function(x, tz = "", ...) {
@@ -75,10 +75,10 @@ reclass_date.chron <- function(new, orig) {
 reclass_date.timeDate <- function(new, orig) {
   timeDate::as.timeDate(new)
 }
-#' @export
-reclass_date.its <- function(new, orig) {
-  its::its(new, format = "%Y-%m-%d %X")
-}
+## #' @export
+## reclass_date.its <- function(new, orig) {
+##   its::its(new, format = "%Y-%m-%d %X")
+## }
 #' @export
 reclass_date.ti <- function(new, orig) {
   tis::as.ti(new, tis::tifName(orig))
@@ -89,7 +89,7 @@ reclass_date.Date <- function(new, orig) {
 }
 
 
-period_to_difftime <- function(per){
+period_to_difftime <- function(per) {
   as.difftime(per)
 }
 
@@ -105,7 +105,7 @@ reclass_timespan <- function(new, orig) standardGeneric("reclass_timespan")
 setGeneric("reclass_timespan")
 
 #' @export
-setMethod("reclass_timespan", signature(orig = "difftime"), function(new, orig){
+setMethod("reclass_timespan", signature(orig = "difftime"), function(new, orig) {
   if (is.period(new))
     as.difftime(new)
   else
@@ -113,41 +113,41 @@ setMethod("reclass_timespan", signature(orig = "difftime"), function(new, orig){
 })
 
 #' @export
-setMethod("reclass_timespan", signature(orig = "Duration"), function(new, orig){
+setMethod("reclass_timespan", signature(orig = "Duration"), function(new, orig) {
   as.duration(new)
 })
 
 #' @export
-setMethod("reclass_timespan", signature(orig = "Interval"), function(new, orig){
+setMethod("reclass_timespan", signature(orig = "Interval"), function(new, orig) {
   as.duration(new)
 })
 
 #' @export
-setMethod("reclass_timespan", signature(orig = "Period"), function(new, orig){
+setMethod("reclass_timespan", signature(orig = "Period"), function(new, orig) {
   as.period(new)
 })
 
 
-#' Change an object to a duration.
+#' Change an object to a duration
 #'
 #' as.duration changes Interval, Period and numeric class objects to
 #' Duration objects. Numeric objects are changed to Duration objects
 #' with the seconds unit equal to the numeric value.
 #'
 #' Durations are exact time measurements, whereas periods are relative time
-#' measurements. See \code{\link{Period-class}}. The length of a period depends
+#' measurements. See [Period-class]. The length of a period depends
 #' on when it occurs. Hence, a one to one mapping does not exist between
 #' durations and periods. When used with a period object, as.duration provides
 #' an inexact estimate of the length of the period; each time unit is assigned
 #' its most common number of seconds. A period of one month is converted to
 #' 2628000 seconds (approximately 30.42 days). This ensures that 12 months will
 #' sum to 365 days, or one normal year. For an exact transformation, first
-#' transform the period to an interval with \code{\link{as.interval}}.
+#' transform the period to an interval with [as.interval()].
 #'
 #' @param x Object to be coerced to a duration
 #' @param ... Parameters passed to other methods. Currently unused.
 #' @return A duration object
-#' @seealso \code{\link{Duration-class}}, \code{\link{duration}}
+#' @seealso [Duration-class], [duration()]
 #' @keywords classes manip methods chron
 #' @examples
 #' span <- interval(ymd("2009-01-01"), ymd("2009-08-01")) #interval
@@ -164,40 +164,40 @@ setMethod("reclass_timespan", signature(orig = "Period"), function(new, orig){
 #' @export
 setGeneric("as.duration",
            function(x, ...) standardGeneric("as.duration"),
-           useAsDefault = function(x, ...){
+           useAsDefault = function(x, ...) {
              stop(sprintf("as.duration is not defined for class '%s'", class(x)))
            })
 
-setMethod("as.duration", signature(x = "character"), function(x){
+setMethod("as.duration", signature(x = "character"), function(x) {
   as.duration(as.period(x))
 })
 
-setMethod("as.duration", signature(x = "numeric"), function(x){
+setMethod("as.duration", signature(x = "numeric"), function(x) {
   new("Duration", x)
 })
 
-setMethod("as.duration", signature(x = "logical"), function(x){
+setMethod("as.duration", signature(x = "logical"), function(x) {
   new("Duration", as.numeric(x))
 })
 
-setMethod("as.duration", signature(x = "difftime"), function(x){
+setMethod("as.duration", signature(x = "difftime"), function(x) {
   new("Duration", as.numeric(x, "secs"))
 })
 
-setMethod("as.duration", signature(x = "Interval"), function(x){
+setMethod("as.duration", signature(x = "Interval"), function(x) {
   new("Duration", x@.Data)
 })
 
-setMethod("as.duration", signature(x = "Duration"), function(x){
+setMethod("as.duration", signature(x = "Duration"), function(x) {
   x
 })
 
-setMethod("as.duration", signature(x = "Period"), function(x){
+setMethod("as.duration", signature(x = "Period"), function(x) {
   new("Duration", period_to_seconds(x))
 })
 
 
-#' Change an object to an \code{interval}.
+#' Change an object to an `interval`
 #'
 #' as.interval changes difftime, Duration, Period and numeric class objects to
 #' intervals that begin at the specified date-time. Numeric objects are first
@@ -210,13 +210,13 @@ setMethod("as.duration", signature(x = "Period"), function(x){
 #' this start date to look up how many seconds each variable
 #' length unit (e.g. month, year) lasted for during the time span
 #' described. See
-#' \code{\link{as.duration}}, \code{\link{as.period}}.
+#' [as.duration()], [as.period()].
 #'
 #' @param x a duration, difftime, period, or numeric object that describes the length of the interval
 #' @param start a POSIXt or Date object that describes when the interval begins
 #' @param ... additional arguments to pass to as.interval
 #' @return an interval object
-#' @seealso \code{\link{interval}}
+#' @seealso [interval()]
 #' @keywords classes manip methods chron
 #' @examples
 #' diff <- make_difftime(days = 31) #difftime
@@ -239,11 +239,11 @@ as.interval <- function(x, start, ...) standardGeneric("as.interval")
 #' @export
 setGeneric("as.interval")
 
-setMethod("as.interval", signature(x = "numeric"), function(x, start, ...){
+setMethod("as.interval", signature(x = "numeric"), function(x, start, ...) {
   .number_to_interval(x, start, ...)
 })
 
-setMethod("as.interval", signature(x = "difftime"), function(x, start, ...){
+setMethod("as.interval", signature(x = "difftime"), function(x, start, ...) {
   .number_to_interval(x, start, ...)
 })
 
@@ -260,9 +260,9 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
   .number_to_interval(as.numeric(x), start, ...)
 })
 
-.number_to_interval <- function(x, start, ...){
+.number_to_interval <- function(x, start, ...) {
   if (missing(start) & all(is.na(x)))
-    start <- as.POSIXct(NA, origin = origin)
+    start <- .POSIXct(NA_real_, tz = "UTC")
   else stopifnot(is.instant(start))
 
   if (is.instant(x))
@@ -272,14 +272,14 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 }
 
 
-#' Change an object to a period.
+#' Change an object to a period
 #'
 #' as.period changes Interval, Duration, difftime and numeric class objects
 #' to Period class objects with the specified units.
 #'
 #' Users must specify which time units to measure the period in. The exact length of
 #' each time unit in a period will depend on when it occurs. See
-#' \code{\link{Period-class}} and \code{\link{period}}.
+#' [Period-class] and [period()].
 #' The choice of units is not trivial; units that are
 #' normally equal may differ in length depending on when the time period
 #' occurs. For example, when a leap second occurs one minute is longer than 60
@@ -287,14 +287,14 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #'
 #' Because periods do not have a fixed length, they can not be accurately
 #' converted to and from Duration objects. Duration objects measure time spans
-#' in exact numbers of seconds, see \code{\link{Duration-class}}. Hence, a one to one
+#' in exact numbers of seconds, see [Duration-class]. Hence, a one to one
 #' mapping does not exist between durations and periods. When used with a
 #' Duration object, as.period provides an inexact estimate; the duration is
 #' broken into time units based on the most common lengths of time units, in
 #' seconds. Because the length of months are particularly variable, a period
 #' with a months unit can not be coerced from a duration object. For an exact
 #' transformation, first transform the duration to an interval with
-#' \code{\link{as.interval}}.
+#' [as.interval()].
 #'
 #' Coercing an interval to a period may cause surprising behavior if you request
 #' periods with small units. A leap year is 366 days long, but one year long. Such
@@ -314,7 +314,7 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #' unit.
 #' @param ... additional arguments to pass to as.period
 #' @return a period object
-#' @seealso \code{\link{Period-class}}, \code{\link{period}}
+#' @seealso [Period-class], [period()]
 #' @keywords classes manip methods chron
 #' @examples
 #' span <- interval(as.POSIXct("2009-01-01"), as.POSIXct("2010-02-02 01:01:01")) #interval
@@ -338,15 +338,15 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #' @export
 setGeneric("as.period",
            function(x, unit, ...) standardGeneric("as.period"),
-           useAsDefault = function(x, unit, ...){
+           useAsDefault = function(x, unit, ...) {
              stop(sprintf("as.period is not defined for class '%s'", class(x)))
            })
 
-setMethod("as.period", signature(x = "character"), function(x, ...){
+setMethod("as.period", signature(x = "character"), function(x, ...) {
   parse_period(x)
 })
 
-setMethod("as.period", signature(x = "numeric"), function(x, unit = "second", ...){
+setMethod("as.period", signature(x = "numeric"), function(x, unit = "second", ...) {
   x <- as.numeric(x)
   if (missing(unit)) unit <- "second"
   unit <- standardise_date_names(unit)
@@ -354,7 +354,7 @@ setMethod("as.period", signature(x = "numeric"), function(x, unit = "second", ..
   f(x)
 })
 
-setMethod("as.period", signature(x = "difftime"), function(x, unit = NULL, ...){
+setMethod("as.period", signature(x = "difftime"), function(x, unit = NULL, ...) {
   seconds_to_period(as.double(x, "secs"))
 })
 
@@ -369,7 +369,7 @@ setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) 
   ## https://github.com/hadley/lubridate/issues/285 for motivation.
 
   unit <-
-    if (missing(unit))  "year"
+    if (missing(unit)) "year"
     else standardise_period_names(unit)
 
   switch(unit,
@@ -393,7 +393,7 @@ setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) 
          stop("Unsuported unit ", unit))
 })
 
-.int_to_period <- function(x){
+.int_to_period <- function(x) {
   ## this function is called only for conversion with units > day
   start <- as.POSIXlt(x@start)
   end <- as.POSIXlt(start + x@.Data)
@@ -402,7 +402,7 @@ setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) 
 
   per <- list()
 
-  for(nm in c("sec", "min", "hour", "mday", "mon", "year")){
+  for (nm in c("sec", "min", "hour", "mday", "mon", "year")) {
     per[[nm]] <- ifelse(negs, start[[nm]] - end[[nm]], end[[nm]] - start[[nm]])
   }
 
@@ -437,7 +437,7 @@ setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) 
     add_months <- rep.int(-1L, sum(ndays))
 
     pmonth <- end$mon[ndays]
-    pmonth[pmonth == 0L] <- 1L #dec == jan == 31 days
+    pmonth[pmonth == 0L] <- 1L # dec == jan == 31 days
     prev_month_days <- .days_in_month(pmonth, end$year[ndays])
 
     ## difference in days:
@@ -497,7 +497,7 @@ setMethod("as.period", signature(x = "Duration"), function(x, unit = NULL, ...) 
 })
 
 setMethod("as.period", signature("Period"),
-          function(x, unit = NULL, ...){
+          function(x, unit = NULL, ...) {
             if (missing(unit) || is.null(unit)) {
               x
             } else {
@@ -525,47 +525,47 @@ setMethod("as.period", signature("logical"), function(x, unit = NULL, ...) {
 setGeneric("as.difftime")
 
 #' @export
-setMethod("as.difftime", signature(tim = "Interval"), function(tim, format = "%X", units = "secs"){
+setMethod("as.difftime", signature(tim = "Interval"), function(tim, format = "%X", units = "secs") {
   as.difftime(as.numeric(tim, units), format, units)
 })
 
 #' @export
-setMethod("as.difftime", signature(tim = "Duration"), function(tim, format = "%X", units = "secs"){
+setMethod("as.difftime", signature(tim = "Duration"), function(tim, format = "%X", units = "secs") {
   as.difftime(tim@.Data, format, units)
 })
 
 #' @export
-setMethod("as.difftime", signature(tim = "Period"), function(tim, format = "%X", units = "secs"){
+setMethod("as.difftime", signature(tim = "Period"), function(tim, format = "%X", units = "secs") {
   as.difftime(period_to_seconds(tim), format, units)
 })
 
 setGeneric("as.numeric")
 
-seconds_to_unit <- function(secs, unit = "second"){
+seconds_to_unit <- function(secs, unit = "second") {
   switch(unit,
          second = secs,
          minute = secs / 60,
          hour   = secs / 3600,
          day    = secs / 86400,
-         month  = secs / (86400 * 365.25)/12,
+         month  = secs / (86400 * 365.25 / 12),
          week   = secs / (86400 * 7),
          year   = secs / (86400 * 365.25),
          stop("invalid unit ", unit))
 }
 
 #' @export
-setMethod("as.numeric", signature("Duration"), function(x, units = "secs", ...){
+setMethod("as.numeric", signature("Duration"), function(x, units = "secs", ...) {
   unit <- standardise_period_names(units)
   as.numeric(seconds_to_unit(x@.Data, unit), ...)
 })
 
 #' @export
-setMethod("as.numeric", signature(x = "Interval"), function(x, units = "secs", ...){
+setMethod("as.numeric", signature(x = "Interval"), function(x, units = "secs", ...) {
   as.numeric(as.duration(x), units, ...)
 })
 
 #' @export
-setMethod("as.numeric", signature(x = "Period"), function(x, units = "second", ...){
+setMethod("as.numeric", signature(x = "Period"), function(x, units = "second", ...) {
   unit <- standardise_period_names(units)
   as.numeric(seconds_to_unit(period_to_seconds(x), unit = unit), ...)
 })
@@ -573,17 +573,17 @@ setMethod("as.numeric", signature(x = "Period"), function(x, units = "second", .
 as.POSIXt <- function(x) as.POSIXlt(x)
 
 #' @export
-setMethod("as.character", signature(x = "Period"), function(x, ...){
+setMethod("as.character", signature(x = "Period"), function(x, ...) {
   format(x)
 })
 
 #' @export
-setMethod("as.character", signature(x = "Duration"), function(x, ...){
+setMethod("as.character", signature(x = "Duration"), function(x, ...) {
   format(x)
 })
 
 #' @export
-setMethod("as.character", signature(x = "Interval"), function(x, ...){
+setMethod("as.character", signature(x = "Interval"), function(x, ...) {
   format(x)
 })
 
@@ -593,26 +593,26 @@ setMethod("as.character", signature(x = "Interval"), function(x, ...){
 #'
 #' @section Compare to base R:
 #'
-#' These are drop in replacements for \code{as.Date} and \code{as.POSIXct},
+#' These are drop in replacements for [as.Date()] and [as.POSIXct()],
 #' with a few tweaks to make them work more intuitively.
 #'
 #' \itemize{
-#'   \item \code{as_date} ignores the timezone attribute, resulting in
+#'   \item `as_date()` ignores the timezone attribute, resulting in
 #'      a more intuitive conversion (see examples)
 #'   \item Both functions provide a default origin argument for numeric
 #'      vectors.
-#'   \item \code{as_datetime} defaults to using UTC.
+#'   \item `as_datetime()` defaults to using UTC.
 #' }
 #'
-#' @param x a vector of \code{\link{POSIXt}}, numeric or character objects
+#' @param x a vector of [POSIXt], numeric or character objects
 #' @param origin a Date object, or something which can be coerced by
-#'   \code{as.Date(origin, ...)} to such an object (default: the Unix epoch of
-#'   "1970-01-01"). Note that in this instance, \code{x} is assumed to reflect
-#'   the number of days since \code{origin} at \code{"UTC"}.
+#'   `as.Date(origin, ...)` to such an object (default: the Unix epoch of
+#'   "1970-01-01"). Note that in this instance, `x` is assumed to reflect
+#'   the number of days since `origin` at `"UTC"`.
 #' @param tz a time zone name (default: time zone of the POSIXt object
-#'   \code{x}). See \code{\link{OlsonNames}}.
+#'   `x`). See [OlsonNames()].
 #' @param ... further arguments to be passed to specific methods (see above).
-#' @return a vector of \code{\link{Date}} objects corresponding to \code{x}.
+#' @return a vector of [Date] objects corresponding to `x`.
 #' @examples
 #' dt_utc <- ymd_hms("2010-08-03 00:50:50")
 #' dt_europe <- ymd_hms("2010-08-03 00:50:50", tz="Europe/London")
@@ -624,14 +624,6 @@ setMethod("as.character", signature(x = "Interval"), function(x, ...){
 setGeneric(name = "as_date",
            def = function(x, ...) standardGeneric("as_date"),
            useAsDefault = as.Date)
-
-#' @rdname as_date
-#' @export
-setGeneric("as_datetime",
-  function(x, ...) {
-    standardGeneric("as_datetime")
-  }
-)
 
 #' @rdname as_date
 #' @export
@@ -650,24 +642,43 @@ setMethod(f = "as_date", signature = "numeric",
 
 #' @rdname as_date
 #' @export
+setMethod("as_date", "character",
+          function(x, tz = NULL) {
+            ymd(x, tz = tz)
+          })
+
+#' @rdname as_date
+#' @export
+setGeneric("as_datetime",
+           function(x, ...) {
+             standardGeneric("as_datetime")
+           })
+
+#' @rdname as_date
+#' @export
 setMethod("as_datetime", "POSIXt",
   function(x, tz = "UTC") {
     with_tz(x, tz)
-  }
-)
+  })
 
 #' @rdname as_date
 #' @export
 setMethod("as_datetime", "numeric",
   function(x, origin = lubridate::origin, tz = "UTC") {
     as.POSIXct(x, origin = origin, tz = tz)
-  }
-)
+  })
+
+
+#' @rdname as_date
+#' @export
+setMethod("as_datetime", "character",
+          function(x, tz = "UTC") {
+            parse_date_time(x, orders = c("ymdTz", "ymdT"), tz = tz)
+          })
 
 #' @rdname as_date
 #' @export
 setMethod("as_datetime", "ANY",
   function(x, tz = "UTC") {
     with_tz(as.POSIXct(x), tzone = tz)
-  }
-)
+  })

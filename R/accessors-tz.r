@@ -1,4 +1,4 @@
-#' Get/set time zone component of a date-time.
+#' Get/set time zone component of a date-time
 #'
 #' Time zones are stored as character strings in an
 #' attribute of date-time objects. tz returns a date's time zone attribute.
@@ -11,7 +11,7 @@
 #' \url{http://en.wikipedia.org/wiki/List_of_tz_database_time_zones}.
 #'
 #' Setting tz does not update a date-time to display the same moment as measured
-#' at a different time zone. See \code{\link{with_tz}}. Setting a new time zone
+#' at a different time zone. See [with_tz()]. Setting a new time zone
 #' creates a new date-time. The numerical value of the hours element stays the
 #' same, only the time zone attribute is replaced.  This creates a new date-time
 #' that occurs an integer value of hours before or after the original date-time.
@@ -20,8 +20,8 @@
 #' chron, then R will update the number in the hours element to display the new
 #' date-time in the GMT timezone.
 #'
-#' For a description of the time zone attribute, see \code{\link[base]{timezones}}
-#' or \code{\link[base]{DateTimeClasses}}.
+#' For a description of the time zone attribute, see [base::timezones()]
+#' or [base::DateTimeClasses].
 #'
 #' @export
 #' @param x a date-time object of class a POSIXct, POSIXlt, Date, chron, yearmon,
@@ -60,16 +60,14 @@ tz <- function (x)
 
 #' @export
 tz.default <- function(x) {
-  if (is.null(attr(x,"tzone")) && !is.POSIXt(x))
+  if (is.null(attr(x, "tzone")) && !is.POSIXt(x))
     return("UTC")
-  tzs <- attr(as.POSIXlt(x),"tzone")
-  tzs[1]
+  attr(as.POSIXlt(x), "tzone")[[1]]
 }
 
 #' @export
-tz.zoo <- function(x){
-  tzs <- attr(as.POSIXlt(zoo::index(x)), "tzone")
-  tzs[1]
+tz.zoo <- function(x) {
+  attr(as.POSIXlt(zoo::index(x)), "tzone")[[1]]
 }
 
 #' @export
@@ -81,9 +79,9 @@ tz.irts <- function(x)
   return("GMT")
 
 #' @rdname tz
-#' @param value timezone value to be assigned to \code{x}'s \code{tzone} attribute
+#' @param value timezone value to be assigned to `x`'s `tzone` attribute
 #' @export
-"tz<-" <- function(x, value){
+"tz<-" <- function(x, value) {
   new <- force_tz(x, value)
   reclass_date(new, x)
 }

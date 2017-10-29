@@ -1,16 +1,16 @@
 #' @include periods.r
 NULL
 
-#' Get/set Date component of a date-time.
+#' Get/set date component of a date-time
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr, zoo,
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
 #'
-#' \code{date} does not yet support years before 0 C.E.
-#' Also \code{date} is not defined for Period objects.
+#' `date()` does not yet support years before 0 C.E.
+#' Also `date()` is not defined for Period objects.
 #'
 #' @param x a date-time object
-#' @param value an object for which the \code{date()} function is defined
+#' @param value an object for which the `date()` function is defined
 #' @return the date of x as a Date
 #' @keywords utilities manip chron methods
 #' @examples
@@ -26,12 +26,15 @@ date <- function(x)
 
 #' @export
 date.default <- function(x) {
-  x <-  as.POSIXlt(x, tz = tz(x))
-  year <- x$year + 1900
-  month <- x$mon + 1
-  day <- x$mday
-
-  as.Date(make_datetime(year, month, day))
+  if (missing(x)) {
+    base::date()
+  } else {
+    x <- as.POSIXlt(x, tz = tz(x))
+    year <- x$year + 1900
+    month <- x$mon + 1
+    day <- x$mday
+    as.Date(make_datetime(year, month, day))
+  }
 }
 #' @export
 date.Period <- function(x)
@@ -45,6 +48,6 @@ date.Period <- function(x)
 setGeneric("date<-")
 
 #' @export
-setMethod("date<-", signature("Period"), function(x, value){
+setMethod("date<-", signature("Period"), function(x, value) {
   stop("date<- is undefined for Period objects")
 })

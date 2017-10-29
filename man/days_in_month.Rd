@@ -2,7 +2,7 @@
 % Please edit documentation in R/accessors-month.r
 \name{days_in_month}
 \alias{days_in_month}
-\title{Get the number of days in the month of a date-time.}
+\title{Get the number of days in the month of a date-time}
 \usage{
 days_in_month(x)
 }
@@ -16,4 +16,3 @@ An integer of the number of days in the month component of the date-time object.
 Date-time must be a POSIXct, POSIXlt, Date, chron, yearmon, yearqtr,
 zoo, zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
 }
-

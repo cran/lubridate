@@ -3,7 +3,7 @@
 \name{minute}
 \alias{minute}
 \alias{minute<-}
-\title{Get/set minutes component of a date-time.}
+\title{Get/set minutes component of a date-time}
 \usage{
 minute(x)
 
@@ -32,4 +32,3 @@ minute(x) > 2
 \keyword{manip}
 \keyword{methods}
 \keyword{utilities}
-

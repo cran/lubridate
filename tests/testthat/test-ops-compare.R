@@ -1,10 +1,12 @@
-context("comparisons operations")
+context("Comparisons operations")
 
 test_that("Comparison operators work with POSIX and Date objects", {
   expect_true(ymd_hms("2016-01-03 00:00:00", tz = "") == "2016-01-03 00:00:00")
   expect_true(ymd_hms("2016-01-03 00:00:01", tz = "") > "2016-01-03 00:00:00")
   expect_true(ymd_hms("2016-01-03 00:00:00", tz = "") == "2016-01-03")
   expect_true(ymd("2016-01-03") == "2016-01-03")
+  expect_true(ymd("2016-01-03") >  "2016-01-02")
+  expect_true(ymd("2016-01-03") <  "2016-01-04")
   expect_true(ymd("2016-01-03") == ymd_hms("2016-01-03 00:00:00"))
   expect_true(ymd("2016-01-03") < ymd_hms("2016-01-03 00:00:01"))
   expect_true(ymd("2016-01-03") != ymd_hms("2016-01-03 00:00:01"))
@@ -14,4 +16,9 @@ test_that("Comparison operators work with POSIX and Date objects", {
   expect_true(ymd("2016-01-03") < ymd_hms("2016-01-03 00:00:01", tz = "Europe/Paris"))
   expect_true(ymd("2016-01-03") < as.POSIXlt(ymd_hms("2016-01-03 00:00:01", tz = "Europe/Paris")))
   expect_true(ymd("2016-01-03") < as.POSIXlt(ymd_hms("2016-01-03 00:00:01", tz = "Europe/Paris")))
+})
+
+test_that("Duration and periods are comparable", {
+  expect_true(dyears(1) < years(1))
+  expect_false(dyears(1) > years(1))
 })

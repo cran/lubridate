@@ -3,7 +3,7 @@
 \name{second}
 \alias{second}
 \alias{second<-}
-\title{Get/set seconds component of a date-time.}
+\title{Get/set seconds component of a date-time}
 \usage{
 second(x)
 
@@ -32,4 +32,3 @@ second(x) > 2
 \keyword{manip}
 \keyword{methods}
 \keyword{utilities}
-

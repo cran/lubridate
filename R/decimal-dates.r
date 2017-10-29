@@ -1,4 +1,4 @@
-#' Converts a date to a decimal of its year.
+#' Converts a date to a decimal of its year
 #'
 #' @export
 #' @param date a POSIXt or Date object
@@ -11,9 +11,9 @@ decimal_date <- function(date)
   UseMethod("decimal_date")
 
 #' @export
-decimal_date.default <- function(date){
+decimal_date.default <- function(date) {
 
-  if(any(!inherits(date, c("POSIXt", "POSIXct", "POSIXlt", "Date"))))
+  if (any(!inherits(date, c("POSIXt", "POSIXct", "POSIXlt", "Date"))))
     stop("date(s) not in POSIXt or Date format")
 
   Y <- year(date)
@@ -28,12 +28,12 @@ decimal_date.default <- function(date){
 decimal_date.zoo <- function(date)
   decimal_date(zoo::index(date))
 
-#' @export
-decimal_date.its <- function(date)
-  decimal_date.default(attr(date, "dates"))
+## #' @export
+## decimal_date.its <- function(date)
+##   decimal_date.default(attr(date, "dates"))
 
 
-#' Converts a decimal to a date.
+#' Converts a decimal to a date
 #'
 #' @export
 #' @param decimal a numeric object

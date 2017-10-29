@@ -1,7 +1,7 @@
 #' @include periods.r
 NULL
 
-#' Get/set hours component of a date-time.
+#' Get/set hours component of a date-time
 #'
 #' Date-time must be a POSIXct, POSIXlt, Date, Period, chron, yearmon, yearqtr, zoo,
 #' zooreg, timeDate, xts, its, ti, jul, timeSeries, and fts objects.
@@ -28,7 +28,7 @@ hour.Period <- function(x)
   slot(x, "hour")
 
 #' @export
-#' @param value numeric value to be assigned to \code{hour} component
+#' @param value numeric value to be assigned to the `hour` component
 #' @rdname hour
 "hour<-" <- function(x, value)
   x <- x + hours(value - hour(x))
@@ -36,7 +36,7 @@ hour.Period <- function(x)
 setGeneric("hour<-")
 
 #' @export
-setMethod("hour<-", signature("Period"), function(x, value){
+setMethod("hour<-", signature("Period"), function(x, value) {
   slot(x, "hour") <- value
   x
 })
