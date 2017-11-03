@@ -317,7 +317,7 @@ setMethod("as.interval", signature("logical"), function(x, start, ...) {
 #' @seealso [Period-class], [period()]
 #' @keywords classes manip methods chron
 #' @examples
-#' span <- interval(as.POSIXct("2009-01-01"), as.POSIXct("2010-02-02 01:01:01")) #interval
+#' span <- interval(ymd_hms("2009-01-01 00:00:00"), ymd_hms("2010-02-02 01:01:01")) #interval
 #' as.period(span)
 #' as.period(span, units = "day")
 #' "397d 1H 1M 1S"
@@ -644,7 +644,7 @@ setMethod(f = "as_date", signature = "numeric",
 #' @export
 setMethod("as_date", "character",
           function(x, tz = NULL) {
-            ymd(x, tz = tz)
+            as_date(as_datetime(x, tz = "UTC"))
           })
 
 #' @rdname as_date
@@ -673,7 +673,7 @@ setMethod("as_datetime", "numeric",
 #' @export
 setMethod("as_datetime", "character",
           function(x, tz = "UTC") {
-            parse_date_time(x, orders = c("ymdTz", "ymdT"), tz = tz)
+            parse_date_time(x, orders = c("ymdTz", "ymdT", "ymd"), tz = tz, train = FALSE)
           })
 
 #' @rdname as_date

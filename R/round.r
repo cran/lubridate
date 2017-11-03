@@ -68,7 +68,7 @@
 #' ## print fractional seconds
 #' options(digits.secs=6)
 #'
-#' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' x <- ymd_hms("2009-08-03 12:01:59.23")
 #' round_date(x, ".5s")
 #' round_date(x, "sec")
 #' round_date(x, "second")
@@ -84,7 +84,7 @@
 #' round_date(x, "halfyear")
 #' round_date(x, "year")
 #'
-#' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' x <- ymd_hms("2009-08-03 12:01:59.23")
 #' floor_date(x, ".1s")
 #' floor_date(x, "second")
 #' floor_date(x, "minute")
@@ -98,7 +98,7 @@
 #' floor_date(x, "halfyear")
 #' floor_date(x, "year")
 #'
-#' x <- as.POSIXct("2009-08-03 12:01:59.23")
+#' x <- ymd_hms("2009-08-03 12:01:59.23")
 #' ceiling_date(x, ".1 sec") # imprecise representation at 0.1 sec !!!
 #' ceiling_date(x, "second")
 #' ceiling_date(x, "minute")
@@ -113,7 +113,7 @@
 #' ceiling_date(x, "halfyear")
 #' ceiling_date(x, "year")
 #'
-#' ## POSIXct precision is pretty much limited to seconds:
+#' ## As of R 3.4.2 POSIXct printing of fractional numbers is wrong
 #' as.POSIXct("2009-08-03 12:01:59.3") ## -> "2009-08-03 12:01:59.2 CEST"
 #' ceiling_date(x, ".1 sec") ## -> "2009-08-03 12:01:59.2 CEST"
 #'
@@ -289,29 +289,29 @@ ceiling_date <- function(x, unit = "seconds", change_on_boundary = NULL, week_st
 }
 
 trunc_multi_unit <- function(x, unit, n) {
-  y <- as.POSIXlt(x)
+  x <- as.POSIXlt(x)
   switch(unit,
          second = {
-           y$sec <- if (n == 1) trunc(y$sec) else floor_multi_unit(y$sec, n)
+           x$sec <- if (n == 1) trunc(x$sec) else floor_multi_unit(x$sec, n)
          },
          minute = {
-           y$sec[] <- 0
-           y$min <- floor_multi_unit(y$min, n)
+           x$sec[] <- 0
+           x$min <- floor_multi_unit(x$min, n)
          },
          hour = {
-           y$sec[] <- 0
-           y$min[] <- 0L
-           y$hour <- floor_multi_unit(y$hour, n)
+           x$sec[] <- 0
+           x$min[] <- 0L
+           x$hour <- floor_multi_unit(x$hour, n)
          },
          day = {
-           y$sec[] <- 0
-           y$min[] <- 0L
-           y$hour[] <- 0L
-           y$isdst[] <- -1L
-           y$mday <- floor_multi_unit1(y$mday, n)
+           x$sec[] <- 0
+           x$min[] <- 0L
+           x$hour[] <- 0L
+           x$isdst[] <- -1L
+           x$mday <- floor_multi_unit1(x$mday, n)
          },
          stop("Invalid unit ", unit))
-  y
+  x
 }
 
 floor_multi_unit <- function(x, n) {

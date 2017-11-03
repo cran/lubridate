@@ -1,8 +1,18 @@
-Version 1.6.0.9000
-==================
+Version 1.7.1
+=============
+
+## BUG FIXES
+
+* [#575](https://github.com/tidyverse/lubridate/issues/598), [#600](https://github.com/tidyverse/lubridate/issues/600), [#602](https://github.com/tidyverse/lubridate/issues/602) Fix zoneinfo lookup on windows and solaris.
+* [#598](https://github.com/tidyverse/lubridate/issues/598) Fix broken parsing of `ymd_hms` strings by `as_date`.
+* [#597](https://github.com/tidyverse/lubridate/issues/597) Fix broken parsing of `ymd` strings by `as_datetime`.
+
+Version 1.7.0
+=============
 
 ### NEW FEATURES
 
+* Reduced memory footprint on `trunc_multi_unit` so that it overwrites the vector argument `x` versus making a new vector `y`.
 * [#438](https://github.com/tidyverse/lubridate/issues/438) New function `force_tzs` for "enforcement" of heterogeneous time zones.
 * [#438](https://github.com/tidyverse/lubridate/issues/438) New function `local_time` for the retrieval of local day time in different time zones.
 * [#560](https://github.com/tidyverse/lubridate/issues/560) New argument `cutoff_2000` for parsing functions to indicate 20th century cutoff for `y` format.
@@ -21,7 +31,7 @@ Version 1.6.0.9000
 
 ### CHANGES
 
-* [#401](https://github.com/tidyverse/lubridate/issues/401) **Breaking change** `wday` labels are in current locale. The abbreviated labels in English locales have been also changed to standard abbreviations (Tues -> Tue, Thurs -> Thu etc.).
+* [#401](https://github.com/tidyverse/lubridate/issues/401) **[Breaking Change]** Labels returned by `wday` and `month` are now in current locale. The abbreviated labels in English locales have been changed to standard abbreviations (Tues -> Tue, Thurs -> Thu etc.).
 * [#469](https://github.com/tidyverse/lubridate/issues/469) Throw warning in `with_tz` on invalid timezone.
 * [#572](https://github.com/tidyverse/lubridate/issues/572) `B` and `b` formats no longer match numeric months. This corresponds to the original intent, and was always documented as such.
 
