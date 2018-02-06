@@ -35,7 +35,7 @@ setClass("Duration", contains = c("Timespan", "numeric"), validity = check_durat
 #' @name hidden_aliases
 #' @aliases Compare,Duration,ANY-method Compare,Duration,Duration-method
 #'   Compare,difftime,Duration-method Compare,ANY,Duration-method
-#'   Compare,Duration,Period-method
+#'   Compare,Duration,Period-method Compare,Duration,difftime-method
 #'   Compare,character,Duration-method Compare,Duration,character-method
 #'   as.numeric,Duration-method show,Duration-method c,Duration-method
 #'   rep,Duration-method [,Duration-method [<-,Duration,ANY,ANY,ANY-method
@@ -167,9 +167,10 @@ setMethod("[[<-", signature(x = "Duration"),
 #' oriented programming.
 #'
 #' @param num the number or a character vector of time units. In string
-#'   representation all unambiguous name units and abbreviations are supported;
-#'   'm' stands for month and 'M' for minutes, see examples. Fractional units
-#'   are supported.
+#'   representation all unambiguous name units and abbreviations and ISO 8601
+#'   formats are supported; 'm' stands for month and 'M' for minutes unless ISO
+#'   8601 "P" modifier is present (see examples). Fractional units are
+#'   supported.
 #' @param units a character string that specifies the type of units that num
 #'   refers to. When `num` is character, this argument is ignored.
 #' @param ... a list of time units to be included in the duration and their
@@ -181,25 +182,41 @@ setMethod("[[<-", signature(x = "Duration"),
 #' @keywords chron classes
 #' @examples
 #'
-#' duration(day = -1)
-#' # -86400s (~-1 days)
+#' ### Separate period and units vectors
+#'
 #' duration(90, "seconds")
 #' duration(1.5, "minutes")
 #' duration(-1, "days")
-#' # -86400s (~-1 days)
+#'
+#' ### Units as arguments
+#'
+#' duration(day = -1)
 #' duration(second = 90)
 #' duration(minute = 1.5)
 #' duration(mins = 1.5)
 #' duration(second = 3, minute = 1.5, hour = 2, day = 6, week = 1)
 #' duration(hour = 1, minute = -60)
+#'
+#' ### Parsing
+#'
 #' duration("2M 1sec")
 #' duration("2hours 2minutes 1second")
 #' duration("2d 2H 2M 2S")
 #' duration("2days 2hours 2mins 2secs")
 #' # Missing numerals default to 1. Repeated units are added up.
 #' duration("day day")
-#' # Comparison with characters is supported from v1.6.0.
+#'
+#' ### ISO 8601 parsing
+#'
+#' duration("P3Y6M4DT12H30M5S")
+#' duration("P23DT23H") # M stands for months
+#' duration("10DT10M") # M stands for minutes
+#' duration("P23DT60H 20min 100 sec") # mixing ISO and lubridate style parsing
+#'
+#' # Comparison with characters (from v1.6.0)
+#'
 #' duration("day 2 sec") > "day 1sec"
+#'
 #'
 #' ## ELEMENTARY CONSTRUCTORS:
 #'
@@ -346,7 +363,14 @@ setMethod("Compare", signature(e1 = "character", e2 = "Duration"),
 #' @export
 setMethod("Compare", c(e1 = "difftime", e2 = "Duration"),
           function(e1, e2) {
-            callGeneric(as.numeric(e1, "secs"), as.numeric(e2, "secs"))
+            callGeneric(as.numeric(e1, "secs"), e2@.Data)
+          })
+
+
+#' @export
+setMethod("Compare", c(e1 = "Duration", e2 = "difftime"),
+          function(e1, e2) {
+            callGeneric(e1@.Data, as.numeric(e2, "secs"))
           })
 
 #' @export

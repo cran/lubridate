@@ -14,10 +14,6 @@ test_that("floor_date works for each time element", {
   expect_identical(floor_date(x, "year"), as.POSIXct("2009-01-01 00:00:00", tz = "UTC"))
 })
 
-test_that("ceiling_date works with multi-units", {
-  x <- as.POSIXct("2009-08-03 12:01:59.23", tz =        "UTC")
-})
-
 test_that("floor_date works for multi-units", {
   x <- as.POSIXct("2009-08-03 12:01:59.23", tz = "UTC")
   expect_identical(floor_date(x, "2 secs"),   as.POSIXct("2009-08-03 12:01:58", tz = "UTC"))
@@ -272,6 +268,9 @@ test_that("rounding works across DST", {
   expect_equal(floor_date(tt, "month"), as.POSIXct("2016-03-01", tz = "Europe/Helsinki"))
   tt <- ymd_hms("2016-03-27 05:00:00", tz = "Europe/Helsinki");
   expect_equal(floor_date(tt, "day"), as.POSIXct("2016-03-27", tz = "Europe/Helsinki"))
+  ## https://github.com/tidyverse/lubridate/issues/605
+  x <- ymd_hms("2017-11-05 23:59:03", tz = 'America/New_York')
+  expect_equal(ceiling_date(x, "day"), as.POSIXct("2017-11-06", tz = "America/New_York"))
 })
 
 test_that("Ceiling for partials (Date) rounds up on boundary", {

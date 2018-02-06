@@ -14,6 +14,31 @@ test_that("is.interval works as expected", {
     as.POSIXct("2009-08-03 13:01:59", tz = "UTC"))), is_true())
 })
 
+test_that("Parsing of iso 8601 intervals works", {
+  expect_equal(interval("2007-03-01T13:00:00Z/2008-05-11T15:30:00Z"),
+               interval("2007-03-01T13:00:00Z", "2008-05-11T15:30:00Z"))
+  expect_equal(interval("2007-03-01T13:00:00Z/P1Y2M10DT2H30M"),
+               interval("2007-03-01T13:00:00Z",
+                        ymd_hms("2007-03-01T13:00:00Z") + period("P1Y2M10DT2H30M")))
+
+  expect_equal(interval("P1Y2M10DT2H30M/2008-05-11T15:30:00Z"),
+               interval(ymd_hms("2008-05-11T15:30:00Z") - period("P1Y2M10DT2H30M"),
+                        "2008-05-11T15:30:00Z"))
+
+  expect_equal(interval(c("P1Y2M10DT2H30M/2008-05-11T15:30:00Z",
+                          "P2H30M/2008-05-11T15:30:00Z")),
+               interval(ymd_hms("2008-05-11T15:30:00Z") - period(c("P1Y2M10DT2H30M", "P2H30M")),
+                        "2008-05-11T15:30:00Z"))
+
+  expect_equal(interval(c("P1Y2M10DT2H30M/2008-05-11T15:30:00Z",
+                          "2001-05-11T15:30:00Z/P2H30M")),
+               interval(c(ymd_hms("2008-05-11T15:30:00Z") - period("P1Y2M10DT2H30M"),
+                          ymd_hms("2001-05-11T15:30:00Z")),
+                        c(ymd_hms("2008-05-11T15:30:00Z"),
+                          ymd_hms("2001-05-11T15:30:00Z") + period("P2H30M"))))
+
+})
+
 test_that("is.interval handles vectors", {
   expect_that(is.interval(interval(
     as.POSIXct(c("2008-08-03 13:01:59", "2009-08-03 13:01:59"), tz = "UTC"),
@@ -39,7 +64,6 @@ test_that("interval handles vector input", {
   time3 <- as.POSIXct("2009-08-04 13:01:59", tz = "UTC")
   int <- interval(c(time1, time2), time3)
   num <- as.numeric(time3) -  as.numeric(c(time1, time2))
-
 
   expect_equal(int@.Data, num)
   expect_equal(int@start, c(time1, time2))
@@ -81,23 +105,28 @@ test_that("interval handles character inputs", {
 
 
 test_that("interval handles POSIXlt inputs", {
+  skip_on_cran()
 
+  oldtz <- Sys.getenv("TZ")
   Sys.setenv(TZ = "America/Los_Angeles")
+  on.exit(Sys.setenv(TZ = oldtz))
+
   t1 <- as.POSIXlt("2007-01-01")
   t2 <- as.POSIXlt("2007-08-01")
+
   expect_equal(unclass(interval(t1, t2)),
                unclass(new("Interval", 18313200,
                            start = as.POSIXct("2007-01-01"),
-                           tzone = Sys.timezone())))
+                           tzone = "America/Los_Angeles")))
 
   t1 <- as.POSIXlt("2007-01-01")
   t2 <- as.POSIXlt("2007-08-01 00:01:02")
+
   expect_equal(unclass(interval(t1, t2)),
                unclass(new("Interval", 18313262,
                            start = as.POSIXct("2007-01-01"),
-                           tzone = Sys.timezone())))
+                           tzone = "America/Los_Angeles")))
 
-  Sys.setenv(TZ = "")
 })
 
 test_that("as.interval works as expected", {
@@ -162,7 +191,6 @@ test_that("summary.Interval creates useful summary", {
 test_that("as.interval handles NAs", {
   expect_equal(as.interval(NA), interval(NA, NA))
 })
-
 
 test_that("c.interval works as expected", {
   time1 <- as.POSIXct("2008-08-03 13:01:59", tz = "UTC")
@@ -601,5 +629,25 @@ test_that("Reduce works with intervals (#348)", {
 
   expect_equal(Reduce(union, ints),
                interval(ymd("2001-01-01"), ymd("2004-01-01")))
+
+})
+
+test_that("Intervals handles missing numbers", {
+
+  int <- new("Interval"
+           , .Data = c(NA, NA, NA, 123552000, 71020800, 82425600)
+           , start = structure(c(NA, NA, NA, 1174953600, 1364428800, 1183334400),
+                               class = c("POSIXct", "POSIXt"), tzone = "UTC")
+           , tzone = "UTC")
+
+  out <- new("Interval"
+           , .Data = c(NA, NA, NA, 31622400, NA, 31622400)
+           , start = structure(c(NA, NA, NA, 1199145600, NA, 1199145600), tzone = "UTC",
+                               class = c("POSIXct", "POSIXt"))
+           , tzone = "UTC")
+
+  expect_equal(intersect(int, interval("2008-01-01", "2009-01-01")), out)
+
+  expect_equal(intersect(int, int), int)
 
 })

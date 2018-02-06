@@ -46,15 +46,15 @@ and \code{as.POSIXct()}. Default is \code{FALSE}.}
 can use \code{system("locale -a")} to list all the installed locales.}
 
 \item{select_formats}{A function to select actual formats for parsing from a
-set of formats which matched a training subset of \code{x}. it receives a named
+set of formats which matched a training subset of \code{x}. It receives a named
 integer vector and returns a character vector of selected formats. Names
 of the input vector are formats (not orders) that matched the training
 set. Numeric values are the number of dates (in the training set) that
 matched the corresponding format. You should use this argument if the
 default selection method fails to select the formats in the right
-order. By default the formats with most formating tockens (\%) are
-selected and \%Y counts as 2.5 tockens (so that it has a priority over
-\%y\%m). Se examples.}
+order. By default the formats with most formating tokens (\%) are
+selected and \%Y counts as 2.5 tokens (so that it has a priority over
+\%y\%m). See examples.}
 
 \item{exact}{logical. If \code{TRUE}, the \code{orders} parameter is interpreted as an
 exact \code{strptime()} format and no training or guessing are performed
@@ -284,7 +284,7 @@ my_select <-   function(trained, drop=FALSE, ...){
 
 parse_date_time(c("27-09-13", "27-09-2013"), "dmy", select_formats = my_select)
 
-## ** invalid times with "fast" parcing **
+## ** invalid times with "fast" parsing **
 parse_date_time("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
 parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York")
 parse_date_time2("2010-03-14 02:05:06",  "YmdHMS", tz = "America/New_York", lt = TRUE)

@@ -20,8 +20,9 @@ if (file.exists("../../00check.log")) {
 }
 
 do_Rscript <- function(expr) {
+  rscript <- sprintf("%s/bin/Rscript", Sys.getenv("R_HOME"))
   paste(
-    system2("Rscript",
+    system2(rscript,
             args = c("--vanilla", "--default-packages=NULL", "-e", shQuote(expr)),
             env = c("R_TESTS=", env),
             stdout = TRUE, stderr = TRUE),

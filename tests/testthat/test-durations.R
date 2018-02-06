@@ -14,7 +14,7 @@ test_that("make_difftime works as expected", {
   expect_that(diff, equals(y))
 })
 
-test_that("parsing works as expected", {
+test_that("Duration parsing works", {
   expect_equal(duration("1min 2sec 2secs 1H 2M 1d"),
                duration(seconds = 4, minutes = 3, hours = 1, days = 1))
   expect_equal(duration("day day"),
@@ -50,15 +50,6 @@ test_that("parsing with 0 units works as expected", {
 })
 
 
-
-test_that("character comparison with durrations works as expected", {
-  expect_true("day" == duration(days = 1))
-  expect_true("2 days, 2 secs" == duration(days = 2, seconds = 2))
-  expect_true(duration("day 1s") >  duration(days = 1))
-  expect_true("day 1s" >  duration(days = 1))
-  expect_true("day 1S 2H" == duration(days = 1, seconds = 1, hours = 2))
-  expect_false("day 1S 2H" < duration(days = 1, hours = 2))
-})
 
 test_that("make_difftime handles vectors", {
   x <- as.POSIXct(c("2008-08-03 13:01:59", "2008-08-03 13:01:59"), tz = "UTC")

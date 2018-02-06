@@ -50,19 +50,23 @@
 #' x
 #' tz(x) <- "Europe/Berlin"
 #' x
-#' }
-#' Sys.setenv(TZ = "GMT")
+#'
+#' Sys.setenv(TZ = "UTC")
 #' now()
 #' tz(now())
 #' Sys.unsetenv("TZ")
+#' }
 tz <- function (x)
   UseMethod("tz")
 
 #' @export
 tz.default <- function(x) {
-  if (is.null(attr(x, "tzone")) && !is.POSIXt(x))
+  tzone <- attr(x, "tzone")[[1]]
+  if (is.null(tzone) && !is.POSIXt(x))
     return("UTC")
-  attr(as.POSIXlt(x), "tzone")[[1]]
+  if (is.character(tzone) && nzchar(tzone))
+    return(tzone)
+  attr(as.POSIXlt(x[1]), "tzone")[[1]]
 }
 
 #' @export

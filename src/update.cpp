@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <inttypes.h>
 #include "civil_time.h"
 #include "time_zone.h"
 #include "time_zone_if.h"
@@ -17,6 +18,30 @@
 // R's timezone registry:
 // https://github.com/SurajGupta/r-source/blob/master/src/extra/tzone/registryTZ.c
 
+
+/// floor
+
+int_fast64_t NA_INT32 = static_cast<int_fast64_t>(NA_INTEGER);
+int_fast64_t NA_INT64 = INT_FAST64_MIN;
+double fINT64_MAX = static_cast<double>(INT_FAST64_MAX);
+double fINT64_MIN = static_cast<double>(INT_FAST64_MIN);
+
+int_fast64_t floor_to_int64(double x) {
+  // maybe fixme: no warning yet on integer overflow
+  if (ISNAN(x))
+    return NA_INT64;
+
+  x = std::floor(x);
+  if (x > fINT64_MAX || x <= fINT64_MIN) {
+    return NA_INT64;
+  }
+
+  return static_cast<int_fast64_t>(x);
+}
+
+
+/// tzone utilities
+
 namespace chrono = std::chrono;
 using sys_seconds = chrono::duration<int_fast64_t>;
 using time_point = chrono::time_point<std::chrono::system_clock, sys_seconds>;
@@ -26,25 +51,73 @@ const std::unordered_map<std::string, int> TZMAP {
   {"PDT", -7}, {"PST", -8}, {"WEST", 1}, {"WET", 0}
 };
 
-namespace {
-// initialize once per session
-Rcpp::Environment _base = Rcpp::Environment::base_namespace();
-Rcpp::Function _sys_tz = _base["Sys.timezone"];
-const std::string LOCAL_TZ(CHAR(STRING_ELT(_sys_tz(), 0)));
+const char* tz_from_R_tzone(SEXP tz) {
+  if (Rf_isNull(tz)) {
+    return "";
+  } else {
+    if (!Rf_isString(tz))
+      Rf_error("'tz' is not a character vector");
+    const char* tz0 = CHAR(STRING_ELT(tz, 0));
+    if (strlen(tz0) == 0) {
+      if (LENGTH(tz) > 1) {
+        return CHAR(STRING_ELT(tz, 1));
+      }
+    }
+    return tz0;
+  }
 }
 
-// Memoized local time zone
-std::string local_tz() {
-  // Check for $TZ in case user overridden it
+const char* tz_from_tzone_attr(SEXP x){
+  return tz_from_R_tzone(Rf_getAttrib(x, Rf_install("tzone")));
+}
+
+const char* get_current_tz() {
+  // ugly workaround to get local time zone (abbreviation) as seen by R (not used)
+  Rcpp::NumericVector origin = Rcpp::NumericVector::create(0);
+  origin.attr("class") = Rcpp::CharacterVector::create("POSIXct", "POSIXt");
+  Rcpp::Environment base = Rcpp::Environment::base_namespace();
+  Rcpp::Function as_posixlt(base["as.POSIXlt.POSIXct"]);
+  return tz_from_R_tzone(as_posixlt(origin));
+}
+
+const char* get_system_tz() {
+  Rcpp::Environment base = Rcpp::Environment::base_namespace();
+  Rcpp::Function sys_timezone(base["Sys.timezone"]);
+  SEXP sys_tz = STRING_ELT(sys_timezone(), 0);
+  if (sys_tz == NA_STRING || strlen(CHAR(sys_tz)) == 0) {
+    Rf_warning("System timezone name is unknown. Please set environment variable TZ.");
+    return "UTC";
+  } else {
+    return CHAR(sys_tz);
+  }
+}
+
+// initialize once per session
+const char* SYS_TZ; // = get_system_tz();
+
+const char* local_tz() {
   const char* tz_env = std::getenv("TZ");
-  if (tz_env)
+  if (tz_env == NULL) {
+    // memoize once per session
+    if (SYS_TZ == NULL) {
+      SYS_TZ = get_system_tz();
+    }
+    return SYS_TZ;
+  } else if (strlen(tz_env) == 0) {
+    // FIXME:
+    // if set but empty, it's system specific ...
+    // Is there a way way to get TZ name as R sees it?
+    Rf_warning("Environment variable TZ is set to \"\". Things might break.");
+    return get_current_tz();
+  }
+  else {
     return tz_env;
-  return LOCAL_TZ;
+  }
 }
 
 bool load_tz(std::string tzstr, cctz::time_zone& tz) {
   // return `true` if loaded, else false
-  if (tzstr.size() == 0){
+  if (tzstr.size() == 0) {
     // CCTZ doesn't work on windows https://github.com/google/cctz/issues/53
     /* std::cout << "Local TZ: " << local_tz() << std::endl; */
     cctz::load_time_zone(local_tz(), &tz);
@@ -62,6 +135,11 @@ bool load_tz(std::string tzstr, cctz::time_zone& tz) {
 }
 
 // [[Rcpp::export]]
+Rcpp::CharacterVector C_local_tz() {
+    return Rf_mkString(local_tz());
+}
+
+// [[Rcpp::export]]
 Rcpp::LogicalVector C_valid_tz(const Rcpp::CharacterVector& tz_name) {
   cctz::time_zone tz;
   std::string tzstr(tz_name[0]);
@@ -73,21 +151,6 @@ void load_tz_or_fail(std::string tzstr, cctz::time_zone& tz, std::string error_m
     Rcpp::stop(error_msg.c_str(), tzstr);
   }
 }
-
-const char* get_tzone(SEXP tz) {
-  if (Rf_isNull(tz)) {
-    return "";
-  } else {
-    if (!Rf_isString(tz))
-      Rcpp::stop("'tz' is not a character vector");
-    return CHAR(STRING_ELT(tz, 0));
-  }
-}
-
-std::string get_tzone_attr(SEXP tz){
-  return get_tzone(Rf_getAttrib(tz, Rf_install("tzone")));
-}
-
 
 // Helper for conversion functions. Get seconds from civil_lookup, but relies on
 // use original time pre/post time if cl_new falls in repeated interval.
@@ -174,7 +237,7 @@ Rcpp::newDatetimeVector C_update_dt(const Rcpp::NumericVector& dt,
   if (do_yday + do_mday + do_wday > 1)
     Rcpp::stop("Conflicting days input, only one of yday, mday and wday must be supplied");
 
-  std::string tzfrom = get_tzone_attr(dt);
+  std::string tzfrom = tz_from_tzone_attr(dt);
   cctz::time_zone tzone1;
   load_tz_or_fail(tzfrom, tzone1, "Invalid timezone of input vector: \"%s\"");
 
@@ -183,7 +246,7 @@ Rcpp::newDatetimeVector C_update_dt(const Rcpp::NumericVector& dt,
   if (Rf_isNull(tz)) {
     tzto = tzfrom;
   } else {
-    tzto = get_tzone(tz);
+    tzto = tz_from_R_tzone(tz);
   }
   load_tz_or_fail(tzto, tzone2, "CCTZ: Unrecognized tzone: \"%s\"");
 
@@ -193,12 +256,14 @@ Rcpp::newDatetimeVector C_update_dt(const Rcpp::NumericVector& dt,
   for (R_xlen_t i = 0; i < N; i++)
     {
       double dti = loop_dt ? dt[i] : dt[0];
-      if (ISNA(dti)) {
+      int_fast64_t secs = floor_to_int64(dti);
+
+      if (ISNAN(dti) || secs == NA_INT64) {
         out[i] = NA_REAL;
         continue;
       }
-      int_fast64_t secs = std::floor(dti);
-      double rem = do_second ? 0.0 : dti - secs;
+
+      double rem = 0.0;
       sys_seconds ss(secs);
       time_point tp1(ss);
       cctz::civil_second ct1 = cctz::convert(tp1, tzone1);
@@ -207,23 +272,35 @@ Rcpp::newDatetimeVector C_update_dt(const Rcpp::NumericVector& dt,
         y = ct1.year(), m = ct1.month(), d = ct1.day(),
         H = ct1.hour(), M = ct1.minute(), S = ct1.second();
 
-      if (loop_year) y = year[i]; else if (do_year) y = year[0];
-      if (loop_month) m = month[i]; else if (do_month) m = month[0];
-      if (loop_mday) d = mday[i]; else if (do_mday) d = mday[0];
-      if (loop_hour) H = hour[i]; else if (do_hour) H = hour[0];
-      if (loop_minute) M = minute[i]; else if (do_minute) M = minute[0];
-      if (loop_second) {
-        S = std::floor(second[i]);
-        rem = second[i] - S;
-      } else if (do_second) {
-        S = std::floor(second[0]);
-        rem = second[0] - S;
+      if (do_year) {
+        y = loop_year ? year[i] : year[0];
+        if (y == NA_INT32) {out[i] = NA_REAL; continue; }
       }
-
-      if (y == NA_INTEGER || m == NA_INTEGER || d == NA_INTEGER ||
-          H == NA_INTEGER || M == NA_INTEGER || S == NA_INTEGER) {
-        out[i] = NA_REAL;
-        continue;
+      if (do_month) {
+        m = loop_month ? month[i] : month[0];
+        if (m == NA_INT32) {out[i] = NA_REAL; continue; }
+      }
+      if (do_mday) {
+        d = loop_mday ? mday[i] : mday[0];
+        if (d == NA_INT32) {out[i] = NA_REAL; continue; }
+      }
+      if (do_hour) {
+        H = loop_hour ? hour[i] : hour[0];
+        if (H == NA_INT32) {out[i] = NA_REAL; continue; }
+      }
+      if (do_minute) {
+        M = loop_minute ? minute[i] : minute[0];
+        if (M == NA_INT32) {out[i] = NA_REAL; continue; }
+      }
+      if (do_second) {
+        if (loop_second) {
+          S = floor_to_int64(second[i]);
+          rem = second[i] - S;
+        } else {
+          S = floor_to_int64(second[0]);
+          rem = second[0] - S;
+        }
+        if (S == NA_INT64) {out[i] = NA_REAL; continue; }
       }
 
       if (do_yday) {
@@ -261,7 +338,7 @@ Rcpp::newDatetimeVector C_force_tz(const Rcpp::NumericVector dt,
   if (tz.size() != 1)
     Rcpp::stop("`tz` argument must be a single character string");
 
-  std::string tzfrom_name = get_tzone_attr(dt);
+  std::string tzfrom_name = tz_from_tzone_attr(dt);
   std::string tzto_name(tz[0]);
   cctz::time_zone tzfrom, tzto;
   load_tz_or_fail(tzfrom_name, tzfrom, "CCTZ: Unrecognized timezone of the input vector: \"%s\"");
@@ -275,7 +352,9 @@ Rcpp::newDatetimeVector C_force_tz(const Rcpp::NumericVector dt,
 
   for (size_t i = 0; i < n; i++)
     {
-      int_fast64_t secs = std::floor(dt[i]);
+      int_fast64_t secs = floor_to_int64(dt[i]);
+      /* printf("na: %i na64: %+" PRIiFAST64 "  secs: %+" PRIiFAST64 "  dt: %f\n", NA_INTEGER, INT_FAST64_MIN, secs, dt[i]); */
+      if (secs == NA_INT64) {out[i] = NA_REAL; continue; }
       double rem = dt[i] - secs;
       sys_seconds d1(secs);
       time_point tp1(d1);
@@ -302,7 +381,7 @@ Rcpp::newDatetimeVector C_force_tzs(const Rcpp::NumericVector dt,
   if (tzs.size() != dt.size())
     Rcpp::stop("In 'C_force_tzs' tzs and dt arguments must be of the same length");
 
-  std::string tzfrom_name = get_tzone_attr(dt);
+  std::string tzfrom_name = tz_from_tzone_attr(dt);
   std::string tzout_name(tz_out[0]);
 
   cctz::time_zone tzfrom, tzto, tzout;
@@ -321,7 +400,8 @@ Rcpp::newDatetimeVector C_force_tzs(const Rcpp::NumericVector dt,
         tzto_old_name = tzto_name;
       }
 
-      int_fast64_t secs = std::floor(dt[i]);
+      int_fast64_t secs = floor_to_int64(dt[i]);
+      if (secs == NA_INT64) { out[i] = NA_REAL; continue; }
       double rem = dt[i] - secs;
       sys_seconds secsfrom(secs);
       time_point tpfrom(secsfrom);
@@ -342,7 +422,7 @@ Rcpp::NumericVector C_local_time(const Rcpp::NumericVector dt,
   if (tzs.size() != dt.size())
     Rcpp::stop("`tzs` and `dt` arguments must be of the same length");
 
-  std::string tzfrom_name = get_tzone_attr(dt);
+  std::string tzfrom_name = tz_from_tzone_attr(dt);
   std::string tzto_old_name("not-a-tz");
   cctz::time_zone tzto;
 
@@ -357,7 +437,8 @@ Rcpp::NumericVector C_local_time(const Rcpp::NumericVector dt,
         tzto_old_name = tzto_name;
       }
 
-      int_fast64_t secs = std::floor(dt[i]);
+      int_fast64_t secs = floor_to_int64(dt[i]);
+      if (secs == NA_INT64) { out[i] = NA_REAL; continue; }
       double rem = dt[i] - secs;
 
       sys_seconds secsfrom(secs);

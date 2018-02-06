@@ -396,7 +396,8 @@ setMethod("as.period", signature(x = "Interval"), function(x, unit = NULL, ...) 
 .int_to_period <- function(x) {
   ## this function is called only for conversion with units > day
   start <- as.POSIXlt(x@start)
-  end <- as.POSIXlt(start + x@.Data)
+  end <- unclass(as.POSIXlt(start + x@.Data))
+  start <- unclass(start)
 
   negs <- x@.Data < 0 & !is.na(x@.Data)
 
@@ -593,8 +594,8 @@ setMethod("as.character", signature(x = "Interval"), function(x, ...) {
 #'
 #' @section Compare to base R:
 #'
-#' These are drop in replacements for [as.Date()] and [as.POSIXct()],
-#' with a few tweaks to make them work more intuitively.
+#' These are drop in replacements for [as.Date()] and [as.POSIXct()], with a few
+#' tweaks to make them work more intuitively.
 #'
 #' \itemize{
 #'   \item `as_date()` ignores the timezone attribute, resulting in
@@ -607,10 +608,13 @@ setMethod("as.character", signature(x = "Interval"), function(x, ...) {
 #' @param x a vector of [POSIXt], numeric or character objects
 #' @param origin a Date object, or something which can be coerced by
 #'   `as.Date(origin, ...)` to such an object (default: the Unix epoch of
-#'   "1970-01-01"). Note that in this instance, `x` is assumed to reflect
-#'   the number of days since `origin` at `"UTC"`.
-#' @param tz a time zone name (default: time zone of the POSIXt object
-#'   `x`). See [OlsonNames()].
+#'   "1970-01-01"). Note that in this instance, `x` is assumed to reflect the
+#'   number of days since `origin` at `"UTC"`.
+#' @param tz a time zone name (default: time zone of the POSIXt object `x`). See
+#'   [OlsonNames()].
+#' @param format format argument for character methods. When supplied parsing is
+#'   performed by [strptime()]. For this reason consider using specialized
+#'   parsing functions in lubridate.
 #' @param ... further arguments to be passed to specific methods (see above).
 #' @return a vector of [Date] objects corresponding to `x`.
 #' @examples
@@ -618,7 +622,7 @@ setMethod("as.character", signature(x = "Interval"), function(x, ...) {
 #' dt_europe <- ymd_hms("2010-08-03 00:50:50", tz="Europe/London")
 #' c(as_date(dt_utc), as.Date(dt_utc))
 #' c(as_date(dt_europe), as.Date(dt_europe))
-#' ## need not suply origin
+#' ## need not supply origin
 #' as_date(10)
 #' @export
 setGeneric(name = "as_date",
@@ -643,8 +647,11 @@ setMethod(f = "as_date", signature = "numeric",
 #' @rdname as_date
 #' @export
 setMethod("as_date", "character",
-          function(x, tz = NULL) {
-            as_date(as_datetime(x, tz = "UTC"))
+          function(x, tz = NULL, format = NULL) {
+            if (is.null(format))
+              as_date(as_datetime(x, tz = "UTC"))
+            else
+              as_date(strptime(x, format, tz))
           })
 
 #' @rdname as_date
@@ -672,8 +679,11 @@ setMethod("as_datetime", "numeric",
 #' @rdname as_date
 #' @export
 setMethod("as_datetime", "character",
-          function(x, tz = "UTC") {
-            parse_date_time(x, orders = c("ymdTz", "ymdT", "ymd"), tz = tz, train = FALSE)
+          function(x, tz = "UTC", format = NULL) {
+            if (is.null(format))
+              .parse_iso_dt(x, tz)
+            else
+              strptime(x, format = format, tz = tz)
           })
 
 #' @rdname as_date
