@@ -1,10 +1,11 @@
-#include <Rcpp.h>
-#include <inttypes.h>
+#include <cstdint>
+#include <limits>
+#include <unordered_map>
 #include "civil_time.h"
 #include "time_zone.h"
 #include "time_zone_if.h"
-#include <unordered_map>
 #include "utils.h"
+#include <Rcpp.h>
 
 // CIVIL TIME:
 // https://github.com/google/cctz/blob/master/include/civil_time.h
@@ -22,9 +23,9 @@
 /// floor
 
 int_fast64_t NA_INT32 = static_cast<int_fast64_t>(NA_INTEGER);
-int_fast64_t NA_INT64 = INT_FAST64_MIN;
-double fINT64_MAX = static_cast<double>(INT_FAST64_MAX);
-double fINT64_MIN = static_cast<double>(INT_FAST64_MIN);
+int_fast64_t NA_INT64 = std::numeric_limits<int_fast64_t>::min();
+double fINT64_MAX = static_cast<double>(std::numeric_limits<int_fast64_t>::max());
+double fINT64_MIN = static_cast<double>(std::numeric_limits<int_fast64_t>::min());
 
 int_fast64_t floor_to_int64(double x) {
   // maybe fixme: no warning yet on integer overflow
@@ -92,16 +93,11 @@ const char* get_system_tz() {
   }
 }
 
-// initialize once per session
-const char* SYS_TZ; // = get_system_tz();
-
 const char* local_tz() {
+  // initialize once per session
+  static const char* SYS_TZ = get_system_tz();
   const char* tz_env = std::getenv("TZ");
   if (tz_env == NULL) {
-    // memoize once per session
-    if (SYS_TZ == NULL) {
-      SYS_TZ = get_system_tz();
-    }
     return SYS_TZ;
   } else if (strlen(tz_env) == 0) {
     // FIXME:
@@ -120,7 +116,7 @@ bool load_tz(std::string tzstr, cctz::time_zone& tz) {
   if (tzstr.size() == 0) {
     // CCTZ doesn't work on windows https://github.com/google/cctz/issues/53
     /* std::cout << "Local TZ: " << local_tz() << std::endl; */
-    cctz::load_time_zone(local_tz(), &tz);
+    return cctz::load_time_zone(local_tz(), &tz);
   } else {
     if (!cctz::load_time_zone(tzstr, &tz)) {
       auto el = TZMAP.find(tzstr);
@@ -130,8 +126,8 @@ bool load_tz(std::string tzstr, cctz::time_zone& tz) {
         return false;
       }
     }
+    return true;
   }
-  return true;
 }
 
 // [[Rcpp::export]]

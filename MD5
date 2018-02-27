@@ -1,6 +1,6 @@
-ff264e71d167434d6141a71e90004804 *DESCRIPTION
+6bb28ffbc939c9ce0ee69bfc4f0b33d4 *DESCRIPTION
 c1a1cf735e19acd65dccb75f0a169aea *NAMESPACE
-f40af45f84faba3224601bd53a097aad *NEWS.md
+b9211b8da02ff0a4653b872f3616a44c *NEWS.md
 d72f2565ad7238ec4a79d278b371d039 *R/Dates.r
 357490b920f47ddf541e5a0f92bedb85 *R/POSIXt.r
 87868c8a1e291ada05071f80e21e9d8e *R/RcppExports.R
@@ -56,7 +56,7 @@ a4eca0d1ebff1dc90da52f32fef3de56 *data/lakers.rda
 305e9bb0edf2b9f339192932ade0bf4b *inst/cctz.sh
 81cc7d37c6618a2ac39c1daa127e948f *inst/doc/lubridate.R
 e6555ea369c5001f01e9365009996e5e *inst/doc/lubridate.Rmd
-11ae86bdecd40374b795ca91848fcde5 *inst/doc/lubridate.html
+6e02f1b15809177f6c6ee1a0f01817f5 *inst/doc/lubridate.html
 cbd0115223b55d1d4e6b1b9084872104 *inst/pkgdown/assets/tidyverse.css
 1b382473f33def546c7c664480b005f6 *inst/pkgdown/assets/tidyverse.css.map
 83324230ad6f187a6552678d48044df7 *man/DateCoercion.Rd
@@ -151,7 +151,7 @@ ef3ab1e7a2c198cc0138d88f83738ab2 *src/constants.h
 2b4db9e0c0ec0554a02c53d0208508b0 *src/datetime.c
 211b40cee85236352e63759e338e9d50 *src/period.c
 c25e32f898ec391c95c89be2cec4249d *src/tparse.c
-ac581d6e5fd5a23d4c5e4033d2e60820 *src/update.cpp
+787e05017258e7d9fa9786cb0fbc9342 *src/update.cpp
 b2f5f76a149423c7aba089cde07beb32 *src/utils.c
 10cac4a44d2f0904c82e04c51c5fd714 *src/utils.h
 2341ad901c9e60c8555fe5eaee09e787 *tests/testthat.R
@@ -182,7 +182,7 @@ d353df962ff00a78c5ae04e808807f64 *tests/testthat/test-round.R
 a26ea55f748dc6d1d241271d43c34c4f *tests/testthat/test-settors.R
 c62cc0f8af40d90766fb236f7bf726c9 *tests/testthat/test-stamp.R
 8dba9113b1df8d775e9cdb71982fe6cb *tests/testthat/test-timespans.R
-9adc88a769a2c503b2d102ea89051b69 *tests/testthat/test-timezones.R
-a6082dff8556b335ce038003973c1fa4 *tests/testthat/test-update.R
+3d57367cd2a45554521dab634da9fef7 *tests/testthat/test-timezones.R
+9becb1b2d665df7492fb04682ad3e458 *tests/testthat/test-update.R
 dd24b10456b2c43c826ec5138e16d8cd *tests/testthat/test-utilities.R
 e6555ea369c5001f01e9365009996e5e *vignettes/lubridate.Rmd
