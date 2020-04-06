@@ -17,9 +17,13 @@ day(x)
 
 mday(x)
 
-wday(x, label = FALSE, abbr = TRUE,
+wday(
+  x,
+  label = FALSE,
+  abbr = TRUE,
   week_start = getOption("lubridate.week.start", 7),
-  locale = Sys.getlocale("LC_TIME"))
+  locale = Sys.getlocale("LC_TIME")
+)
 
 qday(x)
 
@@ -49,7 +53,8 @@ will display an abbreviated version of the label, such as "Sun". abbr is
 disregarded if label = FALSE.}
 
 \item{week_start}{day on which week starts following ISO conventions - 1
-means Monday, 7 means Sunday (default). You can set \code{lubridate.week.start}
+means Monday, 7 means Sunday (default). When \code{label = TRUE}, this will be
+the first level of the returned factor. You can set \code{lubridate.week.start}
 option to control this parameter globally.}
 
 \item{locale}{locale to use for day names. Default to current locale.}
@@ -64,8 +69,9 @@ ordered factor if label is \code{TRUE}.
 Get/set days component of a date-time
 }
 \details{
-\code{day()} and \code{day<-()} are aliases for \code{mday()} and \code{mday<-()}
-respectively.
+\code{mday()} and \code{yday()} return the day of the month and day of the
+year respectively. \code{day()} and \verb{day<-()} are aliases for \code{mday()} and
+\verb{mday<-()}.
 }
 \examples{
 x <- as.Date("2009-09-02")
@@ -82,9 +88,6 @@ mday(x) #2
 yday(x) <- 1  #"2009-01-01"
 yday(x) <- 366 #"2010-01-01"
 mday(x) > 3
-}
-\seealso{
-\code{\link[=yday]{yday()}}, \code{\link[=mday]{mday()}}
 }
 \keyword{chron}
 \keyword{manip}

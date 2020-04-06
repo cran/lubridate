@@ -64,14 +64,20 @@ setClass("Interval", contains = c("Timespan", "numeric"),
 
 #' @export
 setMethod("show", signature(object = "Interval"), function(object) {
-  print(format.Interval(object), quote = F)
+  if (length(object@.Data) == 0) {
+    cat("<Interval[0]>\n")
+  } else {
+    print(format(object), quote = FALSE)
+  }
 })
 
 #' @export
 format.Interval <- function(x, ...) {
-  if (length(x@.Data) == 0) return("Interval(0)")
-  paste(format(x@start, tz = x@tzone, usetz = TRUE), "--",
-    format(x@start + x@.Data, tz = x@tzone, usetz = TRUE), sep = "")
+  paste(
+    format(x@start, tz = x@tzone, usetz = TRUE),
+    format(x@start + x@.Data, tz = x@tzone, usetz = TRUE),
+    sep = "--"
+  )
 }
 
 #' @export
@@ -151,7 +157,7 @@ unique.Interval <- function(x, ...) {
 #' `interval()` creates an [Interval-class] object with the specified start and
 #' end dates. If the start date occurs before the end date, the interval will be
 #' positive. Otherwise, it will be negative. Character vectors in ISO 8601
-#' format are suported from v1.7.2.
+#' format are supported from v1.7.2.
 #'
 #' Intervals are time spans bound by two real date-times.  Intervals can be
 #' accurately converted to either period or duration objects using
@@ -191,21 +197,26 @@ unique.Interval <- function(x, ...) {
 #'
 #' is.interval(period(months= 1, days = 15)) # FALSE
 #' is.interval(interval(ymd(20090801), ymd(20090809))) # TRUE
-interval <- function(start, end = NULL, tzone = tz(start)) {
-
-  if (is.null(tzone)) {
-    tzone <- tz(end)
-    if (is.null(tzone))
-      tzone <- "UTC"
-  }
+interval <- function(start = NULL, end = NULL, tzone = tz(start)) {
+  # NB: tzone is forced and never called on NULL here
 
   if (is.character(start) && is.null(end)) {
     return(parse_interval(start, tzone))
   }
 
+  if (length(start) == 0 || length(end) == 0) {
+    ## We used to return UTC on NULL
+    if (is.null(start) && missing(tzone)) {
+      tzone <- "UTC"
+    }
+    start <- POSIXct(tz = tzone)
+    return(new("Interval", numeric(), start = start, tzone = tzone))
+  }
+
   if (is.Date(start)) start <- date_to_posix(start)
   if (is.Date(end)) end <- date_to_posix(end)
 
+  force(tzone)
   start <- as_POSIXct(start, tzone)
   end <- as_POSIXct(end, tzone)
 
@@ -217,7 +228,13 @@ interval <- function(start, end = NULL, tzone = tz(start)) {
 }
 
 parse_interval <- function(x, tz) {
-  mat <- str_split_fixed(x, "/", 2)
+
+  # create matrix of string parts from x: 1st column is anything before /, 2nd is anything after.
+  # replicates without stringr: str_split_fixed(x, "/", 2)
+  mat <- matrix(
+    c(gsub('(^[^/]+)/(.+$)', '\\1', x), gsub('(^[^/]+)/(.+$)', '\\2', x)),
+    ncol = 2
+  )
   pstart <- grepl("^P", mat[, 1])
   pend <- grepl("^P",  mat[, 2])
 
@@ -431,11 +448,13 @@ int_diff <- function(times) {
   interval(times[-length(times)], times[-1])
 }
 
+
+#' @importFrom generics intersect
 #' @export
-setGeneric("intersect")
+generics::intersect
 
 #' @export
-setMethod("intersect", signature(x = "Interval", y = "Interval"), function(x, y) {
+intersect.Interval <- function(x, y, ...) {
   int1 <- int_standardize(x)
   int2 <- int_standardize(y)
 
@@ -452,13 +471,14 @@ setMethod("intersect", signature(x = "Interval", y = "Interval"), function(x, y)
   negix <- !is.na(x@.Data) & (sign(x@.Data) == -1)
   new.int[negix] <- int_flip(new.int[negix])
   new.int
-})
+}
+
+#' @importFrom generics union
+#' @export
+generics::union
 
 #' @export
-setGeneric("union")
-
-#' @export
-setMethod("union", signature(x = "Interval", y = "Interval"), function(x, y) {
+union.Interval <- function(x, y, ...) {
   int1 <- int_standardize(x)
   int2 <- int_standardize(y)
 
@@ -467,21 +487,22 @@ setMethod("union", signature(x = "Interval", y = "Interval"), function(x, y) {
 
   spans <- as.numeric(ends) - as.numeric(starts)
 
-  if (any(!int_overlaps(int1, int2)))
+  if (any(!int_overlaps(int1, int2)) && is_verbose()) {
     message("Union includes intervening time between intervals.")
+  }
 
   tz(starts) <- x@tzone
   new.int <- new("Interval", spans, start = starts, tzone = x@tzone)
   new.int[sign(x@.Data) == -1] <- int_flip(new.int[sign(x@.Data) == -1])
   new.int
-})
+}
+
+#' @importFrom generics setdiff
+#' @export
+generics::setdiff
 
 #' @export
-setGeneric("setdiff")
-
-# returns the part of x that is not in y
-#' @export
-setMethod("setdiff", signature(x = "Interval", y = "Interval"), function(x, y) {
+setdiff.Interval <- function(x, y, ...) {
 
   if (length(x) != length(y)) {
     xy <- match_lengths(x, y)
@@ -516,25 +537,26 @@ setMethod("setdiff", signature(x = "Interval", y = "Interval"), function(x, y) {
   new.int <- new("Interval", spans, start = starts, tzone = x@tzone)
   new.int[sign(x@.Data) == -1] <- int_flip(new.int[sign(x@.Data) == -1])
   new.int
-})
+}
 
 
-#' Tests whether a date or interval falls within an interval
+#' Does a date (or interval) fall within an interval?
 #'
-#' %within% returns TRUE if `a` falls within interval `b`. Both `a` and `b` are
-#' recycled according to standard R rules. If `b` is a list of intervals, `a` is
-#' checked if it falls within any of the intervals in `b`. If a is an interval,
-#' both its start and end dates must fall within b to return TRUE.
+#' Check whether `a` lies within the interval `b`, inclusive of the endpoints.
 #'
 #' @export
 #' @rdname within-interval
 #' @aliases %within%,Interval,Interval-method %within%,ANY,Interval-method
 #'   %within%,Date,list-method %within%,POSIXt,list-method
-#' @param a An interval or date-time object
-#' @param b An interval or a list of intervals (see examples)
-#' @return A logical
-#' @examples
+#' @param a An interval or date-time object.
+#' @param b Either an interval vector, or a list of intervals.
 #'
+#'   If `b` is an internal it is recycled to the same length as `a`.
+#'   If `b` is a list of intervals, `a` is checked if it falls within _any_
+#'   of the intervals, i.e. `a %within% list(int1, int2)` is equivalent to
+#'   `a %within% int1 | a %within% int2`.
+#' @return A logical vector.
+#' @examples
 #' int <- interval(ymd("2001-01-01"), ymd("2002-01-01"))
 #' int2 <- interval(ymd("2001-06-01"), ymd("2002-01-01"))
 #'
@@ -553,11 +575,10 @@ setMethod("setdiff", signature(x = "Interval", y = "Interval"), function(x, y) {
 #' blackouts<- list(interval(ymd("2014-12-30"), ymd("2014-12-31")),
 #'                  interval(ymd("2014-12-30"), ymd("2015-01-03")))
 #' dates %within% blackouts
-
-"%within%" <- function(a, b) standardGeneric("%within%")
-
-#' @export
-setGeneric("%within%")
+setGeneric("%within%", useAsDefault = function(a, b) {
+  stop(sprintf("No %%within%% method with signature a = %s,  b = %s",
+               class(a)[[1]], class(b)[[1]]))
+})
 
 .within <- function(a, int) {
   as.numeric(a) - as.numeric(int@start) <= int@.Data & as.numeric(a) - as.numeric(int@start) >= 0
@@ -646,10 +667,14 @@ setMethod("time_length", signature("Interval"), function(x, unit = "second") {
 })
 
 #' @export
-setMethod("Arith", signature(e1 = "Interval", e2 = "ANY"), undefined_arithmetic)
+setMethod("Arith", signature(e1 = "Interval", e2 = "ANY"), function(e1, e2) {
+  stop_incompatible_classes(e1, e2, .Generic)
+})
 
 #' @export
-setMethod("Arith", signature(e1 = "ANY", e2 = "Interval"), undefined_arithmetic)
+setMethod("Arith", signature(e1 = "ANY", e2 = "Interval"), function(e1, e2) {
+  stop_incompatible_classes(e1, e2, .Generic)
+})
 
 #' @name hidden_aliases
 #' @aliases Arith,Interval,ANY-method Arith,ANY,Interval-method

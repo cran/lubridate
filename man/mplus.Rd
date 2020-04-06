@@ -54,15 +54,10 @@ always returns a date in the nth month after Date. If the new date would
 usually spill over into the n + 1th month, \code{\%m+\%} will return the last day of
 the nth month (\code{\link[=rollback]{rollback()}}). Date \code{\%m-\%} months(n) always returns a
 date in the nth month before Date.
-
-\code{add_with_rollback()} provides additional functionality to \code{\%m+\%} and
-\code{\%m-\%}. It allows rollback to first day of the month instead of the last day
-of the previous month and controls whether HMS component of the end date is
-preserved or not.
 }
 \details{
 \code{\%m+\%} and \code{\%m-\%} handle periods with components less than a month by first
-adding/substracting months and then performing usual arithmetics with smaller
+adding/subtracting months and then performing usual arithmetics with smaller
 units.
 
 \code{\%m+\%} and \code{\%m-\%} should be used with caution as they are not one-to-one
@@ -80,4 +75,10 @@ leap <- ymd("2012-02-29")
 leap \%m+\% years(1)
 leap \%m+\% years(-1)
 leap \%m-\% years(1)
+
+x <- ymd_hms("2019-01-29 01:02:03")
+add_with_rollback(x, months(1))
+add_with_rollback(x, months(1), preserve_hms = FALSE)
+add_with_rollback(x, months(1), roll_to_first = TRUE)
+add_with_rollback(x, months(1), roll_to_first = TRUE, preserve_hms = FALSE)
 }

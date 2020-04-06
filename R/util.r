@@ -15,18 +15,10 @@ match_lengths <- function(x, y) {
   list(x, y)
 }
 
-recognize <- function(x) {
-  recognized <- c("POSIXt", "POSIXlt", "POSIXct", "yearmon", "yearqtr", "Date")
-
-  if (all(class(x) %in% recognized))
-    return(TRUE)
-  return(FALSE)
-}
-
 standardise_date_names <- function(x) {
   dates <- c("second", "minute", "hour", "mday", "wday", "yday", "day", "week", "month", "year", "tz")
   y <- gsub("(.)s$", "\\1", x)
-  res <- dates[pmatch(y, dates)]
+  res <- dates[pmatch(y, dates, duplicates.ok = TRUE)]
   if (any(is.na(res))) {
     stop("Invalid unit name: ", paste(x[is.na(res)], collapse = ", "),
       call. = FALSE)
@@ -38,7 +30,7 @@ standardise_difftime_names <- function(x) {
   dates <- c("secs", "mins", "hours", "days", "weeks")
   y <- gsub("(.)s$", "\\1", x)
   y <- substr(y, 1, 3)
-  res <- dates[pmatch(y, dates)]
+  res <- dates[pmatch(y, dates, duplicates.ok = TRUE)]
   if (any(is.na(res))) {
     stop("Invalid difftime name: ", paste(x[is.na(res)], collapse = ", "),
       call. = FALSE)
@@ -109,11 +101,11 @@ parse_period_unit <- function(unit) {
       start <- attr(m, "capture.start")
       end <- start + attr(m, "capture.length") - 1L
       n <- if (end[[1]] >= start[[1]]) {
-             as.integer(str_sub(unit, start[[1]], end[[1]]))
+             as.integer(substr(unit, start[[1]], end[[1]]))
            } else {
              1
            }
-      unit <- str_sub(unit, start[[2]], end[[2]])
+      unit <- substr(unit, start[[2]], end[[2]])
       list(n = n, unit = unit)
     } else {
       stop(sprintf("Invalid unit specification '%s'", unit))
@@ -122,14 +114,39 @@ parse_period_unit <- function(unit) {
   }
 }
 
-undefined_arithmetic <- function(e1, e2) {
-  msg <- sprintf("Arithmetic operators undefined for '%s' and '%s' classes:
-  convert one to numeric or a matching time-span class.", class(e1), class(e2))
-  stop(msg)
-}
-
 date_to_posix <- function(date, tz = "UTC") {
   utc <- .POSIXct(unclass(date) * 86400, tz = "UTC")
-  if (tz == "UTC") utc
+  if (is_utc(tz)) utc
   else force_tz(utc, tz)
+}
+
+# UTC-equivalent timezones can be treated as UTC;
+#   check grep('UTC|GMT', OlsonNames(), value = TRUE)
+is_utc = function(tz) {
+  utc_tz = c("UTC", "GMT", "Etc/UTC", "Etc/GMT", "GMT-0", "GMT+0", "GMT0")
+  if (is.null(tz)) tz = Sys.timezone()
+  return(tz %in% utc_tz)
+}
+
+# minimal custom str_sub function to replicate stringr::str_sub without the full dependency.
+.str_sub <- function(x, start, end, replace_with = "") {
+
+  # get the parts of the string to the left and right of the replacement.
+  start.c = substr(x, 1, start - 1)
+  end.c = substr(x, end + 1, nchar(x))
+
+  # paste with replacement in the middle.
+  x <- paste(start.c, replace_with, end.c, sep = "")
+
+  x
+}
+
+is_verbose <- function() {
+  isTRUE(getOption("lubridate.verbose"))
+}
+
+stop_incompatible_classes <- function(x, y, method) {
+  stop(paste0(
+    "Incompatible classes: <", is(x)[[1]], "> ", method, " <", is(y)[[1]], ">\n"
+  ), call. = FALSE)
 }

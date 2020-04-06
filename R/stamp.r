@@ -1,6 +1,6 @@
 ##' Format dates and times based on human-friendly templates
 ##'
-##' Stamps are just like [format()], but based on human-frendly
+##' Stamps are just like [format()], but based on human-friendly
 ##' templates like "Recorded at 10 am, September 2002" or "Meeting, Sunday May
 ##' 1, 2000, at 10:20 pm".
 ##'
@@ -96,7 +96,9 @@ stamp <- function(x, orders = lubridate_formats,
     ## Post-process only when at the end of the string, otherwise don't bother
     ## and just output with %z format after a conversion to UTC.
 
-    oOz_end <- str_extract(FMT, "%O[oOz]$")
+    # replicate str_extract(FMT, "%O[oOz]$") without stringr dependence.
+    # must return NA if no match.
+    oOz_end <- ifelse(grepl('%O[oOz]$', FMT), gsub("^.*(%O[oOz]$)", "\\1", FMT), rep(NA, length(FMT)))
 
     if (is.na(oOz_end)) {
       FMT <- sub("%O[oOz]", "%z",
@@ -105,7 +107,7 @@ stamp <- function(x, orders = lubridate_formats,
       eval(bquote(
         function(x, locale = .(locale)) {
           ## %z ignores timezone
-          if (tz(x[[1]]) != "UTC")
+          if (!is_utc(tz(x[[1L]])))
             x <- with_tz(x, tzone = "UTC")
           .(reset_local_expr)
           format(x, format = .(FMT))
@@ -159,11 +161,11 @@ stamp <- function(x, orders = lubridate_formats,
   ## "%Oz"  +0100
   ## "%OO"  +01:00
 
-  ## calulate offset by forcing this time as utc
+  ## calculate offset by forcing this time as utc
   dtm_utc <- force_tz(x, tzone = "UTC")
 
   ## the offset is the duration represented by the difference in time
-  offset_duration = as.duration(dtm_utc - x)
+  offset_duration <- difftime(dtm_utc, x, units = "secs")
 
   ## determine sign
   .sgn <- ifelse(offset_duration >= as.duration(0), "+", "-")
