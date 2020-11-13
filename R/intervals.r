@@ -266,12 +266,6 @@ parse_interval <- function(x, tz) {
 is.interval <- function(x) is(x, c("Interval"))
 
 
-#'
-#'
-#' `int_start()` and `int_start<-()` are accessors the start date of an
-#' interval. Note that changing the start date of an interval will change the
-#' length of the interval, since the end date will remain the same.
-#'
 #' @rdname interval
 #' @param int an interval object
 #' @return `int_start()` and `int_end()` return a POSIXct date object when
@@ -300,10 +294,9 @@ int_start <- function(int) int@start
     tzone = int@tzone)
 }
 
-#' @description
-#' `int_end()` and `int_end<-()` are accessors the end date of an
-#' interval. Note that changing the end date of an interval will change the
-#' length of the interval, since the start date will remain the same.
+#' @description `int_start()`/`int_end()` and `int_start<-()`/`int_end<-()` are
+#'   "accessors" and "setters" respectively of the start/end date of an
+#'   interval.
 #'
 #' @rdname interval
 #' @export
@@ -551,7 +544,7 @@ setdiff.Interval <- function(x, y, ...) {
 #' @param a An interval or date-time object.
 #' @param b Either an interval vector, or a list of intervals.
 #'
-#'   If `b` is an internal it is recycled to the same length as `a`.
+#'   If `b` is an interval it is recycled to the same length as `a`.
 #'   If `b` is a list of intervals, `a` is checked if it falls within _any_
 #'   of the intervals, i.e. `a %within% list(int1, int2)` is equivalent to
 #'   `a %within% int1 | a %within% int2`.
