@@ -1,6 +1,6 @@
-6001eeed40aeecae649abd56659c4a6f *DESCRIPTION
+39c9f3089222c25aae41e56bb590172c *DESCRIPTION
 528b9fbf3ae81823c3940f4a1a8da87d *NAMESPACE
-4ba19dbb12ddf07fa75e79886568397f *NEWS.md
+85aba835a7d4334e98d9a6539aa6de9f *NEWS.md
 c3ae7380c5cb0afb9645eb59eb20504c *R/Dates.r
 ed09e25deab2db43ccaebf51776bd220 *R/POSIXt.r
 87868c8a1e291ada05071f80e21e9d8e *R/RcppExports.R
@@ -16,7 +16,7 @@ ce5cdf6f241ea8051c773e00a698032b *R/accessors-second.r
 1d63a75c9cb5c312c5d7ae016dceb7c6 *R/accessors-week.r
 57d8e506f3cb945fc25ca8dfb4d16a7b *R/accessors-year.r
 61df9d1deda71da55ce1a569680fc4d3 *R/am-pm.r
-f8e86465a8eeb4b71a7d396289f9abb8 *R/coercion.r
+cda24bcc7b0f8b7f39318b156a9c0acb *R/coercion.r
 761d023ca4f74330258c68d3b37067c1 *R/constants.r
 21200567303cb7c85b675867a7cd8201 *R/cyclic_encoding.r
 6922e15119548c547037189255058c33 *R/data.r
@@ -33,14 +33,14 @@ d05d21f55aa805b7a48ec4d8e2e38571 *R/intervals.r
 6168a35c3e2c9b4a50045c53cbb7bec8 *R/numeric.r
 3feef770d9645bbf9c29f67e36d4a02a *R/ops-addition.r
 57f09af09cfd615b1a1753b411cfd439 *R/ops-compare.r
-99939016fa4716d35f43bb0406452c88 *R/ops-division.r
+ddbafd48b65f267376709ff802dd5d58 *R/ops-division.r
 f58b0fa1750c7a0eb44ec4d70ae568ff *R/ops-integer-division.r
 81d787c9fb610466eee75571b8b10006 *R/ops-m+.r
 9b4df9b4252ba44fe2e2e07d9d3e7dd8 *R/ops-modulo.r
 e8c0641d9a6851a83a4cde22f0630a48 *R/ops-multiplication.r
 d90b405e2cdb72b4c30481c9271e23d7 *R/ops-subtraction.r
 18839afc50515921353dd7d443e30148 *R/package.r
-ad923d2abb411ff94150af8a6f00f4ac *R/parse.r
+26095c908a52777eece6b861f4c52b1f *R/parse.r
 136edd0bf2042112eb1c1e87426fd384 *R/periods.r
 bc9405cd2758841c05511f95e771bf8d *R/pretty.r
 abb619c81ec391bd1b6f0d36fbea1cc9 *R/round.r
@@ -50,7 +50,7 @@ ff017cef5273739e4fd8ad50b5f7051f *R/stamp.r
 c0d72f7a309a90ee1bda56a0c62040c6 *R/update.r
 e376c85aad189727ee2f139efca242f5 *R/util.r
 58dacff5d3c1e9405fe6f35a742f9c02 *R/vctrs.R
-93be17d6bc2553e98108f78b1c44c1e3 *R/zzz.R
+83e999a2fda622f8277c9b0bea60a6cc *R/zzz.R
 e0cad4baca383c694b72299763eaa86f *README.md
 39e1597df66f7aaeb02de1401567e280 *build/vignette.rds
 a9137fd9c8609c9f9013e68dd904e756 *cleanup
@@ -59,7 +59,7 @@ f00bdce2cc6c936e791532bf66f3e40f *inst/CITATION
 305e9bb0edf2b9f339192932ade0bf4b *inst/cctz.sh
 dce014d195f833390a09d2bbdca8b5da *inst/doc/lubridate.R
 aabdff67dc16d60af8619a25176db9e8 *inst/doc/lubridate.Rmd
-47c9ab458bf48da99d5ab189b8145d22 *inst/doc/lubridate.html
+1fef9126118b606cfdcc08c4cf0c4d89 *inst/doc/lubridate.html
 cbd0115223b55d1d4e6b1b9084872104 *inst/pkgdown/assets/tidyverse.css
 1b382473f33def546c7c664480b005f6 *inst/pkgdown/assets/tidyverse.css.map
 83324230ad6f187a6552678d48044df7 *man/DateCoercion.Rd
@@ -73,7 +73,7 @@ f0d7a599451acc1e310393135231ce49 *man/am.Rd
 b0896c1ca8a015375809333e5e9377ed *man/as.duration.Rd
 82f8ca0cc720c261aab1fe6e98bab89c *man/as.interval.Rd
 a16e11f5ad9c1ab9263fe907f7ad9fff *man/as.period.Rd
-f2ebacf84297b4345d608b2fe15779e3 *man/as_date.Rd
+62f02695d40d777051f00b177170d5bb *man/as_date.Rd
 be4efc188a852bee9e300a10bd132563 *man/cyclic_encoding.Rd
 df82d0e02a37578110e374e469e043c6 *man/date.Rd
 47a209eb20e5fbb24d85c878518384f6 *man/date_decimal.Rd
@@ -107,7 +107,7 @@ bca4c2d33002b53f467c4b54b1592fa2 *man/leap_year.Rd
 9967d8f5c43e85f2f9c34f84f4a7fe5d *man/mplus.Rd
 d3a714a5f78cd9147fa021d31dd156db *man/now.Rd
 c09b457de72676ebc8c583a32168ab8f *man/origin.Rd
-e67e225619b931fb36e757f2f4cdd1e8 *man/parse_date_time.Rd
+42f2ee43d84b42c45e2cc3210cb9e793 *man/parse_date_time.Rd
 b150a01907e3b0fad5c002f659d30df8 *man/period.Rd
 b9ec23d56e3ccfbae6c5cb94d3ac307a *man/period_to_seconds.Rd
 285acd644a1d565186a448749e3b07f9 *man/posix_utils.Rd
@@ -145,7 +145,7 @@ a71187d54c274cc9bfbb48d44cc89195 *src/cctz/src/time_zone_fixed.h
 b27b5e15323d9e86fb1e78ccc6cb2a23 *src/cctz/src/time_zone_impl.h
 3f1d277f9c3438bb2c1a4b2dcb2560b9 *src/cctz/src/time_zone_info.cc
 7c8b8f35a25aab53fb76c356eb1fd17c *src/cctz/src/time_zone_info.h
-a49b5354484c4fa582123780c3a7dd40 *src/cctz/src/time_zone_libc.cc
+8a1ef8211946acad2fe5eb69659a431c *src/cctz/src/time_zone_libc.cc
 290ef8776251333c8516b88f213db785 *src/cctz/src/time_zone_libc.h
 7340acb18b1e3d9f6108ef79a8cbf3b4 *src/cctz/src/time_zone_lookup.cc
 982523fd94d516e62932c7c990a17915 *src/cctz/src/time_zone_lookup_test.cc
@@ -158,9 +158,9 @@ eb33dacdc81a55c463612591ea17f656 *src/cctz/time_zone.h
 ef3ab1e7a2c198cc0138d88f83738ab2 *src/constants.h
 2fa7ab3ac96d27066e8ec6e43605e7a0 *src/datetime.c
 211b40cee85236352e63759e338e9d50 *src/period.c
-a3ac600f87e36ab992a96ec76e6d7864 *src/tparse.c
+2e034cf101b37391dabc37c61f3812ab *src/tparse.c
 341eff84904fba82c46b170368993936 *src/update.cpp
-702aa1692543d6f3c9ee44f150773a6d *src/utils.c
+91a541495212f0f9857e519be51c651d *src/utils.c
 030b60d3e95d7059fdd585ac37569fa2 *src/utils.h
 32c1f9567766970df69d7fd480308f42 *tests/testthat.R
 b5e36a405464386132f17ffe709c2c1a *tests/testthat/helper-output.R
@@ -182,13 +182,13 @@ d504d0282647597b34d94836371502f9 *tests/testthat/test-durations.R
 0b983fde4f6eae163c3dec41256c3f55 *tests/testthat/test-namespace.R
 c1968e857a74c9ae19fce26e7f0b33d5 *tests/testthat/test-ops-addition.R
 a9ca18ed89d0980eef689a3c75847c42 *tests/testthat/test-ops-compare.R
-935f4af434a88e84a3411033123377fc *tests/testthat/test-ops-division.R
+ffb4336a343e76c8e261c001de6b14e0 *tests/testthat/test-ops-division.R
 d4003a616083dec43ef8544ebcf58e02 *tests/testthat/test-ops-integer-division.R
 dee64ac71d7438e7aabdba9b2989f9d0 *tests/testthat/test-ops-integer-division.txt
 3e2a469d276593f2ace66f8aa75f0958 *tests/testthat/test-ops-modulo.R
 d80e1baa51823e3ab22b798b2cbcc8d0 *tests/testthat/test-ops-multiplication.R
 a0ed4271b21222b79fb500dde768236c *tests/testthat/test-ops-subtraction.R
-e3dce5814b31ff734070154882187212 *tests/testthat/test-parsers.R
+b0bc37395d6f8a33f603a8330ce4206d *tests/testthat/test-parsers.R
 19c6689b6e09a4131630b2f5a5ccef4d *tests/testthat/test-periods.R
 6b36cef0ef7b6da7718d5a8bfd8c0c25 *tests/testthat/test-pretty.R
 6644a835d764edffa2d0aef4c6ed0c7a *tests/testthat/test-rollback.R

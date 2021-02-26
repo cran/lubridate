@@ -1,3 +1,15 @@
+Version 1.7.10
+==============
+
+### NEW FEATURES
+
+* `fast_strptime()` and `parse_date_time2()` now accept multiple formats and apply them in turn
+
+### BUG FIXES
+
+* [#926](https://github.com/tidyverse/lubridate/issues/926) Fix incorrect division of intervals by months involving leap years
+* Fix incorrect skipping of digits during parsing of the `%z` format
+
 Version 1.7.9.2
 ===============
 
