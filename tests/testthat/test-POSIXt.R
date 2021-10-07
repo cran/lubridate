@@ -18,6 +18,30 @@ test_that("is.POSIXt handles vectors", {
     as.POSIXct("2009-08-03 13:01:59", tz = "UTC"))))
 })
 
+test_that("c.POSIXct deals correctly with heterogeneous date-time classes", {
+  d <- make_date(2000, 1, 1)
+  dt <- make_datetime(2000, 1, 1, tz = "Europe/Berlin")
+  expect_equal(c(dt, d), make_datetime(c(2000, 2000), 1, 1, tz = "Europe/Berlin"))
+  expect_equal(c(dt, list(d)), make_datetime(c(2000, 2000), 1, 1, tz = "Europe/Berlin"))
+  expect_equal(c(dt, list(d, list(d))), make_datetime(c(2000, 2000, 2000), 1, 1, tz = "Europe/Berlin"))
+  dt <- make_datetime(2000, 1, 1, tz = "UTC")
+  expect_equal(c(dt, d), make_datetime(c(2000, 2000), 1, 1, tz = "UTC"))
+})
+
+
+test_that("c.POSIXct deals correctly with empty vectors", {
+  expect_equal(
+    c(ymd("2021-01-01", tz = "America/New_York"), NULL, c()),
+    ymd("2021-01-01", tz = "America/New_York"))
+  expect_equal(
+    c(ymd("2021-01-01", tz = "America/New_York"), POSIXct(),
+      ymd("2021-01-02", tz = "America/New_York")),
+    ymd(c("2021-01-01", "2021-01-02"), tz = "America/New_York"))
+  expect_equal(
+    c(ymd("2021-01-01", tz = "UTC"), POSIXct(), ymd("2021-01-02"), NULL),
+    ymd(c("2021-01-01", "2021-01-02"), tz = "UTC"))
+})
+
 # as_datetime -------------------------------------------------------------
 
 test_that("converts numeric", {
@@ -32,6 +56,14 @@ test_that("converts date", {
   expect_s3_class(dt, "POSIXct")
   expect_equal(tz(dt), "UTC")
   expect_equal(unclass(dt)[[1]], 0)
+})
+
+test_that("as_datetime.Date respects tz and sets HMS to 00:00:00", {
+  d <- ymd(c("2000-01-01", "2020-10-10"))
+  expect_equal(as_datetime(d, tz = "Europe/Berlin"),
+               ymd(c("2000-01-01", "2020-10-10"), tz = "Europe/Berlin"))
+  expect_equal(as_datetime(d),
+               ymd(c("2000-01-01", "2020-10-10"), tz = "UTC"))
 })
 
 test_that("converts character", {

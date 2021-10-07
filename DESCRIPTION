@@ -1,7 +1,7 @@
 Type: Package
 Package: lubridate
 Title: Make Dealing with Dates a Little Easier
-Version: 1.7.10
+Version: 1.8.0
 Authors@R: 
     c(person(given = "Vitalie",
              family = "Spinu",
@@ -13,6 +13,9 @@ Authors@R:
       person(given = "Hadley",
              family = "Wickham",
              role = "aut"),
+      person(given = "Davis",
+             family = "Vaughan",
+             role = "ctb"),
       person(given = "Ian",
              family = "Lyttle",
              role = "ctb"),
@@ -50,37 +53,37 @@ URL: https://lubridate.tidyverse.org,
         https://github.com/tidyverse/lubridate
 BugReports: https://github.com/tidyverse/lubridate/issues
 Depends: methods, R (>= 3.2)
-Imports: generics, Rcpp (>= 0.12.13)
+Imports: generics
 Suggests: covr, knitr, testthat (>= 2.1.0), vctrs (>= 0.3.0), rmarkdown
 Enhances: chron, timeDate, tis, zoo
-LinkingTo: Rcpp
+LinkingTo: cpp11 (>= 0.2.7)
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
-SystemRequirements: A system with zoneinfo data (e.g.
-        /usr/share/zoneinfo) as well as a recent-enough C++11 compiler
-        (such as g++-4.8 or later). On Windows the zoneinfo included
-        with R is used.
-Collate: 'Dates.r' 'POSIXt.r' 'RcppExports.R' 'util.r' 'parse.r'
-        'timespans.r' 'intervals.r' 'difftimes.r' 'durations.r'
-        'periods.r' 'accessors-date.R' 'accessors-day.r'
-        'accessors-dst.r' 'accessors-hour.r' 'accessors-minute.r'
-        'accessors-month.r' 'accessors-quarter.r' 'accessors-second.r'
-        'accessors-tz.r' 'accessors-week.r' 'accessors-year.r'
-        'am-pm.r' 'time-zones.r' 'numeric.r' 'coercion.r' 'constants.r'
-        'cyclic_encoding.r' 'data.r' 'decimal-dates.r' 'deprecated.r'
-        'format_ISO8601.r' 'guess.r' 'hidden.r' 'instants.r'
-        'leap-years.r' 'ops-addition.r' 'ops-compare.r'
+SystemRequirements: C++11, A system with zoneinfo data (e.g.
+        /usr/share/zoneinfo). On Windows the zoneinfo included with R
+        is used.
+Collate: 'Dates.r' 'POSIXt.r' 'util.r' 'parse.r' 'timespans.r'
+        'intervals.r' 'difftimes.r' 'durations.r' 'periods.r'
+        'accessors-date.R' 'accessors-day.r' 'accessors-dst.r'
+        'accessors-hour.r' 'accessors-minute.r' 'accessors-month.r'
+        'accessors-quarter.r' 'accessors-second.r' 'accessors-tz.r'
+        'accessors-week.r' 'accessors-year.r' 'am-pm.r' 'time-zones.r'
+        'numeric.r' 'coercion.r' 'constants.r' 'cpp11-wrappers.R'
+        'cpp11.R' 'cyclic_encoding.r' 'data.r' 'decimal-dates.r'
+        'deprecated.r' 'format_ISO8601.r' 'guess.r' 'hidden.r'
+        'instants.r' 'leap-years.r' 'ops-addition.r' 'ops-compare.r'
         'ops-division.r' 'ops-integer-division.r' 'ops-m+.r'
         'ops-modulo.r' 'ops-multiplication.r' 'ops-subtraction.r'
-        'package.r' 'pretty.r' 'round.r' 'stamp.r' 'update.r' 'vctrs.R'
-        'zzz.R'
+        'package.r' 'pretty.r' 'round.r' 'stamp.r' 'tzdir.R' 'update.r'
+        'vctrs.R' 'zzz.R'
 NeedsCompilation: yes
-Packaged: 2021-02-26 13:24:01 UTC; vspinu
+Packaged: 2021-10-03 10:14:57 UTC; vspinu
 Author: Vitalie Spinu [aut, cre],
   Garrett Grolemund [aut],
   Hadley Wickham [aut],
+  Davis Vaughan [ctb],
   Ian Lyttle [ctb],
   Imanuel Costigan [ctb],
   Jason Law [ctb],
@@ -90,4 +93,4 @@ Author: Vitalie Spinu [aut, cre],
   Chel Hee Lee [ctb],
   Google Inc. [ctb, cph]
 Repository: CRAN
-Date/Publication: 2021-02-26 15:00:09 UTC
+Date/Publication: 2021-10-07 15:20:02 UTC

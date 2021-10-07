@@ -1,8 +1,27 @@
+Version 1.8.0
+=============
+
+### NEW FEATURES
+
+* [#960](https://github.com/tidyverse/lubridate/issues/960) `c.POSIXct` and `c.Date` can deal with heterogeneous object types (e.g `c(date, datetime)` works as expected)
+
+### BUG FIXES
+
+* [#994](https://github.com/tidyverse/lubridate/issues/994) Subtracting two duration or two period objects no longer results in an ambiguous dispatch note.
+* `c.Date` and `c.POSIXct` correctly deal with empty vectors.
+
+* `as_datetime(date, tz=XYZ)` returns the date-time object with HMS set to 00:00:00 in the corresponding `tz`
+
+### CHANGES
+
+* [#966](https://github.com/tidyverse/lubridate/pull/966) Lubridate is now built with cpp11 (contribution of @DavisVaughan)
+
 Version 1.7.10
 ==============
 
 ### NEW FEATURES
 
+* [#955](https://github.com/tidyverse/lubridate/pull/955) Add `type` argument to `quarter()` for more control over the returned class
 * `fast_strptime()` and `parse_date_time2()` now accept multiple formats and apply them in turn
 
 ### BUG FIXES
