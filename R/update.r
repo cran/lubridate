@@ -8,73 +8,118 @@
 #'
 #' @name DateTimeUpdate
 #' @param object a date-time object
-#' @param ... named arguments: years, months, ydays, wdays, mdays, days, hours,
-#'   minutes, seconds, tzs (time zone component)
-#' @param roll logical. If `TRUE`, and the resulting date-time lands on a
-#'   non-existent civil time instant (DST, 29th February, etc.) roll the date
-#'   till next valid point. When `FALSE`, the default, produce NA for non
-#'   existing date-times.
-#' @param week_start week starting day (Default is 7, Sunday). Set
-#'   `lubridate.week.start` option to control this.
-#' @param simple logical. Deprecated. Same as `roll`.
-#' @return a date object with the requested elements updated. The object will
-#'   retain its original class unless an element is updated which the original
-#'   class does not support. In this case, the date returned will be a POSIXlt
-#'   date object.
+#' @param ... named arguments: years, months, ydays, wdays, mdays, days, hours, minutes,
+#'   seconds, tzs (time zone component)
+#' @param week_start week start day (Default is 7, Sunday. Set `lubridate.week.start` to
+#'   override). Full or abbreviated names of the days of the week can be in English or
+#'   as provided by the current locale.
+#' @param simple,roll deprecated
+#' @return a date object with the requested elements updated. The object will retain its
+#'   original class unless an element is updated which the original class does not
+#'   support. In this case, the date returned will be a POSIXlt date object.
+#' @inheritParams timechange::time_add
 #' @keywords manip chron
 #' @examples
 #' date <- ymd("2009-02-10")
 #' update(date, year = 2010, month = 1, mday = 1)
 #'
-#' update(date, year =2010, month = 13, mday = 1)
+#' update(date, year = 2010, month = 13, mday = 1)
 #'
 #' update(date, minute = 10, second = 3)
 #' @export
-update.POSIXt <- function(object, ..., roll = FALSE,
+update.POSIXt <- function(object, ...,
+                          roll_dst = c("NA", "post"),
                           week_start = getOption("lubridate.week.start", 7),
-                          simple = NULL) {
+                          roll = NULL, simple = NULL) {
   if (!is.null(simple)) roll <- simple
-  do.call(update_date_time, c(list(object, roll = roll, week_start = week_start),
-                              list(...)))
+  do.call(update_datetime, c(
+    list(object, week_start = week_start, roll_dst = roll_dst, roll = roll),
+    list(...)
+  ))
 }
 
-update_date_time <- function(object, years = integer(), months = integer(),
-                             days = integer(), mdays = integer(), ydays = integer(), wdays = integer(),
-                             hours = integer(), minutes = integer(), seconds = double(), tzs = NULL,
-                             roll = FALSE, week_start = 7) {
+update_datetime <- function(object, years = NULL, months = NULL,
+                            days = NULL, mdays = NULL, ydays = NULL, wdays = NULL,
+                            hours = NULL, minutes = NULL, seconds = NULL, tzs = NULL,
+                            roll_month = "full",
+                            roll_dst = c("NA", "post"),
+                            roll = NULL,
+                            week_start = 7,
+                            exact = FALSE) {
+  roll_dst <- normalize_roll_dst(roll_dst, roll, 1)
+  week_start <- as_week_start(week_start)
 
-  if (!length(object)) return(object)
-
-  if (length(days) > 0) mdays = days;
-  updates <- list(year = years, month = months,
-                  yday = ydays, mday = mdays, wday = wdays,
-                  hour = hours, minute = minutes, second = seconds)
-  maxlen <- max(unlist(lapply(updates, length)))
-
-  if (maxlen > 1) {
-    for (nm in names(updates)) {
-      len <- length(updates[[nm]])
-      ## len == 1 is treated at C_level
-      if (len != maxlen && len > 1)
-        updates[[nm]] <- rep_len(updates[[nm]], maxlen)
+  if (!is.null(days)) {
+    if (!is.null(mdays)) {
+      stop("Only one of `days` and `mdays` must be supplied")
     }
+    mdays <- days
   }
 
-  if (is.null(tzs))
-    tzs <- tz(object)
+  updates <- list(
+    year = years, month = months,
+    mday = mdays, wday = wdays, yday = ydays,
+    hour = hours, minute = minutes, second = seconds
+  )
+  timechange::time_update(
+    object, updates = normalize_units_length(updates), tz = tzs,
+    roll_dst = roll_dst, roll_month = roll_month,
+    week_start = as_week_start(week_start),
+    exact = exact
+  )
+}
 
-  ## todo: check if the following lines make any unnecessary copies
-  updates[["dt"]] <- as.POSIXct(object)
-  updates[["roll"]] <- roll
-  updates[["tz"]] <- tzs
-  updates[["week_start"]] <- week_start
-  reclass_date(do.call(cpp_update_dt, updates), object)
+normalize_units_length <- function(units) {
+  if (length(units) == 0)
+    return(units)
+  maxlen <- max(unlist(lapply(units, length)))
+  if (maxlen > 1) {
+    for (nm in names(units)) {
+      len <- length(units[[nm]])
+      if (len != maxlen && len > 1)
+        units[[nm]] <- rep_len(units[[nm]], maxlen)
+    }
+  }
+  units
+}
+
+as_week_start <- function(x) {
+  if (is.numeric(x)) {
+    if (x > 7 || x < 1) {
+      stop("Invalid 'week_start' argument; must be between 1 and 7")
+    }
+    return(x)
+  }
+
+  if (length(x) != 1L)
+    stop("Invalid `week_start` argument; must be of length 1")
+
+  if (!is.character(x))
+    stop("Invalid `week_start` argument; must be a number in 1-7 (Monday based) or string day of the week", call. = FALSE)
+
+  # Use pmatch to also capture abbreviations.
+  english_idx <- pmatch(x, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+  if (!is.na(english_idx)) {
+    return(english_idx)
+  }
+
+  # Other locales might use abbreviations that are not so pmatch-friendly; try full first, then partial.
+  native_full_idx <- match(x, .get_locale_regs()$wday_names$full)
+  if (!is.na(native_full_idx)) {
+    return(native_full_idx)
+  }
+
+  native_abbr_idx <- match(x, .get_locale_regs()$wday_names$abr)
+  if (!is.na(native_abbr_idx)) {
+    return(native_abbr_idx)
+  }
 }
 
 ## prior to v1.7.0
 update_posixt_old <- function(object, ..., simple = FALSE) {
-
-  if (!length(object)) return(object)
+  if (!length(object)) {
+    return(object)
+  }
   date <- as.POSIXlt(object)
 
   ## adjudicate units input
@@ -94,8 +139,9 @@ update_posixt_old <- function(object, ..., simple = FALSE) {
     if (uname != "mday") {
       ## we compute everything with mdays (operating with ydays doesn't work)
       if (uname != "day") {
-        if (uname == "yday" & !is.null(units$year))
+        if (uname == "yday" & !is.null(units$year)) {
           warning("Updating on both 'year' and 'yday' can lead to wrong results. See bug #319.", call. = F)
+        }
         diff <- units[[uname]] - date[[uname]] - 1
         units[[uname]] <- diff + date$mday
       }
@@ -116,32 +162,39 @@ update_posixt_old <- function(object, ..., simple = FALSE) {
   maxlen <- max(unlist(lapply(date, length)))
 
   if (maxlen > 1) {
-    for (nm in names(date))
- if (length(date[[nm]]) != maxlen)
+    for (nm in names(date)) {
+      if (length(date[[nm]]) != maxlen) {
         date[[nm]] <- rep_len(date[[nm]], maxlen)
+      }
+    }
   }
 
   class(date) <- c("POSIXlt", "POSIXt")
-  if (!is.null(new_tz))
+  if (!is.null(new_tz)) {
     attr(date, "tzone") <- new_tz
+  }
 
   ## fit to timeline
   ## POSIXct format avoids negative and NA elements in POSIXlt format
   fit_to_timeline(date, class(object)[[1]], simple = simple)
 }
 
+is_zero_hms <- function(hours = NULL, minutes = NULL, seconds = NULL, tzs = NULL, ...) {
+  is.null(tzs) &&
+    (is.null(hours) || sum(hours, na.rm = TRUE) == 0) &&
+    (is.null(minutes) || sum(minutes, na.rm = TRUE) == 0) &&
+    (is.null(seconds) || sum(seconds, na.rm = TRUE) == 0)
+}
+
 #' @export
 update.Date <- function(object, ...) {
-
-  ct <- as_datetime(object, tz = "UTC")
-  new <- update(ct, ...)
-  ## fixme: figure out a way to avoid this, or write specialized update for Date
-  new_lt <- as.POSIXlt(new, tz = "UTC")
-  if (sum(c(new_lt$hour, new_lt$min, new_lt$sec), na.rm = TRUE)) {
-    new
-  } else {
-    make_date(new_lt$year + 1900, new_lt$mon + 1, new_lt$mday)
-  }
+  out <- update_datetime(object, ...)
+  ## lubridate's missing hms component checks for actual zeros. Not a great idea as the
+  ## return type is unpredictable but we are stuck with it.
+  if (is.POSIXct(out) && is_zero_hms(...))
+    as_date(out)
+  else
+    out
 }
 
 #' Fit a POSIXlt date-time to the timeline
@@ -166,19 +219,24 @@ update.Date <- function(object, ...) {
 #' @examples
 #' \dontrun{
 #'
-#' tricky <- structure(list(sec   = c(5,    0,    0,    -1),
-#'                          min   = c(0L,   5L,   5L,   0L),
-#'                          hour  = c(2L,   0L,   2L,   2L),
-#'                          mday  = c(4L,   4L,   14L,  4L),
-#'                          mon   = c(10L,  10L,  2L,   10L),
-#'                          year  = c(112L, 112L, 110L, 112L),
-#'                          wday  = c(0L,   0L,   0L,   0L),
-#'                          yday  = c(308L, 308L, 72L,  308L),
-#'                          isdst = c(1L,   0L,   0L,   1L)),
-#'                     .Names = c("sec", "min", "hour", "mday", "mon",
-#'                                "year", "wday", "yday",  "isdst"),
-#'                     class = c("POSIXlt", "POSIXt"),
-#'                     tzone = c("America/Chicago", "CST", "CDT"))
+#' tricky <- structure(list(
+#'   sec = c(5, 0, 0, -1),
+#'   min = c(0L, 5L, 5L, 0L),
+#'   hour = c(2L, 0L, 2L, 2L),
+#'   mday = c(4L, 4L, 14L, 4L),
+#'   mon = c(10L, 10L, 2L, 10L),
+#'   year = c(112L, 112L, 110L, 112L),
+#'   wday = c(0L, 0L, 0L, 0L),
+#'   yday = c(308L, 308L, 72L, 308L),
+#'   isdst = c(1L, 0L, 0L, 1L)
+#' ),
+#' .Names = c(
+#'   "sec", "min", "hour", "mday", "mon",
+#'   "year", "wday", "yday", "isdst"
+#' ),
+#' class = c("POSIXlt", "POSIXt"),
+#' tzone = c("America/Chicago", "CST", "CDT")
+#' )
 #'
 #' tricky
 #' ## [1] "2012-11-04 02:00:00 CDT" Doesn't exist because clocks "fall back" to 1:00 CST
@@ -200,14 +258,16 @@ update.Date <- function(object, ...) {
 #' }
 #' @export
 fit_to_timeline <- function(lt, class = "POSIXct", simple = FALSE) {
-  if (class != "POSIXlt" && class != "POSIXct")
+  if (class != "POSIXlt" && class != "POSIXct") {
     stop("class argument must be POSIXlt or POSIXct")
+  }
 
   if (simple) {
-
-    if (class == "POSIXct") as.POSIXct(lt)
-    else as.POSIXlt(as.POSIXct(lt))
-
+    if (class == "POSIXct") {
+      as.POSIXct(lt)
+    } else {
+      as.POSIXlt(as.POSIXct(lt))
+    }
   } else {
 
     ## fall break - DST only changes if it has to
@@ -216,7 +276,6 @@ fit_to_timeline <- function(lt, class = "POSIXct", simple = FALSE) {
 
     dstdiff <- !is.na(ct) & (lt$isdst != lt2$isdst)
     if (any(dstdiff)) {
-
       dlt <- lt[dstdiff]
       dlt2 <- lt2[dstdiff]
       dlt$isdst <- dlt2$isdst
@@ -224,20 +283,22 @@ fit_to_timeline <- function(lt, class = "POSIXct", simple = FALSE) {
       dlt$gmtoff <- dlt2$gmtoff
       dct <- as.POSIXct(dlt) # should directly match if not in gap
 
-      if (class == "POSIXct")
+      if (class == "POSIXct") {
         ct[dstdiff] <- dct
-      else
+      } else {
         lt2[dstdiff] <- dlt
+      }
 
       chours <- format.POSIXlt(as.POSIXlt(dct), "%H", usetz = FALSE)
       lhours <- format.POSIXlt(dlt, "%H", usetz = FALSE)
 
       any <- any(hdiff <- chours != lhours)
       if (!is.na(any) && any) {
-        if (class == "POSIXct")
+        if (class == "POSIXct") {
           ct[dstdiff][hdiff] <- NA
-        else
+        } else {
           lt2[dstdiff][hdiff] <- NA
+        }
       }
     }
     if (class == "POSIXct") ct else lt2

@@ -35,6 +35,8 @@ mday(x) <- value
 
 qday(x) <- value
 
+qday(x) <- value
+
 wday(x, week_start = getOption("lubridate.week.start", 7)) <- value
 
 yday(x) <- value
@@ -59,7 +61,9 @@ option to control this parameter globally.}
 
 \item{locale}{locale to use for day names. Default to current locale.}
 
-\item{value}{a numeric object}
+\item{value}{(for \verb{wday<-}) a numeric or a string giving the name of the day in
+the current locale or in English. Can be abbreviated. When a
+string, the value of \code{week_start} is ignored.}
 }
 \value{
 \code{wday()} returns the day of the week as a decimal number or an
@@ -75,7 +79,7 @@ year respectively. \code{day()} and \verb{day<-()} are aliases for \code{mday()}
 }
 \examples{
 x <- as.Date("2009-09-02")
-wday(x) #4
+wday(x) # 4
 
 wday(ymd(080101))
 wday(ymd(080101), label = TRUE, abbr = FALSE)
@@ -83,10 +87,10 @@ wday(ymd(080101), label = TRUE, abbr = TRUE)
 wday(ymd(080101) + days(-2:4), label = TRUE, abbr = TRUE)
 
 x <- as.Date("2009-09-02")
-yday(x) #245
-mday(x) #2
-yday(x) <- 1  #"2009-01-01"
-yday(x) <- 366 #"2010-01-01"
+yday(x) # 245
+mday(x) # 2
+yday(x) <- 1 # "2009-01-01"
+yday(x) <- 366 # "2010-01-01"
 mday(x) > 3
 }
 \keyword{chron}

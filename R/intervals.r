@@ -15,27 +15,35 @@ check_interval <- function(object) {
   }
   if (length(object@.Data) != length(object@start)) {
     msg <- paste("Inconsistent lengths: spans = ", length(object@.Data),
-      ", start dates = ", length(object@start), sep = "")
+      ", start dates = ", length(object@start),
+      sep = ""
+    )
     errors <- c(errors, msg)
   }
-  if (length(errors) == 0)
+  if (length(errors) == 0) {
     TRUE
-  else
+  } else {
     errors
+  }
 }
 
 .units_within_seconds <- function(secs, unit = "second") {
   ## return a list suitable to pass to new("Period", ...)
   switch(unit,
-         second = list(secs),
-         minute = list(secs %% 60, minute = secs %/% 60),
-         hour =
-           c(.units_within_seconds(secs %% 3600, "minute"),
-             list(hour = secs %/% 3600)),
-         day =
-           c(.units_within_seconds(secs %% 86400, "hour"),
-             list(day = secs %/% 86400)),
-         stop("Unsuported unit ", unit))
+    second = list(secs),
+    minute = list(secs %% 60, minute = secs %/% 60),
+    hour =
+      c(
+        .units_within_seconds(secs %% 3600, "minute"),
+        list(hour = secs %/% 3600)
+      ),
+    day =
+      c(
+        .units_within_seconds(secs %% 86400, "hour"),
+        list(day = secs %/% 86400)
+      ),
+    stop("Unsuported unit ", unit)
+  )
 }
 
 #' Interval class
@@ -59,8 +67,10 @@ check_interval <- function(object) {
 #'
 #' @aliases intervals
 #' @export
-setClass("Interval", contains = c("Timespan", "numeric"),
-  slots = c(start = "POSIXct",   tzone = "character"), validity = check_interval)
+setClass("Interval",
+  contains = c("Timespan", "numeric"),
+  slots = c(start = "POSIXct", tzone = "character"), validity = check_interval
+)
 
 #' @export
 setMethod("show", signature(object = "Interval"), function(object) {
@@ -81,12 +91,14 @@ format.Interval <- function(x, ...) {
 }
 
 #' @export
-setMethod("c", signature(x = "Interval"), function(x, ...) {
-  elements <- lapply(list(...), as.interval)
-  spans <- c(x@.Data, unlist(elements@.Data))
-  starts <- c(x@start, lapply(elements, int_start))
-  new("Interval", spans, start = starts, tzone = x@tzone)
-})
+c.Interval <- function(...) {
+  dots <- list(...)
+  nempty <- sapply(dots, length) != 0
+  elements <- lapply(dots[nempty], as.interval)
+  spans <- unlist(elements@.Data)
+  starts <- do.call(c, unname(lapply(elements, int_start)))
+  new("Interval", spans, start = starts, tzone = elements[[1]]@tzone)
+}
 
 #' @export
 setMethod("rep", signature(x = "Interval"), function(x, ...) {
@@ -94,14 +106,16 @@ setMethod("rep", signature(x = "Interval"), function(x, ...) {
 })
 
 #' @export
-setMethod("[", signature(x = "Interval"),
+setMethod(
+  "[", signature(x = "Interval"),
   function(x, i, j, ..., drop = TRUE) {
-      new("Interval", x@.Data[i], start = x@start[i], tzone = x@tzone)
+    new("Interval", x@.Data[i], start = x@start[i], tzone = x@tzone)
   }
 )
 
 #' @export
-setMethod("[[", signature(x = "Interval"),
+setMethod(
+  "[[", signature(x = "Interval"),
   function(x, i, j, ..., exact = TRUE) {
     new("Interval", x@.Data[i], start = x@start[i], tzone = x@tzone)
   }
@@ -109,13 +123,12 @@ setMethod("[[", signature(x = "Interval"),
 
 #' @export
 setMethod("[<-", signature(x = "Interval"), function(x, i, j, ..., value) {
-    if (is.interval(value)) {
-      x@.Data[i] <- value@.Data
-      x@start[i] <- value@start
-      new("Interval", x@.Data, start = x@start, tzone = x@tzone)
-    }
-    else {
-      x@.Data[i] <- value
+  if (is.interval(value)) {
+    x@.Data[i] <- value@.Data
+    x@start[i] <- value@start
+    new("Interval", x@.Data, start = x@start, tzone = x@tzone)
+  } else {
+    x@.Data[i] <- value
     new("Interval", x@.Data, start = x@start, tzone = x@tzone)
   }
 })
@@ -126,8 +139,7 @@ setMethod("[[<-", signature(x = "Interval"), function(x, i, j, ..., value) {
     x@.Data[i] <- value@.Data
     x@start[i] <- value@start
     new("Interval", x@.Data, start = x@start, tzone = x@tzone)
-  }
-  else {
+  } else {
     x@.Data[i] <- value
     new("Interval", x@.Data, start = x@start, tzone = x@tzone)
   }
@@ -195,7 +207,7 @@ unique.Interval <- function(x, ...) {
 #' interval("2008 05 11/P2hours 30minutes")
 #' interval("08 05 11/P 2h 30m")
 #'
-#' is.interval(period(months= 1, days = 15)) # FALSE
+#' is.interval(period(months = 1, days = 15)) # FALSE
 #' is.interval(interval(ymd(20090801), ymd(20090809))) # TRUE
 interval <- function(start = NULL, end = NULL, tzone = tz(start)) {
   # NB: tzone is forced and never called on NULL here
@@ -232,11 +244,11 @@ parse_interval <- function(x, tz) {
   # create matrix of string parts from x: 1st column is anything before /, 2nd is anything after.
   # replicates without stringr: str_split_fixed(x, "/", 2)
   mat <- matrix(
-    c(gsub('(^[^/]+)/(.+$)', '\\1', x), gsub('(^[^/]+)/(.+$)', '\\2', x)),
+    c(gsub("(^[^/]+)/(.+$)", "\\1", x), gsub("(^[^/]+)/(.+$)", "\\2", x)),
     ncol = 2
   )
   pstart <- grepl("^P", mat[, 1])
-  pend <- grepl("^P",  mat[, 2])
+  pend <- grepl("^P", mat[, 2])
 
   if (any(pstart & pend)) {
     stop(sprintf("Interval specified with period endpoints (%s)", x[pstart & pend][[1]]))
@@ -290,8 +302,10 @@ int_start <- function(int) int@start
   value <- as.POSIXct(value)
   span <- as.numeric(int@start + int@.Data - value, "secs")
   equal.lengths <- data.frame(span, value)
-  int <- new("Interval", span, start = equal.lengths$value,
-    tzone = int@tzone)
+  int <- new("Interval", span,
+    start = equal.lengths$value,
+    tzone = int@tzone
+  )
 }
 
 #' @description `int_start()`/`int_end()` and `int_start<-()`/`int_end<-()` are
@@ -307,8 +321,10 @@ int_end <- function(int) int@start + int@.Data
 "int_end<-" <- function(int, value) {
   value <- as.POSIXct(value)
   span <- as.numeric(value - int@start, "secs")
-  int <- new("Interval", span, start = int@start,
-    tzone = int@tzone)
+  int <- new("Interval", span,
+    start = int@start,
+    tzone = int@tzone
+  )
 }
 
 #' @rdname interval
@@ -496,7 +512,6 @@ generics::setdiff
 
 #' @export
 setdiff.Interval <- function(x, y, ...) {
-
   if (length(x) != length(y)) {
     xy <- match_lengths(x, y)
     x <- xy[[1]]
@@ -508,8 +523,10 @@ setdiff.Interval <- function(x, y, ...) {
   makes2 <- !aligned & inside
 
   if (sum(makes2)) {
-    stop(paste("Cases", which(makes2),
-      "result in discontinuous intervals."))
+    stop(paste(
+      "Cases", which(makes2),
+      "result in discontinuous intervals."
+    ))
   }
 
   int1 <- int_standardize(x)
@@ -540,7 +557,7 @@ setdiff.Interval <- function(x, y, ...) {
 #' @export
 #' @rdname within-interval
 #' @aliases %within%,Interval,Interval-method %within%,ANY,Interval-method
-#'   %within%,Date,list-method %within%,POSIXt,list-method
+#'   %within%,Date,list-method %within%,POSIXt,list-method %within%,Interval,list-method
 #' @param a An interval or date-time object.
 #' @param b Either an interval vector, or a list of intervals.
 #'
@@ -560,49 +577,61 @@ setdiff.Interval <- function(x, y, ...) {
 #' ## recycling (carefully note the difference between using a vector of
 #' ## intervals and list of intervals for the second argument)
 #' dates <- ymd(c("2014-12-20", "2014-12-30", "2015-01-01", "2015-01-03"))
-#' blackout_vector <- c(interval(ymd("2014-12-30"), ymd("2014-12-31")),
-#'               interval(ymd("2014-12-30"), ymd("2015-01-03")))
+#' blackout_vector <- c(
+#'   interval(ymd("2014-12-30"), ymd("2014-12-31")),
+#'   interval(ymd("2014-12-30"), ymd("2015-01-03"))
+#' )
 #' dates %within% blackout_vector
 #'
 #' ## within ANY of the intervals of a list
 #' dates <- ymd(c("2014-12-20", "2014-12-30", "2015-01-01", "2015-01-03"))
-#' blackout_list<- list(interval(ymd("2014-12-30"), ymd("2014-12-31")),
-#'                  interval(ymd("2014-12-30"), ymd("2015-01-03")))
-#' dates %within% blackout_list
+#' lst <- list(
+#'   interval(ymd("2014-12-30"), ymd("2014-12-31")),
+#'   interval(ymd("2014-12-30"), ymd("2015-01-03"))
+#' )
+#' dates %within% lst
+#'
+#' ## interval within a list of intervals
+#' int <- interval(
+#'   ymd("2014-12-20", "2014-12-30"),
+#'   ymd("2015-01-01", "2015-01-03")
+#' )
+#' int %within% lst
 setGeneric("%within%", useAsDefault = function(a, b) {
-  stop(sprintf("No %%within%% method with signature a = %s,  b = %s",
-               class(a)[[1]], class(b)[[1]]))
+  stop(sprintf(
+    "No %%within%% method with signature a = %s,  b = %s",
+    class(a)[[1]], class(b)[[1]]
+  ))
 })
 
 .within <- function(a, int) {
+  int <- int_standardize(int)
   as.numeric(a) - as.numeric(int@start) <= int@.Data & as.numeric(a) - as.numeric(int@start) >= 0
 }
 
 setMethod("%within%", signature(b = "Interval"), function(a, b) {
-  if (!is.instant(a)) stop("Argument 1 is not a recognized date-time")
+  if (!is.instant(a))
+    stop("Argument 1 is not a recognized datetime")
   a <- as.POSIXct(a)
   .within(a, b)
 })
 
-setMethod("%within%", signature(a = "Interval", b = "Interval"), function(a, b) {
-  a <- int_standardize(a)
-  b <- int_standardize(b)
+.within_interval <- function(a, b) {
   start.in <- as.numeric(a@start) >= as.numeric(b@start)
   end.in <- (as.numeric(a@start) + a@.Data) <= (as.numeric(b@start) + b@.Data)
   start.in & end.in
-})
+}
 
 setMethod("%within%", signature(a = "Interval", b = "Interval"), function(a, b) {
   a <- int_standardize(a)
   b <- int_standardize(b)
-  start.in <- as.numeric(a@start) >= as.numeric(b@start)
-  end.in <- (as.numeric(a@start) + a@.Data) <= (as.numeric(b@start) + b@.Data)
-  start.in & end.in
+  .within_interval(a, b)
 })
 
-.within_instant <- function(a, b) {
-  if (!all(sapply(b, is.interval)))
+.within_list_instant <- function(a, b) {
+  if (!all(sapply(b, is.interval))) {
     stop("When second argument to %within% is a list it must contain interval objects only")
+  }
   a <- as.POSIXct(a)
   out <- FALSE
   for (int in b) {
@@ -611,8 +640,22 @@ setMethod("%within%", signature(a = "Interval", b = "Interval"), function(a, b) 
   out
 }
 
-setMethod("%within%", signature(a = "POSIXt", b = "list"), .within_instant)
-setMethod("%within%", signature(a = "Date", b = "list"), .within_instant)
+setMethod("%within%", signature(a = "POSIXt", b = "list"), .within_list_instant)
+setMethod("%within%", signature(a = "Date", b = "list"), .within_list_instant)
+
+setMethod("%within%", signature(a = "Interval", b = "list"), function(a, b) {
+  if (!all(sapply(b, is.interval))) {
+    stop("When second argument to %within% is a list it must contain interval objects only")
+  }
+  out <- FALSE
+  a <- int_standardize(a)
+  for (int in b) {
+    int <- int_standardize(int)
+    out <- out | .within_interval(a, int)
+  }
+  out
+})
+
 
 #' @export
 as.list.Interval <- function(x, ...) {
@@ -631,30 +674,32 @@ summary.Interval <- function(object, ...) {
 
   qq <- c(n, earliest, latest, zone)
   names(qq) <- c("Intervals", "Earliest endpoint", "Latest endpoint", "Time zone")
-  if (any(nas))
+  if (any(nas)) {
     c(qq, `NA's` = sum(nas))
-  else qq
+  } else {
+    qq
+  }
 }
 
 #' @rdname time_length
 setMethod("time_length", signature("Interval"), function(x, unit = "second") {
   unit <- standardise_period_names(unit)
   if (unit %in% c("year", "month")) {
-
     periods <- as.period(x, unit = unit)
     int_part <- slot(periods, unit)
 
     prev_aniv <- add_with_rollback(
       int_start(x), (int_part * period(1, units = unit)),
-      roll_to_first = TRUE, preserve_hms = FALSE)
+      roll_to_first = TRUE, preserve_hms = FALSE
+    )
     next_aniv <- add_with_rollback(
       int_start(x), ((int_part + ifelse(x@.Data < 0, -1, 1)) * period(1, units = unit)),
-      roll_to_first = TRUE, preserve_hms = FALSE)
+      roll_to_first = TRUE, preserve_hms = FALSE
+    )
 
     sofar <- as.duration(int_end(x) - prev_aniv)
     total <- as.duration(next_aniv - prev_aniv)
     int_part + sign(x@.Data) * sofar / total
-
   } else {
     as.duration(x) / duration(num = 1, units = unit)
   }
@@ -674,28 +719,27 @@ setMethod("Arith", signature(e1 = "ANY", e2 = "Interval"), function(e1, e2) {
 #' @aliases Arith,Interval,ANY-method Arith,ANY,Interval-method
 #'   intersect,Interval,Interval-method union,Interval,Interval-method
 #'   setdiff,Interval,Interval-method as.numeric,Interval-method
-#'   show,Interval-method c,Interval-method rep,Interval-method
-#'   [,Interval-method [<-,Interval,ANY,ANY,ANY-method [[,Interval-method
-#'   [[<-,Interval,ANY,ANY,ANY-method $,Interval-method $<-,Interval-method
-#'   as.difftime,Interval-method as.character,Interval-method
-#'   +,Interval,Duration-method +,Interval,Interval-method
-#'   +,Interval,Period-method +,Interval,Date-method +,Date,Interval-method
-#'   +,Interval,difftime-method +,difftime,Interval-method
-#'   +,Interval,numeric-method +,numeric,Interval-method
-#'   +,Interval,POSIXct-method +,POSIXct,Interval-method
-#'   +,Interval,POSIXlt-method +,POSIXlt,Interval-method
-#'   /,Interval,Duration-method /,Interval,Interval-method
-#'   /,Interval,Period-method /,Interval,difftime-method
-#'   /,difftime,Interval-method /,Interval,numeric-method
-#'   /,numeric,Interval-method *,Interval,ANY-method *,ANY,Interval-method
-#'   -,Interval,missing-method -,Interval,Interval-method -,Date,Interval-method
-#'   -,POSIXct,Interval-method -,POSIXlt,Interval-method
+#'   as.integer,Interval-method show,Interval-method c,Interval-method
+#'   rep,Interval-method [,Interval-method [<-,Interval,ANY,ANY,ANY-method
+#'   [[,Interval-method [[<-,Interval,ANY,ANY,ANY-method $,Interval-method
+#'   $<-,Interval-method as.difftime,Interval-method as.character,Interval-method
+#'   day<-,Interval-method hour<-,Interval-method minute<-,Interval-method
+#'   month<-,Interval-method second<-,Interval-method year<-,Interval-method
+#'   +,Interval,Duration-method +,Interval,Interval-method +,Interval,Period-method
+#'   +,Interval,Date-method +,Date,Interval-method +,Interval,difftime-method
+#'   +,difftime,Interval-method +,Interval,numeric-method +,numeric,Interval-method
+#'   +,Interval,POSIXct-method +,POSIXct,Interval-method +,Interval,POSIXlt-method
+#'   +,POSIXlt,Interval-method /,Interval,Duration-method /,Interval,Interval-method
+#'   /,Interval,Period-method /,Interval,difftime-method /,difftime,Interval-method
+#'   /,Interval,numeric-method /,numeric,Interval-method *,Interval,ANY-method
+#'   *,ANY,Interval-method -,Interval,missing-method -,Interval,Interval-method
+#'   -,Date,Interval-method -,POSIXct,Interval-method -,POSIXlt,Interval-method
 #'   -,numeric,Interval-method -,Interval,Date-method -,Interval,POSIXct-method
-#'   -,Interval,POSIXlt-method -,Interval,numeric-method
-#'   -,Duration,Interval-method -,Period,Interval-method
-#'   %%,Interval,Duration-method %%,Interval,Interval-method
+#'   -,Interval,POSIXlt-method -,Interval,numeric-method -,Duration,Interval-method
+#'   -,Period,Interval-method %%,Interval,Duration-method %%,Interval,Interval-method
 #'   %%,Interval,Period-method %%,Interval,Duration %%,Interval,Interval
 #'   %%,Interval,Period -,Date,Interval -,Duration,Interval -,Interval,Date
-#'   -,Interval,Interval -,Interval,POSIXct -,Interval,POSIXlt
-#'   -,Interval,numeric -,POSIXct,Interval -,POSIXlt,Interval -,numeric,Interval
+#'   -,Interval,Interval -,Interval,POSIXct -,Interval,POSIXlt -,Interval,numeric
+#'   -,POSIXct,Interval -,POSIXlt,Interval -,numeric,Interval -,Interval,Duration-method
+#'   -,Interval,Period-method
 NULL

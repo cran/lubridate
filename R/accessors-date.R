@@ -26,8 +26,9 @@ NULL
 #' date(x) <- as.Date("2000-01-02")
 #' x
 #' @export
-date <- function(x)
+date <- function(x) {
   UseMethod("date")
+}
 
 #' @export
 date.default <- function(x) {
@@ -42,13 +43,18 @@ date.default <- function(x) {
   }
 }
 #' @export
-date.Period <- function(x)
+date.Period <- function(x) {
   stop("date is undefined for Period objects")
+}
 
 #' @rdname date
 #' @export
-"date<-" <- function(x, value)
-  x <- x + days(date(value) - date(x))
+"date<-" <- function(x, value) {
+  update(x,
+    years = year(value),
+    months = month(value),
+    days = day(value))
+}
 
 setGeneric("date<-")
 

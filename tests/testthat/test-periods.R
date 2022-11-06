@@ -1,5 +1,3 @@
-context("Periods")
-
 test_that("period() returns zero-length vector", {
   x <- period()
   expect_s4_class(x, "Period")
@@ -23,19 +21,23 @@ test_that("period(0-len-vec, ...) returns zero-length period", {
 
   expect_equal(
     period(c(30, 20), units = c("secs", "days")),
-    period(c(30, 20), units = c("secs", "days"), days = numeric()))
+    period(c(30, 20), units = c("secs", "days"), days = numeric())
+  )
 
   expect_equal(
     period(numeric(), days = 10),
-    period(days = 10))
+    period(days = 10)
+  )
 
   expect_equal(
     period(days = 10, secs = 1, hours = numeric()),
-    period())
+    period()
+  )
 
   expect_equal(
     period(days = 10, secs = numeric(), hours = 3),
-    period())
+    period()
+  )
 })
 
 test_that("period constructor doesn't accept non-numeric or non-character inputs", {
@@ -45,28 +47,35 @@ test_that("period constructor doesn't accept non-numeric or non-character inputs
 test_that("period constructor works with duplicated units", {
   expect_equal(
     period(c(1, 1, 2, 10), c("days", "sec", "seconds", "day")),
-    period("11d 3s"))
+    period("11d 3s")
+  )
   expect_equal(
     period(sec = 1, day = 1, seconds = 2, days = 10),
-    period("11d 3s"))
+    period("11d 3s")
+  )
   expect_equal(
     period(sec = c(1, 2), day = c(1, 2), seconds = 2, days = c(10, 20, 30, 40)),
-    period(c("11d 3s", "22d 4s", "31d 3s", "42d 4s")))
+    period(c("11d 3s", "22d 4s", "31d 3s", "42d 4s"))
+  )
 })
 
 test_that("period parsing works", {
   expect_equal(
     period("1min 2sec 2secs 1H 2M 1d"),
-    period(seconds = 4, minutes = 3, hours = 1, days = 1))
+    period(seconds = 4, minutes = 3, hours = 1, days = 1)
+  )
   expect_equal(
     period("day day"),
-    period(days = 2))
+    period(days = 2)
+  )
   expect_equal(
     period("S M H d m y"),
-    period(seconds = 1, minutes = 1, hours = 1, days = 1, months = 1, years = 1))
+    period(seconds = 1, minutes = 1, hours = 1, days = 1, months = 1, years = 1)
+  )
   expect_equal(
     period("2S 3M 4H 5d 6w 7m 8y"),
-    period(seconds = 2, minutes = 3, hours = 4, days = 5, weeks = 6, months = 7, years = 8))
+    period(seconds = 2, minutes = 3, hours = 4, days = 5, weeks = 6, months = 7, years = 8)
+  )
   expect_equal(period("K")@.Data, NA_real_)
   expect_equal(period("K")@hour, NA_real_)
   expect_equal(period("ksfdsfds")@.Data, NA_real_)
@@ -78,28 +87,35 @@ test_that("ISO ISO 8601 period parsing works", {
   expect_equal(period("P")@.Data, NA_real_)
   expect_equal(
     period("P3Y6M4DT12H30M5S"),
-    period(years = 3, months = 6, days = 4, hours = 12, minutes = 30, seconds = 5))
+    period(years = 3, months = 6, days = 4, hours = 12, minutes = 30, seconds = 5)
+  )
   expect_equal(
     period("P23DT23H"),
-    period(days = 23, hours = 23))
+    period(days = 23, hours = 23)
+  )
   expect_equal(
     period("P23DT60H"),
-    period(days = 23, hours = 60))
+    period(days = 23, hours = 60)
+  )
   expect_equal(
     period("P23DT60H20minutes 100 sec"),
-    period(days = 23, hours = 60, minutes = 20, seconds = 100))
+    period(days = 23, hours = 60, minutes = 20, seconds = 100)
+  )
   expect_equal(
     period(c("P23DT23H", "PT0S", "P0D")),
-    period(days = c(23, 0, 0), hours = c(23, 0, 0)))
+    period(days = c(23, 0, 0), hours = c(23, 0, 0))
+  )
 })
 
 test_that("fractional parsing works as expected", {
   expect_equal(
     period("1.1min 2.3sec 2.3secs 1.0H 2.2M 1.5d"),
-    period(seconds = 43222.6, minutes = 3, hours = 1, days = 1))
+    period(seconds = 43222.6, minutes = 3, hours = 1, days = 1)
+  )
   expect_equal(
     period("day 1.2days"),
-    period(days = 2, seconds = 17280))
+    period(days = 2, seconds = 17280)
+  )
 })
 
 test_that("is.period works", {
@@ -118,7 +134,7 @@ test_that("is.period works", {
 test_that("period works as expected", {
   per <- period(second = 90, minute = 5)
 
-  expect_is(per, "Period")
+  expect_s4_class(per, "Period")
   expect_equal(period(hours = 25), hours(25))
   expect_equal(per@year, 0)
   expect_equal(per@month, 0)
@@ -131,7 +147,7 @@ test_that("period works as expected", {
 test_that("period works as expected", {
   per <- period(c(90, 5), c("second", "minute"))
 
-  expect_is(per, "Period")
+  expect_s4_class(per, "Period")
   expect_equal(period(hours = 25), hours(25))
   expect_equal(per@year, 0)
   expect_equal(per@month, 0)
@@ -144,7 +160,7 @@ test_that("period works as expected", {
 test_that("period handles vector input", {
   per <- period(second = c(90, 60), minute = 5)
 
-  expect_is(per, "Period")
+  expect_s4_class(per, "Period")
   expect_equal(length(per), 2)
   expect_equal(per@year, c(0, 0))
   expect_equal(per@month, c(0, 0))
@@ -169,7 +185,7 @@ test_that("format.Period works as expected", {
   per3 <- period(years = 1, days = NA)
   expect_match(format(per), "5M 90S")
   expect_match(format(per2), "0S")
-  expect_equivalent(format(per3), as.character(NA))
+  expect_equal(format(per3), as.character(NA))
 })
 
 test_that("as.numeric and as.duration correctly handle periods", {
@@ -526,10 +542,14 @@ test_that("c.Period correctly handles NAs", {
 
 test_that("NA components propagate to all components of a period", {
   p <- period(secs = c(1, 2, 3), days = c(1, 2, NA), months = c(1, NA, 3))
-  expect_equal(p,
-               new("Period", .Data = c(1, NA, NA), year = c(0, NA, NA),
-                   month = c(1, NA, NA), day = c(1, NA, NA),
-                   hour = c(0, NA, NA), minute = c(0, NA, NA)))
+  expect_equal(
+    p,
+    new("Period",
+      .Data = c(1, NA, NA), year = c(0, NA, NA),
+      month = c(1, NA, NA), day = c(1, NA, NA),
+      hour = c(0, NA, NA), minute = c(0, NA, NA)
+    )
+  )
 })
 
 test_that("c.Period doesn't fail with empty elements", {
@@ -539,6 +559,32 @@ test_that("c.Period doesn't fail with empty elements", {
   )
 })
 
+test_that("as.integer works with periods", {
+  p <- period("2d 0H 2M 1s")
+  expect_equal(as.integer(p, units = "minute"), as.integer(as.numeric(p, units = "minute")))
+  expect_equal(as.integer(p, units = "hour"), as.integer(as.numeric(p, units = "hour")))
+  expect_equal(as.integer(p), as.numeric(p))
+  expect_type(as.integer(p), "integer")
+})
+
+test_that("c.Period works with named elements", {
+  nmd <- c(a = hours(1), b = minutes(30))
+  umd <- c(hours(1), minutes(30))
+  names(umd) <- c("a", "b")
+  expect_equal(nmd, umd)
+
+  nmd <- c(a = hours(c(1, 1)), b = minutes(c(30, 31)))
+  umd <- c(hours(1), hours(1), minutes(30), minutes(31))
+  names(umd) <- c("a1", "a2", "b1", "b2")
+  expect_equal(nmd, umd)
+
+  ## empty elements
+  nmd <- c(a = hours(1), NULL, b = minutes(30), seconds(10))
+  umd <- c(hours(1), minutes(30), seconds(10))
+  names(umd) <- c("a", "b", "")
+  expect_equal(nmd, umd)
+})
+
 test_that("summary.Period creates useful summary", {
   per <- period(minutes = 5)
   text <- c(rep("5M 0S", 6), 1)
@@ -546,6 +592,8 @@ test_that("summary.Period creates useful summary", {
 
   expect_equal(summary(c(per, NA)), text)
 })
+
+
 
 test_that("idempotentcy between period_to_seconds and seconds_to_period holds", {
   period <- period(years = 2, months = 3, days = 4, hour = 5, minutes = 6, seconds = 7)

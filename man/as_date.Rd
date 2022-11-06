@@ -7,11 +7,11 @@
 \alias{as_date,numeric-method}
 \alias{as_date,character-method}
 \alias{as_datetime}
+\alias{as_datetime,ANY-method}
 \alias{as_datetime,POSIXt-method}
 \alias{as_datetime,numeric-method}
 \alias{as_datetime,character-method}
 \alias{as_datetime,Date-method}
-\alias{as_datetime,ANY-method}
 \title{Convert an object to a date or date-time}
 \usage{
 as_date(x, ...)
@@ -26,15 +26,15 @@ as_date(x, ...)
 
 as_datetime(x, ...)
 
-\S4method{as_datetime}{POSIXt}(x, tz = "UTC")
+\S4method{as_datetime}{ANY}(x, tz = lubridate::tz(x))
+
+\S4method{as_datetime}{POSIXt}(x, tz = lubridate::tz(x))
 
 \S4method{as_datetime}{numeric}(x, origin = lubridate::origin, tz = "UTC")
 
 \S4method{as_datetime}{character}(x, tz = "UTC", format = NULL)
 
 \S4method{as_datetime}{Date}(x, tz = "UTC")
-
-\S4method{as_datetime}{ANY}(x, tz = "UTC")
 }
 \arguments{
 \item{x}{a vector of \link{POSIXt}, numeric or character objects}
@@ -44,14 +44,13 @@ as_datetime(x, ...)
 \item{tz}{a time zone name (default: time zone of the POSIXt object \code{x}). See
 \code{\link[=OlsonNames]{OlsonNames()}}.}
 
-\item{origin}{a Date object, or something which can be coerced by
-\code{as.Date(origin, ...)} to such an object (default: the Unix epoch of
-"1970-01-01"). Note that in this instance, \code{x} is assumed to reflect the
-number of days since \code{origin} at \code{"UTC"}.}
+\item{origin}{a Date object, or something which can be coerced by \code{as.Date(origin, ...)} to such an object (default: the Unix epoch of "1970-01-01"). Note that in
+this instance, \code{x} is assumed to reflect the number of days since \code{origin} at
+\code{"UTC"}.}
 
 \item{format}{format argument for character methods. When supplied parsing is
-performed by \code{\link[=strptime]{strptime()}}. For this reason consider using specialized
-parsing functions in lubridate.}
+performed by \code{parse_date_time(x, orders = formats, exact = TRUE)}. Thus, multiple
+formats are supported and are tried in turn.}
 }
 \value{
 a vector of \link{Date} objects corresponding to \code{x}.
@@ -74,9 +73,9 @@ uses only the tz argument to \code{as.Date()} ("UTC" by default).
 
 \item Both functions provide a default origin argument for numeric vectors.
 
-\item Both functions will generate NAs for
-invalid date format. A warning message will provide a count of the elements
-that were not converted
+\item Both functions will generate NAs for invalid date format. Valid formats are
+those described by ISO8601 standard. A warning message will provide a count of the
+elements that were not converted.
 
 \item \code{as_datetime()} defaults to using UTC.
 
@@ -85,7 +84,7 @@ that were not converted
 
 \examples{
 dt_utc <- ymd_hms("2010-08-03 00:50:50")
-dt_europe <- ymd_hms("2010-08-03 00:50:50", tz="Europe/London")
+dt_europe <- ymd_hms("2010-08-03 00:50:50", tz = "Europe/London")
 c(as_date(dt_utc), as.Date(dt_utc))
 c(as_date(dt_europe), as.Date(dt_europe))
 ## need not supply origin

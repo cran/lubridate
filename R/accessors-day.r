@@ -15,7 +15,9 @@ NULL
 #'   the week as an ordered factor of character strings, such as "Sunday." TRUE
 #'   will display an abbreviated version of the label, such as "Sun". abbr is
 #'   disregarded if label = FALSE.
-#' @param value a numeric object
+#' @param value (for `wday<-`) a numeric or a string giving the name of the day in
+#'   the current locale or in English. Can be abbreviated. When a
+#'   string, the value of `week_start` is ignored.
 #' @param week_start day on which week starts following ISO conventions - 1
 #'   means Monday, 7 means Sunday (default). When `label = TRUE`, this will be
 #'   the first level of the returned factor. You can set `lubridate.week.start`
@@ -26,7 +28,7 @@ NULL
 #' @keywords utilities manip chron methods
 #' @examples
 #' x <- as.Date("2009-09-02")
-#' wday(x) #4
+#' wday(x) # 4
 #'
 #' wday(ymd(080101))
 #' wday(ymd(080101), label = TRUE, abbr = FALSE)
@@ -34,14 +36,15 @@ NULL
 #' wday(ymd(080101) + days(-2:4), label = TRUE, abbr = TRUE)
 #'
 #' x <- as.Date("2009-09-02")
-#' yday(x) #245
-#' mday(x) #2
-#' yday(x) <- 1  #"2009-01-01"
-#' yday(x) <- 366 #"2010-01-01"
+#' yday(x) # 245
+#' mday(x) # 2
+#' yday(x) <- 1 # "2009-01-01"
+#' yday(x) <- 366 # "2010-01-01"
 #' mday(x) > 3
 #' @export day mday
-day <- function(x)
+day <- function(x) {
   UseMethod("mday")
+}
 
 #' @rdname day
 #' @export
@@ -51,14 +54,20 @@ mday <- day
 #' @export
 wday <- function(x, label = FALSE, abbr = TRUE,
                  week_start = getOption("lubridate.week.start", 7),
-                 locale = Sys.getlocale("LC_TIME"))
+                 locale = Sys.getlocale("LC_TIME")) {
   UseMethod("wday")
+}
 
 #' @export
 wday.default <- function(x, label = FALSE, abbr = TRUE,
                          week_start = getOption("lubridate.week.start", 7),
                          locale = Sys.getlocale("LC_TIME")) {
-  wday(as.POSIXlt(x, tz = tz(x))$wday + 1, label, abbr, locale = locale, week_start = week_start)
+  wday.numeric(
+    as.POSIXlt(x, tz = tz(x))$wday + 1,
+    label = label,
+    abbr = abbr,
+    locale = locale,
+    week_start = week_start)
 }
 
 .shift_wday_names <- function(names, week_start = 7) {
@@ -69,15 +78,14 @@ wday.default <- function(x, label = FALSE, abbr = TRUE,
   }
 }
 
+## FIXME: Remove export. This is an internal function and has very
+## confusing semantics. It works by assuming that 1 = Sunday always.
+## https://github.com/tidyverse/lubridate/issues/1025
 #' @export
 wday.numeric <- function(x, label = FALSE, abbr = TRUE,
                          week_start = getOption("lubridate.week.start", 7),
                          locale = Sys.getlocale("LC_TIME")) {
-
-  start <- as.integer(week_start)
-
-  if (start > 7 || start < 1)
-    stop("Invalid 'week_start' argument; must be between 1 and 7")
+  start <- as_week_start(week_start)
 
   if (start != 7) {
     x <- 1 + (x + (6 - start)) %% 7
@@ -93,17 +101,20 @@ wday.numeric <- function(x, label = FALSE, abbr = TRUE,
 }
 
 #' @export
-mday.default <- function(x)
+mday.default <- function(x) {
   as.POSIXlt(x, tz = tz(x))$mday
+}
 
 #' @export
-mday.Period <- function(x)
+mday.Period <- function(x) {
   slot(x, "day")
+}
 
 #' @rdname day
 #' @export
-qday <- function(x)
+qday <- function(x) {
   UseMethod("qday")
+}
 
 #' @export
 qday.default <- function(x) {
@@ -113,16 +124,50 @@ qday.default <- function(x) {
 
 #' @rdname day
 #' @export
-yday <- function(x)
+yday <- function(x) {
   UseMethod("yday")
+}
 
 #' @export
-yday.default <- function(x)
+yday.default <- function(x) {
   as.POSIXlt(x, tz = tz(x))$yday + 1
+}
 
 #' @rdname day
 #' @export
-`day<-` <- function(x, value) standardGeneric("day<-")
+setGeneric("day<-",
+  function (x, value) standardGeneric("day<-"),
+  useAsDefault = function(x, value) {
+    y <- update_datetime(as.POSIXct(x), days = value)
+    reclass_date(y, x)
+  }
+)
+
+#' @export
+setMethod("day<-", "Duration", function(x, value) {
+  x <- x + days(value - day(x))
+})
+
+#' @export
+setMethod("day<-", signature("Period"), function(x, value) {
+  slot(x, "day") <- value
+  x
+})
+
+#' @export
+setMethod("day<-", "Interval", function(x, value) {
+  x <- x + days(value - day(x))
+})
+
+#' @export
+setMethod("day<-", "POSIXt", function(x, value) {
+  update_datetime(x, days = value)
+})
+
+#' @export
+setMethod("day<-", "Date", function(x, value) {
+  update_datetime(x, days = value)
+})
 
 #' @rdname day
 #' @export
@@ -135,34 +180,26 @@ yday.default <- function(x)
 #' @export
 `qday<-` <- function(x, value) standardGeneric("qday<-")
 
+#' @rdname day
 #' @export
-setGeneric("qday<-", useAsDefault = function(x, value)
-  x <- x + days(value - qday(x)))
-
-#' @export
-setGeneric("day<-", useAsDefault = function(x, value)
-  x <- x + days(value - mday(x)))
-
-#' @export
-setMethod("day<-", signature("Period"), function(x, value) {
-  slot(x, "day") <- value
-  x
+setGeneric("qday<-", useAsDefault = function(x, value) {
+  x <- x + days(value - qday(x))
 })
 
 #' @rdname day
 #' @export
 "wday<-" <- function(x, week_start = getOption("lubridate.week.start", 7), value) {
-  if (!is.numeric(value)) {
-    ## FIXME: how to make this localized and preserve backward compatibility? Guesser?
-    labels <- .shift_wday_names(c("sunday", "monday", "tuesday", "wednesday",
-                                  "thursday", "friday", "saturday"),
-                                week_start)
-    value <- pmatch(tolower(value), labels)
+  week_start <- as_week_start(week_start)
+  if (is.character(value)) {
+    value <- as_week_start(value)
+    update(x, wdays = value, week_start = 1)
+  } else {
+    update(x, wdays = value, week_start = week_start)
   }
-  x <- x + days(value - wday(x, week_start = week_start))
 }
 
 #' @rdname day
 #' @export
-"yday<-" <- function(x, value)
-  x <- x + days(value - yday(x))
+"yday<-" <- function(x, value) {
+  update(x, ydays = value)
+}

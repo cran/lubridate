@@ -28,22 +28,36 @@ ceiling_date(
 \arguments{
 \item{x}{a vector of date-time objects}
 
-\item{unit}{a character string specifying a time unit or a multiple of a unit
-to be rounded to. Valid base units are \code{second}, \code{minute}, \code{hour}, \code{day},
-\code{week}, \code{month}, \code{bimonth}, \code{quarter}, \code{season}, \code{halfyear} and
-\code{year}. Arbitrary unique English abbreviations as in the \code{\link[=period]{period()}}
-constructor are allowed. Rounding to multiples of units (except weeks) is
-supported.}
+\item{unit}{a string, \code{Period} object or a date-time object. When a singleton string,
+it specifies a time unit or a multiple of a unit to be rounded to. Valid base units
+are \code{second}, \code{minute}, \code{hour}, \code{day}, \code{week}, \code{month}, \code{bimonth}, \code{quarter},
+\code{season}, \code{halfyear} and \code{year}. Arbitrary unique English abbreviations as in the
+\code{\link[=period]{period()}} constructor are allowed. Rounding to multiples of units (except weeks)
+is supported. When \code{unit} is a \code{Period} object, units of the period objects are
+used. This is equivalent to converting the period object to its string
+representation and passing as \code{unit} argument.
 
-\item{week_start}{when unit is \code{week}, specify the reference day.
-7 represents Sunday and 1 represents Monday.}
+When \code{unit} is a date-time object rounding is done to the nearest of the
+elements in \code{unit}. If range of \code{unit} vector does not cover the range of
+\code{x} \code{ceiling_date()} and \code{floor_date()} round to the \code{max(x)} and \code{min(x)}
+for elements that fall outside of \code{range(unit)}.}
 
-\item{change_on_boundary}{if this is \code{NULL} (the default), instants on the boundary
-remain unchanged, but \code{Date} objects are rounded up to the next boundary.
-If this is \code{TRUE}, instants on the boundary are rounded up to the next boundary.
-If this is \code{FALSE}, nothing on the boundary is rounded up at all. This was the
-default for \pkg{lubridate} prior to \code{v1.6.0}.
-See section \verb{Rounding Up Date Objects} below for more details.}
+\item{week_start}{week start day (Default is 7, Sunday. Set \code{lubridate.week.start} to
+override). Full or abbreviated names of the days of the week can be in English or
+as provided by the current locale.}
+
+\item{change_on_boundary}{if this is \code{NULL} (the default), instants on the
+boundary remain unchanged, but \code{Date} objects are rounded up to the next
+boundary. If this is \code{TRUE}, instants on the boundary are rounded up to the
+next boundary. If this is \code{FALSE}, nothing on the boundary is rounded up at
+all. This was the default for \pkg{lubridate} prior to \code{v1.6.0}. See
+section \verb{Rounding Up Date Objects} below for more details.}
+}
+\value{
+When \code{unit} is a string, return a Date object if \code{x} is a Date and
+\code{unit} is larger or equal than "day", otherwise a POSIXct object. When
+\code{unit} is a date-time object, return a date-time object of the same class
+and same time zone as \code{unit}.
 }
 \description{
 \code{round_date()} takes a date-time object and time unit, and rounds it to the nearest value
@@ -99,7 +113,7 @@ Behavior on the boundary can be changed by setting
 \examples{
 
 ## print fractional seconds
-options(digits.secs=6)
+options(digits.secs = 6)
 
 x <- ymd_hms("2009-08-03 12:01:59.23")
 round_date(x, ".5s")
@@ -146,6 +160,10 @@ ceiling_date(x, "season")
 ceiling_date(x, "halfyear")
 ceiling_date(x, "year")
 
+## Period unit argument
+floor_date(x, days(2))
+floor_date(x, years(1))
+
 ## As of R 3.4.2 POSIXct printing of fractional numbers is wrong
 as.POSIXct("2009-08-03 12:01:59.3") ## -> "2009-08-03 12:01:59.2 CEST"
 ceiling_date(x, ".1 sec") ## -> "2009-08-03 12:01:59.2 CEST"
@@ -164,16 +182,15 @@ ceiling_date(ymd("2000-01-01"), "month")
 ceiling_date(ymd_hms("2000-01-01 00:00:00"), "month", change_on_boundary = FALSE)
 ceiling_date(ymd("2000-01-01"), "month")
 
+x <- ymd_hms("2000-01-01 00:00:00")
+ceiling_date(x, "month")
+ceiling_date(x, "month", change_on_boundary = TRUE)
 
- x <- ymd_hms("2000-01-01 00:00:00")
- ceiling_date(x, "month")
- ceiling_date(x, "month", change_on_boundary = TRUE)
-
- ## For Date objects first day of the month is not on the
- ## "boundary". change_on_boundary applies to instants only.
- x <- ymd("2000-01-01")
- ceiling_date(x, "month")
- ceiling_date(x, "month", change_on_boundary = TRUE)
+## For Date objects first day of the month is not on the
+## "boundary". change_on_boundary applies to instants only.
+x <- ymd("2000-01-01")
+ceiling_date(x, "month")
+ceiling_date(x, "month", change_on_boundary = TRUE)
 }
 \seealso{
 \code{\link[base:Round]{base::round()}}

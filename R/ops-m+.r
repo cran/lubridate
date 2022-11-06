@@ -57,17 +57,24 @@ NULL
 setGeneric("%m+%")
 
 #' @export
-setMethod("%m+%", signature(e2 = "Period"),
-          function(e1, e2) add_with_rollback(e1, e2))
+setMethod(
+  "%m+%", signature(e2 = "Period"),
+  function(e1, e2) add_with_rollback(e1, e2)
+)
 
 #' @export
-setMethod("%m+%", signature(e1 = "Period"),
-          function(e1, e2) add_with_rollback(e2, e1))
+setMethod(
+  "%m+%", signature(e1 = "Period"),
+  function(e1, e2) add_with_rollback(e2, e1)
+)
 
 #' @export
-setMethod("%m+%", signature(e2 = "ANY"),
-          function(e1, e2)
-            stop("%m+% handles only Period objects as second argument"))
+setMethod(
+  "%m+%", signature(e2 = "ANY"),
+  function(e1, e2) {
+    stop("%m+% handles only Period objects as second argument")
+  }
+)
 
 #' @export
 "%m-%" <- function(e1, e2) standardGeneric("%m-%")
@@ -76,17 +83,24 @@ setMethod("%m+%", signature(e2 = "ANY"),
 setGeneric("%m-%")
 
 #' @export
-setMethod("%m-%", signature(e2 = "Period"),
-          function(e1, e2) add_with_rollback(e1, -e2))
+setMethod(
+  "%m-%", signature(e2 = "Period"),
+  function(e1, e2) add_with_rollback(e1, -e2)
+)
 
 #' @export
-setMethod("%m-%", signature(e1 = "Period"),
-          function(e1, e2) add_with_rollback(e2, -e1))
+setMethod(
+  "%m-%", signature(e1 = "Period"),
+  function(e1, e2) add_with_rollback(e2, -e1)
+)
 
 #' @export
-setMethod("%m-%", signature(e2 = "ANY"),
-          function(e1, e2)
-            stop("%m-% handles only Period objects as second argument"))
+setMethod(
+  "%m-%", signature(e2 = "ANY"),
+  function(e1, e2) {
+    stop("%m-% handles only Period objects as second argument")
+  }
+)
 
 #' `add_with_rollback()` is like \code{\%m+\%} and \code{\%m-\%} with more
 #' control over the rollback process. It allows the rollback to first day of the
@@ -107,7 +121,6 @@ setMethod("%m-%", signature(e2 = "ANY"),
 #' add_with_rollback(x, months(1), roll_to_first = TRUE, preserve_hms = FALSE)
 #' @export
 add_with_rollback <- function(e1, e2, roll_to_first = FALSE, preserve_hms = TRUE) {
-
   any_HMS <- any(e2@.Data != 0) || any(e2@minute != 0) || any(e2@hour != 0) || any(e2@day != 0)
   any_year <- any(e2@year != 0)
   if (!is.na(any_year) && any_year) {
@@ -118,7 +131,7 @@ add_with_rollback <- function(e1, e2, roll_to_first = FALSE, preserve_hms = TRUE
   new <- .quick_month_add(e1, e2@month)
   roll <- day(new) < day(e1)
   roll <- !is.na(roll) & roll
-  new[roll] <- rollback(new[roll], roll_to_first = roll_to_first, preserve_hms = preserve_hms)
+  new[roll] <- rollbackward(new[roll], roll_to_first = roll_to_first, preserve_hms = preserve_hms)
 
   if (!is.na(any_HMS) && any_HMS) {
     e2$month <- 0L
@@ -133,7 +146,7 @@ add_with_rollback <- function(e1, e2, roll_to_first = FALSE, preserve_hms = TRUE
   utc <- as.POSIXlt(force_tz(object, tzone = "UTC"))
   utc$mon <- utc$mon + mval
   utc <- as.POSIXct(utc)
-  new <- force_tz(utc, tzone = tzs, roll = TRUE)
+  new <- force_tz(utc, tzone = tzs, roll_dst = c("boundary", "post"))
   reclass_date(new, object)
 }
 
@@ -181,8 +194,9 @@ rollforward <- function(dates, roll_to_first = FALSE, preserve_hms = TRUE) {
 }
 
 .roll <- function(dates, roll_to_first, preserve_hms, forward = FALSE) {
-  if (length(dates) == 0)
+  if (length(dates) == 0) {
     return(dates)
+  }
   day(dates) <- 1
   if (!preserve_hms) {
     hour(dates) <- 0

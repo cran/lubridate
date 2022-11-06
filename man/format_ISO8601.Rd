@@ -14,13 +14,16 @@ format_ISO8601(x, usetz = FALSE, precision = NULL, ...)
 \arguments{
 \item{x}{An object to convert to ISO8601 character format.}
 
-\item{usetz}{Include the time zone in the formatting (of outputs including
-time; date outputs never include time zone information).}
+\item{usetz}{Include the time zone in the formatting.  If
+\code{usetz} is \code{TRUE}, the time zone is included. If
+\code{usetz} is \code{"Z"}, the time is converted to "UTC" and
+the time zone is indicated with "Z" ISO8601 notation.}
 
-\item{precision}{The amount of precision to represent with substrings of
-"ymdhms", as "y"ear, "m"onth, "d"ay, "h"our, "m"inute, and "s"econd. (e.g.
-"ymdhm" would show precision through minutes.  When \code{NULL}, full
-precision for the object is shown.}
+\item{precision}{The amount of precision to represent with
+substrings of "ymdhms", as "y"ear, "m"onth, "d"ay, "h"our,
+"m"inute, and "s"econd. (e.g. "ymdhm" would show precision
+through minutes.  When \code{NULL}, full precision for the object
+is shown.}
 
 \item{...}{Additional arguments to methods.}
 }
@@ -31,9 +34,9 @@ A character vector of ISO8601-formatted text.
 Format in ISO8601 character format
 }
 \examples{
-format_ISO8601(as.Date("02-01-2018", format="\%m-\%d-\%Y"))
-format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz="EST"), usetz=TRUE)
-format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz="EST"), precision="ymdhm")
+format_ISO8601(as.Date("02-01-2018", format = "\%m-\%d-\%Y"))
+format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "EST"), usetz = TRUE)
+format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "EST"), precision = "ymdhm")
 }
 \references{
 \url{https://en.wikipedia.org/wiki/ISO_8601}

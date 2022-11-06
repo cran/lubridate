@@ -20,29 +20,54 @@ NULL
 #' year(x) <- 2001
 #' year(x) > 1995
 #' @export
-year <- function(x)
+year <- function(x) {
   UseMethod("year")
+}
 
 #' @export
-year.default <- function(x)
-    as.POSIXlt(x, tz = tz(x))$year + 1900
+year.default <- function(x) {
+  as.POSIXlt(x, tz = tz(x))$year + 1900
+}
 
 #' @export
-year.Period <- function(x)
+year.Period <- function(x) {
   slot(x, "year")
+}
 
 #' @rdname year
 #' @export
-"year<-" <- function(x, value) {
-  x <- x + years(value - year(x))
-}
+setGeneric("year<-",
+  function (x, value) standardGeneric("year<-"),
+  useAsDefault = function(x, value) {
+    y <- update_datetime(as.POSIXct(x), years = value, roll_month = "NAym")
+    reclass_date(y, x)
+  }
+)
 
-setGeneric("year<-")
+#' @export
+setMethod("year<-", "Duration", function(x, value) {
+  x <- x + years(value - year(x))
+})
 
 #' @export
 setMethod("year<-", signature("Period"), function(x, value) {
   slot(x, "year") <- value
   x
+})
+
+#' @export
+setMethod("year<-", signature("Interval"), function(x, value) {
+  x <- x + years(value - year(x))
+})
+
+#' @export
+setMethod("year<-", "POSIXt", function(x, value) {
+  update_datetime(x, years = value, roll_month = "NAym")
+})
+
+#' @export
+setMethod("year<-", "Date", function(x, value) {
+  update_datetime(x, years = value, roll_month = "NAym")
 })
 
 .other_year <- function(x, week_start = 1) {
@@ -62,7 +87,7 @@ isoyear <- function(x) {
 
 #' @rdname year
 #' @description
-#' `epiyear()` returns years according to the epidemilogical week calendars.
+#' `epiyear()` returns years according to the epidemiological week calendars.
 #' @export
 epiyear <- function(x) {
   .other_year(x, 7)

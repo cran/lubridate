@@ -35,8 +35,9 @@ is.timepoint <- is.instant
 #' now() < now() # TRUE
 #' now() > now() # FALSE
 #' @export
-now <- function(tzone = "")
+now <- function(tzone = "") {
   with_tz(Sys.time(), tzone)
+}
 
 
 #' @rdname now
@@ -66,8 +67,9 @@ origin <- structure(0, class = c("POSIXct", "POSIXt"), tzone = "UTC")
   if (N > 1 && length(x) > 1 && length(x) != N) {
     out <- rep_len(x, N)
     ## repl_len doesn't preserve attributes
-    if (is.POSIXct(x))
+    if (is.POSIXct(x)) {
       attributes(out) <- attributes(x)
+    }
     out
   } else {
     x
@@ -101,19 +103,15 @@ make_datetime <- function(year = 1970L, month = 1L, day = 1L, hour = 0L, min = 0
     .POSIXct(numeric(), tz = tz)
   } else {
     N <- max(lengths)
-    cpp_update_dt(
-      dt = .rep_maybe(origin, N),
+    timechange::time_update(
+      time = .rep_maybe(origin, N),
       year = .rep_maybe(year, N),
       month = .rep_maybe(month, N),
-      yday = integer(),
       mday = .rep_maybe(day, N),
-      wday = integer(),
       hour = .rep_maybe(hour, N),
       minute = .rep_maybe(min, N),
       second = .rep_maybe(sec, N),
-      tz = tz,
-      roll = FALSE,
-      week_start = 7L
+      tz = tz
     )
   }
 }
@@ -126,10 +124,12 @@ make_date <- function(year = 1970L, month = 1L, day = 1L) {
     as.Date(integer(), origin = origin)
   } else {
     N <- max(lengths)
-    secs <- .Call(C_make_d,
-                  rep_len(as.integer(year), N),
-                  rep_len(as.integer(month), N),
-                  rep_len(as.integer(day), N))
-    structure(secs/86400L, class = "Date")
+    secs <- .Call(
+      C_make_d,
+      rep_len(as.integer(year), N),
+      rep_len(as.integer(month), N),
+      rep_len(as.integer(day), N)
+    )
+    structure(secs / 86400L, class = "Date")
   }
 }

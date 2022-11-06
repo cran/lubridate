@@ -32,6 +32,8 @@
 ##' @param locale locale in which `x` is encoded. On Linux-like systems use
 ##' `locale -a` in the terminal to list available locales.
 ##' @param quiet whether to output informative messages.
+##' @param exact logical. If `TRUE`, the `orders` parameter is interpreted as an
+##'   exact [base::strptime()] format and no format guessing is performed.
 ##' @return a function to be applied on a vector of dates
 ##' @seealso [guess_formats()], [parse_date_time()], [strptime()]
 ##' @export
@@ -49,10 +51,18 @@
 ##' stamp("2013-01-01T00:00:00-06")(D)
 ##' stamp("2013-01-01T00:00:00-08:00")(force_tz(D, "America/Chicago"))
 stamp <- function(x, orders = lubridate_formats,
-                  locale = Sys.getlocale("LC_TIME"), quiet = FALSE) {
-
-  fmts <- unique(guess_formats(x, orders, locale))
-  if (is.null(fmts)) stop("Couldn't guess formats of: ", x)
+                  locale = Sys.getlocale("LC_TIME"),
+                  quiet = FALSE, exact = FALSE) {
+  if (exact) {
+    stopifnot(length(orders) > 0)
+    fmts <- orders
+  } else {
+    fmts <- unique(guess_formats(x, orders, locale))
+    ## remove internal lubridate formats except of the ISO8601 time zone formats
+    fmts <- grep("%O[^oOzudHImMUVwWy]", fmts, value = TRUE, invert = TRUE)
+    if (length(fmts) == 0)
+      stop(sprintf("Couldn't guess formats for: %s. Wrong locale? Consider using `exact = TRUE`.", x[[1]]))
+  }
   if (length(fmts) == 1L) {
     FMT <- fmts[[1]]
   } else {
@@ -60,20 +70,24 @@ stamp <- function(x, orders = lubridate_formats,
     formats <- .select_formats(trained)
     FMT <- formats[[1]]
     if (!quiet && length(trained) > 1) {
-      message("Multiple formats matched: ",
-              paste("\"", names(trained), "\"(", trained, ")", sep = "",
-                    collapse = ", "))
+      message(
+        "Multiple formats matched: ",
+        paste("\"", names(trained), "\"(", trained, ")",
+          sep = "",
+          collapse = ", "
+        )
+      )
     }
   }
 
-  if (!quiet)
-      message("Using: \"", FMT, "\"")
+  if (!quiet) {
+    message("Using: \"", FMT, "\"")
+  }
 
 
   ## format doesn't accept 'locale' argument; need a hard reset
   reset_local_expr <-
-    quote(
-    {
+    quote({
       old_lc_time <- Sys.getlocale("LC_TIME")
       if (old_lc_time != locale) {
         on.exit(Sys.setlocale("LC_TIME", old_lc_time))
@@ -97,43 +111,51 @@ stamp <- function(x, orders = lubridate_formats,
 
     # replicate str_extract(FMT, "%O[oOz]$") without stringr dependence.
     # must return NA if no match.
-    oOz_end <- ifelse(grepl('%O[oOz]$', FMT), gsub("^.*(%O[oOz]$)", "\\1", FMT), rep(NA, length(FMT)))
+    oOz_end <- ifelse(grepl("%O[oOz]$", FMT), gsub("^.*(%O[oOz]$)", "\\1", FMT), rep(NA, length(FMT)))
 
     if (is.na(oOz_end)) {
-      FMT <- sub("%O[oOz]", "%z",
-                 sub("%Ou", "Z", FMT, fixed = TRUE))
+      FMT <- sub(
+        "%O[oOz]", "%z",
+        sub("%Ou", "Z", FMT, fixed = TRUE)
+      )
 
-      eval(bquote(
+      out <- eval(bquote(
         function(x, locale = .(locale)) {
           ## %z ignores timezone
-          if (!is_utc(tz(x[[1L]])))
+          if (!is_utc(tz(x[[1L]]))) {
             x <- with_tz(x, tzone = "UTC")
+          }
           .(reset_local_expr)
           format(x, format = .(FMT))
-        }))
-
+        }
+      ))
     } else {
       FMT <- sub("%O[oOz]$", "", FMT)
 
-      eval(bquote(
+      out <- eval(bquote(
         function(x, locale = .(locale)) {
           .(reset_local_expr)
-          paste0(format(x, format = .(FMT)),
-                 .format_offset(x, fmt = .(oOz_end)))
-        }))
+          paste0(
+            format(x, format = .(FMT)),
+            .format_offset(x, fmt = .(oOz_end))
+          )
+        }
+      ))
     }
-
   } else {
     ## most common case
-    eval(bquote(function(x, locale = .(locale)) {
+    out <- eval(bquote(function(x, locale = .(locale)) {
       .(reset_local_expr)
       format(x, format = .(FMT))
     }))
   }
+
+  attr(out, "srcref") <- NULL
+  out
 }
 
 
-.format_offset <- function(x, fmt="%Oz") {
+.format_offset <- function(x, fmt = "%Oz") {
   ## .format_offset
   ##
   ## function to format the offset of a time from UTC
@@ -173,10 +195,10 @@ stamp <- function(x, orders = lubridate_formats,
   offset_duration <- abs(offset_duration)
 
   ## determine hour
-  .hr <- floor(offset_duration/dhours(1))
+  .hr <- floor(offset_duration / dhours(1))
 
   ## determine minutes
-  .min <- floor((offset_duration - dhours(.hr))/dminutes(1))
+  .min <- floor((offset_duration - dhours(.hr)) / dminutes(1))
 
   ## warning if we need minutes, but are using format without minutes
   if (any(.min > 0) & fmt == "%Oo") {
@@ -184,8 +206,7 @@ stamp <- function(x, orders = lubridate_formats,
     fmt <- "%Oz"
   }
 
-  result <- switch(
-    fmt,
+  result <- switch(fmt,
     "%Oo" = sprintf("%s%02d", .sgn, .hr),
     "%Oz" = sprintf("%s%02d%02d", .sgn, .hr, .min),
     "%OO" = sprintf("%s%02d:%02d", .sgn, .hr, .min)
@@ -196,15 +217,21 @@ stamp <- function(x, orders = lubridate_formats,
 
 ##' @rdname stamp
 ##' @export
-stamp_date <- function(x, locale = Sys.getlocale("LC_TIME"), quiet = FALSE)
-  stamp(x, orders = c("ymd", "dmy", "mdy", "ydm", "dym", "myd", "my", "ym", "md", "dm", "m", "d", "y"),
-        locale = locale, quiet = quiet)
+stamp_date <- function(x, locale = Sys.getlocale("LC_TIME"), quiet = FALSE) {
+  stamp(x,
+    orders = c("ymd", "dmy", "mdy", "ydm", "dym", "myd", "my", "ym", "md", "dm", "m", "d", "y"),
+    locale = locale, quiet = quiet
+  )
+}
 
 ##' @rdname stamp
 ##' @export
-stamp_time <- function(x, locale = Sys.getlocale("LC_TIME"), quiet = FALSE)
-  stamp(x, orders = c("hms", "hm", "ms", "h", "m", "s"),
-        locale = locale, quiet = quiet)
+stamp_time <- function(x, locale = Sys.getlocale("LC_TIME"), quiet = FALSE) {
+  stamp(x,
+    orders = c("hms", "hm", "ms", "h", "m", "s"),
+    locale = locale, quiet = quiet
+  )
+}
 
 
 lubridate_formats <- local({
@@ -217,8 +244,10 @@ lubridate_formats <- local({
     out[[paste(D, "_h", sep = "")]] <- paste(xxx[[D]], "r", sep = "")
   }
 
-  out <- c(out, xxx, my = "my", ym = "ym", md = "md", dm = "dm",
-           hms = "T", hm = "R", ms = "MS", h = "r", m = "m", y = "y")
+  out <- c(out, xxx,
+    my = "my", ym = "ym", md = "md", dm = "dm",
+    hms = "T", hm = "R", ms = "MS", h = "r", m = "m", y = "y"
+  )
 
   ## adding ISO8601
   out <- c(ymd_hmsz = "ymdTz", out)

@@ -41,12 +41,15 @@ POSIXct <- function(length = 0L, tz = "UTC") {
 NA_POSIXct_ <- .POSIXct(NA_real_, tz = "UTC")
 
 .recursive_posixct_unclass <- function(x, tz = "UTC") {
-  if (length(x) == 0)
-    NULL
-  else if (is.recursive(x))
+  if (length(x) == 0) {
+    .POSIXct(numeric(), tz = tz)
+  } else if (is.POSIXlt(x)) {
+    with_tz(as.POSIXct(x), tz)
+  } else if (is.recursive(x)) {
     lapply(x, .recursive_posixct_unclass, tz = tz)
-  else
+  } else {
     as_datetime(x, tz = tz)
+  }
 }
 
 #' @method c POSIXct
@@ -54,7 +57,8 @@ c.POSIXct <- function(..., recursive = FALSE) {
   dots <- list(...)
   tz <- tz(dots[[1]])
   .POSIXct(c(unlist(lapply(dots, .recursive_posixct_unclass, tz = tz))),
-           tz = tz)
+    tz = tz
+  )
 }
 
 #' @method c POSIXlt
@@ -63,6 +67,11 @@ c.POSIXlt <- function(..., recursive = FALSE) {
 }
 
 evalqOnLoad({
-    registerS3method("c", "POSIXct", c.POSIXct)
-    ## registerS3method("c", "POSIXlt", c.POSIXlt)
+  registerS3method("c", "POSIXct", c.POSIXct)
+  ## registerS3method("c", "POSIXlt", c.POSIXlt)
 })
+
+#' @name hidden_aliases
+#' @aliases day<-,POSIXt-method hour<-,POSIXt-method minute<-,POSIXt-method
+#'   month<-,POSIXt-method second<-,POSIXt-method year<-,POSIXt-method
+NULL
