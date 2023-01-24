@@ -1,7 +1,7 @@
 Type: Package
 Package: lubridate
 Title: Make Dealing with Dates a Little Easier
-Version: 1.9.0
+Version: 1.9.1
 Authors@R: c(
     person("Vitalie", "Spinu", , "spinuvit@gmail.com", role = c("aut", "cre")),
     person("Garrett", "Grolemund", role = "aut"),
@@ -26,8 +26,8 @@ License: GPL (>= 2)
 URL: https://lubridate.tidyverse.org,
         https://github.com/tidyverse/lubridate
 BugReports: https://github.com/tidyverse/lubridate/issues
-Depends: methods, timechange (>= 0.1.1), R (>= 3.2)
-Imports: generics
+Depends: methods, R (>= 3.2)
+Imports: generics, timechange (>= 0.1.1)
 Suggests: covr, knitr, rmarkdown, testthat (>= 2.1.0), vctrs (>= 0.5.0)
 Enhances: chron, data.table, timeDate, tis, zoo
 VignetteBuilder: knitr
@@ -54,7 +54,7 @@ Collate: 'Dates.r' 'POSIXt.r' 'util.r' 'parse.r' 'timespans.r'
         'pretty.r' 'round.r' 'stamp.r' 'tzdir.R' 'update.r' 'vctrs.R'
         'zzz.R'
 NeedsCompilation: yes
-Packaged: 2022-11-05 22:53:20 UTC; vspinu
+Packaged: 2023-01-23 21:22:44 UTC; vspinu
 Author: Vitalie Spinu [aut, cre],
   Garrett Grolemund [aut],
   Hadley Wickham [aut],
@@ -67,4 +67,4 @@ Author: Vitalie Spinu [aut, cre],
   Jonathan Boiser [ctb],
   Chel Hee Lee [ctb]
 Repository: CRAN
-Date/Publication: 2022-11-06 07:50:02 UTC
+Date/Publication: 2023-01-24 11:20:02 UTC

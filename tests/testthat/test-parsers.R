@@ -1137,13 +1137,25 @@ test_that("parsing with r and R formats works in non-english locale", {
   suppressWarnings(testthat::skip_if(Sys.setlocale("LC_TIME", "fr_FR.utf8") == ""))
   on.exit(Sys.setlocale("LC_TIME", "C"))
   expect_equal(ymd_h("2021-10-26 0"), ymd("2021-10-26", tz = "UTC"))
+  expect_equal(ymd_hm("2022-11-05 12:00", tz = "GMT"),  ymd_hms("2022-11-05 12:00:00", tz = "GMT"))
+  expect_equal(ymd_hm("2022-11-05 12:00", tz = "GMT"),  ymd_hms("2022-11-05 12:00", tz = "GMT", truncated = 1))
+  expect_equal(dmy_hm("05-11-2022 12:00", tz = "GMT"),  ymd_hms("2022-11-05 12:00", tz = "GMT", truncated = 1))
+  expect_equal(ymd_h("2021-10-26 0"), ymd("2021-10-26", tz = "UTC"))
   expect_equal(parse_date_time("2021-10-26 0", "Ymdr"), ymd("2021-10-26", tz = "UTC"))
   expect_equal(parse_date_time("2021-10-26 0001", "YmdR"), ymd_hms("2021-10-26 0:1:0"))
+  expect_equal(parse_date_time("2021-10-26 00  01", "YmdR"), ymd_hms("2021-10-26 0:1:0"))
 })
 
 test_that("NA_real_ propagates in parsing functions", {
   expect_equal(ymd_hms(NA_real_), as_datetime(NA))
   expect_equal(ymd_hms(c(20000101210101, NA_real_)), as_datetime(c("2000-01-01 21:01:01", NA)))
+})
+
+test_that("fractional qY dates are parsed correctly", {
+  ## #1091
+  expect_equal(
+    parse_date_time(c(3.2007, 2.1970, 1.2020, 4.2009, 1.1975, NA), "qY"),
+    ymd(c("2007-07-01 UTC", "1970-04-01 UTC", "2020-01-01 UTC", "2009-10-01 UTC", "1975-01-01 UTC", NA), tz = "UTC"))
 })
 
 ## library(microbenchmark)

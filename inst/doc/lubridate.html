@@ -362,18 +362,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Parsing dates and times</h2>
 <p>Getting R to agree that your data contains the dates and times you think it does can be tricky. Lubridate simplifies that. Identify the order in which the year, month, and day appears in your dates. Now arrange “y”, “m”, and “d” in the same order. This is the name of the function in lubridate that will parse your dates. For example,</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(lubridate)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="co">#&gt; Loading required package: timechange</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co">#&gt; Attaching package: &#39;lubridate&#39;</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#&gt; </span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co">#&gt;     date, intersect, setdiff, union</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="kw">ymd</span>(<span class="st">&quot;20110604&quot;</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="kw">mdy</span>(<span class="st">&quot;06-04-2011&quot;</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="kw">dmy</span>(<span class="st">&quot;04/06/2011&quot;</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">#&gt; Attaching package: &#39;lubridate&#39;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#&gt;     date, intersect, setdiff, union</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="kw">ymd</span>(<span class="st">&quot;20110604&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="kw">mdy</span>(<span class="st">&quot;06-04-2011&quot;</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="kw">dmy</span>(<span class="st">&quot;04/06/2011&quot;</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;2011-06-04&quot;</span></span></code></pre></div>
 <p>Lubridate’s parse functions handle a wide variety of formats and separators, which simplifies the parsing process.</p>
 <p>If your date includes time information, add h, m, and/or s to the name of the function. <code>ymd_hms</code> is probably the most common date time format. To read the dates in with a certain time zone, supply the official name of that time zone in the <code>tz</code> argument.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>arrive &lt;-<span class="st"> </span><span class="kw">ymd_hms</span>(<span class="st">&quot;2011-06-04 12:00:00&quot;</span>, <span class="dt">tz =</span> <span class="st">&quot;Pacific/Auckland&quot;</span>)</span>

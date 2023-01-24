@@ -1,3 +1,18 @@
+Version 1.9.1
+=============
+
+### NEW FEATURES
+
+* `as_datetime()` accepts multiple formats in format argument, just like `as_date()` does.
+
+### BUG FIXES
+
+* [#1091](https://github.com/tidyverse/lubridate/issues/1091) Fix formatting of numeric inputs to parse_date_time.
+* [#1092](https://github.com/tidyverse/lubridate/issues/1092) Fix regression in `ymd_hm` on locales where `p` format is not defined.
+* [#1097](https://github.com/tidyverse/lubridate/issues/1097) Fix `as_date("character")` to work correctly with formats that include extra characters.
+* [#1098](https://github.com/tidyverse/lubridate/issues/1098) Roll over the month boundary in `make_dateime()` when units exceed their maximal values.
+* [#1090](https://github.com/tidyverse/lubridate/issues/1090) timechange has been moved from Depends to Imports.
+
 Version 1.9.0
 =============
 
