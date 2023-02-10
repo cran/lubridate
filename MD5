@@ -1,6 +1,6 @@
-145891df1ef6dc993d3770d047de3127 *DESCRIPTION
+ee0772a5dfd23f1b89d2ee463721c54c *DESCRIPTION
 3b8f5e3241ebebb0d9a485a32ef11e6c *NAMESPACE
-4e33dac874dcb0af0f4356064556db20 *NEWS.md
+cb5f8c442fa83ef034275f521e8c0ef8 *NEWS.md
 b0add32ecda32522a1317952779616fe *R/Dates.r
 e1b35c146005e68b7a511bb5bd7ec5ab *R/POSIXt.r
 720b0f0dd543cf2a6eca985432bad9dd *R/accessors-date.R
@@ -31,7 +31,7 @@ e4f1fd3267f81116c4ed0f811fca8406 *R/intervals.r
 78aca914d0350e9a469e70c74077bce2 *R/leap-years.r
 6168a35c3e2c9b4a50045c53cbb7bec8 *R/numeric.r
 787698bdb89711b81f2fe8cb375119c6 *R/ops-addition.r
-2d0288597abf2496ddb7b7d7d3804512 *R/ops-compare.r
+ef327199dcc497d46910016039fca4ba *R/ops-compare.r
 0a8f1cb526255806f098df6591bbf70f *R/ops-division.r
 f58b0fa1750c7a0eb44ec4d70ae568ff *R/ops-integer-division.r
 abae1de564026ae04a4c17003d37e0b4 *R/ops-m+.r
@@ -39,8 +39,8 @@ abae1de564026ae04a4c17003d37e0b4 *R/ops-m+.r
 0c32fcacd3f7a4558ec0cb3686313f89 *R/ops-multiplication.r
 ab85a185920166d9282797fdeb94e421 *R/ops-subtraction.r
 e6a07649cea3a73e5e04f25b3dfec287 *R/package.r
-6714fce9ca04171dca8c4d38c0f0c469 *R/parse.r
-babbdc726d4a35822bc57c771dc23060 *R/periods.r
+c9466db07e6a514754c0beb46fe5faa5 *R/parse.r
+a21ae75909c1c00e712639258f42e840 *R/periods.r
 597afbb50ed26aa99cd711219f8bd70e *R/pretty.r
 634d6da3b1dab270cd1dd32c3b83d748 *R/round.r
 9021764f2c47db95985ca8c7ca977934 *R/stamp.r
@@ -48,14 +48,14 @@ babbdc726d4a35822bc57c771dc23060 *R/periods.r
 5982a548afaafeb4d436f001cb2dea74 *R/timespans.r
 07062e4041919bd85f7f5bdaced708eb *R/tzdir.R
 8509d8ae337acd4e23b3b3331adc9172 *R/update.r
-fcc66021989d23e76ab6eaa9f0dd227d *R/util.r
+732a4674fe6981d8e119d414fd612083 *R/util.r
 e4cba1d6039745f46b27dc5ac586b597 *R/vctrs.R
 b9ac3f2d5b42aeb15038ba0bc53f83d3 *R/zzz.R
 b3da58252b52b750fab087e63c55bf5d *README.md
-e7fe1ed104e8c7edf6f494bac6315309 *build/vignette.rds
+e0ebc791e770213c65b664c43b160f94 *build/vignette.rds
 a9137fd9c8609c9f9013e68dd904e756 *cleanup
 a4eca0d1ebff1dc90da52f32fef3de56 *data/lakers.rda
-f00bdce2cc6c936e791532bf66f3e40f *inst/CITATION
+2996ee2cab127c7f92073ab30ac0b624 *inst/CITATION
 305e9bb0edf2b9f339192932ade0bf4b *inst/cctz.sh
 dce014d195f833390a09d2bbdca8b5da *inst/doc/lubridate.R
 aabdff67dc16d60af8619a25176db9e8 *inst/doc/lubridate.Rmd
@@ -162,7 +162,7 @@ dee64ac71d7438e7aabdba9b2989f9d0 *tests/testthat/test-ops-integer-division.txt
 3c91db5a0fc841851ccbf3b6073f282d *tests/testthat/test-ops-modulo.R
 d0b7865298ad021de8c7a3b263395e03 *tests/testthat/test-ops-multiplication.R
 5af0f86bdfcc471e4a863168ef90bade *tests/testthat/test-ops-subtraction.R
-0d6ac9605d4f8a138b7a39908ef63f0a *tests/testthat/test-parsers.R
+22e4b5cfc434ce2dfd740e0326178cb9 *tests/testthat/test-parsers.R
 1ef0fed9f4d7ea5a78405ec35fa547b6 *tests/testthat/test-periods.R
 2dfd00f85d30bc253407bb4e0506e9aa *tests/testthat/test-pretty.R
 bdb44ba0fd1be1e9a56bd82740142537 *tests/testthat/test-rollback.R
