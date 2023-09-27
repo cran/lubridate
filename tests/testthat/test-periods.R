@@ -304,6 +304,31 @@ test_that("as.period with different units handles interval objects", {
   expect_equal(as.period(int, "second") + start, end)
 })
 
+test_that("as.period on intervals with months unit recycles and standardizes the new 0 year (#1109)", {
+  start <- ymd("2019-01-01") + c(0, NA, 2)
+  end <- ymd("2023-01-02") + c(0, NA, 100)
+  int <- interval(start, end, tzone = "UTC")
+
+  x <- as.period(int, "months")
+
+  expect_identical(x, months(c(48, NA, 51)) + days(c(1, NA, 9)))
+
+  # In particular, the year slot should be recycled and have `NA`s standardized
+  expect_identical(x@year, c(0, NA, 0))
+  expect_identical(year(x), c(0, NA, 0))
+})
+
+test_that("as.period on periods with months unit recycles and standardizes the new 0 year (#1109)", {
+  x <- years(c(1, NA, 2))
+  x <- as.period(x, "months")
+
+  expect_identical(x, months(c(12, NA, 24)))
+
+  # In particular, the year slot should be recycled and have `NA`s standardized
+  expect_identical(x@year, c(0, NA, 0))
+  expect_identical(year(x), c(0, NA, 0))
+})
+
 test_that("period constructor works num-unit args", {
   expect_equal(period(1, c("sec", "hour")), period("1H 1S"))
   expect_equal(period(1:3, c("sec", "hour", "min")), period("2H 1S 3M"))
@@ -617,4 +642,17 @@ test_that("direct reation of periods works as expected", {
     new("Period", 1:4, day = 1:2),
     period(seconds = 1:4, days = 1:2)
   )
+})
+
+
+test_that("period arithmetics works with infinite times", {
+  #1113
+  skip("FIXME: activate when timechange#29 isfixed")
+  date <- ymd("2023-01-01")
+  expect_equal(date + Inf, date + days(Inf))
+  expect_equal(date + Inf, date + days(Inf))
+
+  ime <- ymd("2023-01-01", tz = "America/New_York")
+  expect_equal(date + Inf, date + days(Inf))
+  expect_equal(date + Inf, date + days(Inf))
 })

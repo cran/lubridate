@@ -1,7 +1,7 @@
 Type: Package
 Package: lubridate
 Title: Make Dealing with Dates a Little Easier
-Version: 1.9.2
+Version: 1.9.3
 Authors@R: c(
     person("Vitalie", "Spinu", , "spinuvit@gmail.com", role = c("aut", "cre")),
     person("Garrett", "Grolemund", role = "aut"),
@@ -35,7 +35,7 @@ Config/Needs/website: tidyverse/tidytemplate
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 SystemRequirements: C++11, A system with zoneinfo data (e.g.
         /usr/share/zoneinfo). On Windows the zoneinfo included with R
         is used.
@@ -54,7 +54,7 @@ Collate: 'Dates.r' 'POSIXt.r' 'util.r' 'parse.r' 'timespans.r'
         'pretty.r' 'round.r' 'stamp.r' 'tzdir.R' 'update.r' 'vctrs.R'
         'zzz.R'
 NeedsCompilation: yes
-Packaged: 2023-02-09 21:36:50 UTC; vspinu
+Packaged: 2023-09-24 18:46:12 UTC; vspinu
 Author: Vitalie Spinu [aut, cre],
   Garrett Grolemund [aut],
   Hadley Wickham [aut],
@@ -67,4 +67,4 @@ Author: Vitalie Spinu [aut, cre],
   Jonathan Boiser [ctb],
   Chel Hee Lee [ctb]
 Repository: CRAN
-Date/Publication: 2023-02-10 01:30:02 UTC
+Date/Publication: 2023-09-27 09:20:06 UTC
