@@ -7,8 +7,8 @@
 #' @references \url{https://en.wikipedia.org/wiki/ISO_8601}
 #' @examples
 #' format_ISO8601(as.Date("02-01-2018", format = "%m-%d-%Y"))
-#' format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "EST"), usetz = TRUE)
-#' format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "EST"), precision = "ymdhm")
+#' format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "America/New_York"), usetz = TRUE)
+#' format_ISO8601(as.POSIXct("2018-02-01 03:04:05", tz = "America/New_York"), precision = "ymdhm")
 #' @aliases format_ISO8601,Date-method format_ISO8601,POSIXt-method format_ISO8601,Interval-method
 #' format_ISO8601,Duration-method format_ISO8601,Period-method
 #' @export
@@ -139,9 +139,9 @@ ISO8601_precision_map <-
 #'   \code{usetz} is \code{"Z"}, the time is converted to "UTC" and
 #'   the time zone is indicated with "Z" ISO8601 notation.
 #' @param precision The amount of precision to represent with
-#'   substrings of "ymdhms", as "y"ear, "m"onth, "d"ay, "h"our,
-#'   "m"inute, and "s"econd. (e.g. "ymdhm" would show precision
-#'   through minutes.  When \code{NULL}, full precision for the object
+#'   substrings of "ymdhms", as year, month, day, hour,
+#'   minute, and second. (e.g. "ymd" is days precision, "ymdhm" is minute precision.
+#'   When \code{NULL}, full precision for the object
 #'   is shown.
 #' @param max_precision The maximum precision allowed to be output.
 #' @keywords internal
